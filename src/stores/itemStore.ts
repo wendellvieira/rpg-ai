@@ -1,9 +1,104 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { Item } from '../classes/Item';
-import type { Arma } from '../classes/Arma';
-import type { Armadura } from '../classes/Armadura';
+import { Arma, type CategoriaArma, type TipoDano, type PropriedadeArma } from '../classes/Arma';
+import { Armadura, type CategoriaArmadura } from '../classes/Armadura';
+import { Consumivel, type TipoConsumivel } from '../classes/Consumivel';
 import { TipoItem, RaridadeItem } from '../types';
+import { PersistenceManager } from '../services/PersistenceManager';
+
+/**
+ * Cria uma instância de Item baseada nos dados serializados
+ */
+function criarItemDeserializado(dados: Record<string, unknown>): Item | null {
+  try {
+    const tipo = dados.tipo as TipoItem;
+
+    switch (tipo) {
+      case TipoItem.ARMA:
+        return new Arma({
+          id: dados.id as string,
+          nome: dados.nome as string,
+          descricao: dados.descricao as string,
+          valor: dados.valor as number,
+          peso: dados.peso as number,
+          raridade: dados.raridade as RaridadeItem,
+          magico: dados.magico as boolean,
+          imagemUrl: dados.imagemUrl as string,
+          categoria: dados.categoria as CategoriaArma,
+          dano: dados.dano as string,
+          tipoDano: dados.tipoDano as TipoDano,
+          alcance: dados.alcance as number,
+          propriedades: dados.propriedades as PropriedadeArma[],
+          critico: dados.critico as number,
+        });
+
+      case TipoItem.ARMADURA:
+      case TipoItem.ESCUDO: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const armaduraData: any = {
+          id: dados.id as string,
+          nome: dados.nome as string,
+          descricao: dados.descricao as string,
+          valor: dados.valor as number,
+          peso: dados.peso as number,
+          raridade: dados.raridade as RaridadeItem,
+          magico: dados.magico as boolean,
+          imagemUrl: dados.imagemUrl as string,
+          categoria: dados.categoria as CategoriaArmadura,
+          bonusCA: dados.bonusCA as number,
+        };
+
+        // Adicionar propriedades opcionais apenas se existirem
+        if (dados.maxDestreza !== undefined) {
+          armaduraData.maxDestreza = dados.maxDestreza as number;
+        }
+        if (dados.forcaMinima !== undefined) {
+          armaduraData.forcaMinima = dados.forcaMinima as number;
+        }
+
+        return new Armadura(armaduraData);
+      }
+
+      case TipoItem.CONSUMIVEL: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const consumivelData: any = {
+          id: dados.id as string,
+          nome: dados.nome as string,
+          descricao: dados.descricao as string,
+          valor: dados.valor as number,
+          peso: dados.peso as number,
+          raridade: dados.raridade as RaridadeItem,
+          magico: dados.magico as boolean,
+          imagemUrl: dados.imagemUrl as string,
+          tipoConsumivel: dados.tipoConsumivel as TipoConsumivel,
+          efeito: dados.efeito as string,
+        };
+
+        // Adicionar propriedades opcionais apenas se existirem
+        if (dados.duracao !== undefined) {
+          consumivelData.duracao = dados.duracao as string;
+        }
+        if (dados.cura !== undefined) {
+          consumivelData.cura = dados.cura as number;
+        }
+        if (dados.usos !== undefined) {
+          consumivelData.usos = dados.usos as number;
+        }
+
+        return new Consumivel(consumivelData);
+      }
+
+      default:
+        // Para outros tipos, criar uma implementação genérica
+        console.warn(`Tipo de item não implementado para deserialização: ${tipo}`);
+        return null;
+    }
+  } catch (error) {
+    console.error('Erro ao deserializar item:', error, dados);
+    return null;
+  }
+}
 
 export const useItemStore = defineStore('item', () => {
   // Estado
@@ -57,21 +152,37 @@ export const useItemStore = defineStore('item', () => {
   );
 
   // Actions
-  function carregarItens(): Promise<void> {
+  async function carregarItens(): Promise<void> {
     carregando.value = true;
     erro.value = null;
 
     try {
-      // TODO: Implementar carregamento quando PersistenceManager suportar itens
-      console.warn(
-        'carregarItens: Funcionalidade não implementada - PersistenceManager precisa suportar itens',
-      );
-      itens.value = [];
-      return Promise.resolve();
+      const persistenceManager = PersistenceManager.getInstance();
+      await persistenceManager.inicializar();
+
+      const indiceItens = await persistenceManager.listarItens();
+      const itensCarregados: Item[] = [];
+
+      for (const itemInfo of indiceItens) {
+        try {
+          const itemData = await persistenceManager.carregarItem(itemInfo.id);
+          if (itemData) {
+            // Criar instância do item baseado no tipo
+            const itemInstance = criarItemDeserializado(itemData);
+            if (itemInstance) {
+              itensCarregados.push(itemInstance);
+            }
+          }
+        } catch (itemError) {
+          console.warn(`Erro ao carregar item ${itemInfo.id}:`, itemError);
+        }
+      }
+
+      itens.value = itensCarregados;
     } catch (error) {
       console.error('Erro ao carregar itens:', error);
       erro.value = 'Erro ao carregar itens';
-      return Promise.reject(new Error('Erro ao carregar itens'));
+      throw new Error('Erro ao carregar itens');
     } finally {
       carregando.value = false;
     }

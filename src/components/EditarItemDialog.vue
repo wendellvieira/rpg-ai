@@ -629,7 +629,7 @@ async function gerarComIA() {
 
   try {
     // Importar dinamicamente o OpenAIService
-    const { OpenAIService } = await import('../services/OpenAIService');
+    const { OpenAIService, limparRespostaJSON } = await import('../services/OpenAIService');
     const openAIService = OpenAIService.getInstance();
 
     // Verificar se a IA está configurada
@@ -686,7 +686,10 @@ Seja criativo mas equilibrado. Para itens lendários como "Excalibur", torne-os 
     ]);
 
     try {
-      const itemData = JSON.parse(response.conteudo);
+      // Limpar formatação markdown se presente usando a função utilitária
+      const conteudoLimpo = limparRespostaJSON(response.conteudo);
+
+      const itemData = JSON.parse(conteudoLimpo);
 
       // Aplicar os dados gerados ao formulário
       if (itemData.tipo) form.value.tipo = itemData.tipo;

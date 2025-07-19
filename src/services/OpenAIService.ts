@@ -21,6 +21,22 @@ export interface RespostaIA {
 }
 
 /**
+ * Limpa formatação markdown de respostas JSON da IA
+ */
+export function limparRespostaJSON(resposta: string): string {
+  let conteudoLimpo = resposta.trim();
+
+  // Remover blocos de código markdown
+  if (conteudoLimpo.startsWith('```json')) {
+    conteudoLimpo = conteudoLimpo.replace(/^```json\s*/, '').replace(/\s*```\s*$/, '');
+  } else if (conteudoLimpo.startsWith('```')) {
+    conteudoLimpo = conteudoLimpo.replace(/^```\s*/, '').replace(/\s*```\s*$/, '');
+  }
+
+  return conteudoLimpo.trim();
+}
+
+/**
  * Serviço para integração com OpenAI GPT
  */
 export class OpenAIService {
