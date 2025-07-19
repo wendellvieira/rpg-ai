@@ -10,7 +10,7 @@ import {
 } from '../classes/Magia';
 
 // Interface para dados de magia serializados
-interface DadosMagiaSerializados {
+export interface DadosMagiaSerializados {
   id: string;
   nome: string;
   descricao: string;
