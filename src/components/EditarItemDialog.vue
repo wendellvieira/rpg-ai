@@ -43,11 +43,11 @@
             </div>
           </div>
 
-          <q-textarea v-model="form.descricao" label="Descrição" outlined rows="3" maxlength="300">
+          <QTextarea v-model="form.descricao" label="Descrição" outlined rows="3" maxlength="300">
             <template v-slot:prepend>
               <q-icon name="description" />
             </template>
-          </q-textarea>
+          </QTextarea>
 
           <!-- Propriedades Básicas -->
           <div class="row q-gutter-md">
