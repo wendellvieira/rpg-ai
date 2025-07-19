@@ -179,6 +179,12 @@ const essentialLinks: EssentialLinkProps[] = [
     to: '/setup?tab=itens',
   },
   {
+    title: 'Mapas',
+    caption: 'Gerenciar mapas e geração IA',
+    icon: 'map',
+    to: '/setup?tab=mapas',
+  },
+  {
     title: 'Configurações',
     caption: 'API e preferências',
     icon: 'settings',

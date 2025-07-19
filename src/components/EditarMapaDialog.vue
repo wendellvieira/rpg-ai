@@ -698,7 +698,7 @@ function pintar(event: MouseEvent): void {
     y: event.clientY - rect.top,
   };
 
-  const ctx = maskCanvas.value.getContext('2d');
+  const ctx = maskCanvas.value.getContext('2d', { willReadFrequently: true });
   if (!ctx || !lastPoint.value) return;
 
   ctx.globalCompositeOperation = paint.value.tool === 'brush' ? 'source-over' : 'destination-out';
@@ -724,7 +724,7 @@ function finalizarPintura(): void {
 function salvarEstadoPaint(): void {
   if (!maskCanvas.value) return;
 
-  const ctx = maskCanvas.value.getContext('2d');
+  const ctx = maskCanvas.value.getContext('2d', { willReadFrequently: true });
   if (!ctx) return;
 
   const imageData = ctx.getImageData(0, 0, maskCanvas.value.width, maskCanvas.value.height);
@@ -755,7 +755,7 @@ function undoPaint(): void {
   if (!paintHistory.value.canUndo || !maskCanvas.value) return;
 
   paintHistory.value.currentIndex--;
-  const ctx = maskCanvas.value.getContext('2d');
+  const ctx = maskCanvas.value.getContext('2d', { willReadFrequently: true });
   if (!ctx) return;
 
   const imageData = paintHistory.value.history[paintHistory.value.currentIndex];
@@ -771,7 +771,7 @@ function redoPaint(): void {
   if (!paintHistory.value.canRedo || !maskCanvas.value) return;
 
   paintHistory.value.currentIndex++;
-  const ctx = maskCanvas.value.getContext('2d');
+  const ctx = maskCanvas.value.getContext('2d', { willReadFrequently: true });
   if (!ctx) return;
 
   const imageData = paintHistory.value.history[paintHistory.value.currentIndex];
@@ -787,7 +787,7 @@ function redoPaint(): void {
 function limparMascara(): void {
   if (!maskCanvas.value) return;
 
-  const ctx = maskCanvas.value.getContext('2d');
+  const ctx = maskCanvas.value.getContext('2d', { willReadFrequently: true });
   if (!ctx) return;
 
   ctx.clearRect(0, 0, maskCanvas.value.width, maskCanvas.value.height);
@@ -956,8 +956,8 @@ function carregarDadosEdicao(): void {
 function inicializarCanvas(): void {
   void nextTick(() => {
     if (paintCanvas.value && maskCanvas.value) {
-      const paintCtx = paintCanvas.value.getContext('2d');
-      const maskCtx = maskCanvas.value.getContext('2d');
+      const paintCtx = paintCanvas.value.getContext('2d', { willReadFrequently: true });
+      const maskCtx = maskCanvas.value.getContext('2d', { willReadFrequently: true });
 
       if (paintCtx && maskCtx) {
         // Configurar canvas
