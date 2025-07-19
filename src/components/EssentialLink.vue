@@ -49,12 +49,12 @@ const router = useRouter();
 
 const isActive = computed(() => {
   if (!props.to) return false;
-  
+
   // Se o link tem query parameters, comparar a URL completa
   if (props.to.includes('?')) {
     return route.fullPath === props.to;
   }
-  
+
   // Caso contrário, comparar apenas o path
   return route.path === props.to;
 });
@@ -64,7 +64,7 @@ function handleClick(event: Event) {
     // Se é um link externo, não fazer nada (o href já cuida)
     return;
   }
-  
+
   if (props.to) {
     event.preventDefault();
     event.stopPropagation();
