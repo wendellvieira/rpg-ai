@@ -433,11 +433,7 @@ function abrirGerenciamento() {
 }
 
 function abrirConfiguracoes() {
-  // TODO: Implementar dialog de configurações
-  $q.notify({
-    type: 'info',
-    message: 'Configurações em desenvolvimento',
-  });
+  void router.push('/setup?tab=config');
 }
 
 async function exportarBackup() {

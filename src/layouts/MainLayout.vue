@@ -170,19 +170,19 @@ const essentialLinks: EssentialLinkProps[] = [
     title: 'Personagens',
     caption: 'Gerenciar personagens',
     icon: 'people',
-    to: '/characters',
+    to: '/setup?tab=personagens',
   },
   {
     title: 'Itens',
-    caption: 'Catálogo de itens',
+    caption: 'Gerenciar itens',
     icon: 'inventory',
-    to: '/items',
+    to: '/setup?tab=itens',
   },
   {
-    title: 'Documentação',
-    caption: 'Guia de uso',
-    icon: 'help',
-    link: 'https://github.com/seu-usuario/rpg-ai',
+    title: 'Configurações',
+    caption: 'API e preferências',
+    icon: 'settings',
+    to: '/setup?tab=config',
   },
 ];
 
@@ -192,8 +192,7 @@ function toggleLeftDrawer() {
 }
 
 function openConfigDialog() {
-  // TODO: Implementar dialog de configuração
-  console.log('Abrir configurações');
+  void router.push('/setup?tab=config');
 }
 
 function openSession(sessionId: string) {
@@ -225,6 +224,11 @@ onMounted(() => {
   // Carregar configurações e sessões
   configStore.carregarConfiguracoes();
   void sessaoStore.carregarSessoes();
+
+  // Listener para fechar drawer quando um link é clicado
+  document.addEventListener('close-drawer', () => {
+    leftDrawerOpen.value = false;
+  });
 });
 </script>
 

@@ -1,7 +1,7 @@
 <template>
   <q-item
     clickable
-    :to="to"
+    @click="handleClick"
     :href="link"
     :target="link ? '_blank' : undefined"
     v-ripple
@@ -27,7 +27,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 export interface Props {
   title: string;
@@ -45,11 +45,34 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const route = useRoute();
+const router = useRouter();
 
 const isActive = computed(() => {
   if (!props.to) return false;
+  
+  // Se o link tem query parameters, comparar a URL completa
+  if (props.to.includes('?')) {
+    return route.fullPath === props.to;
+  }
+  
+  // Caso contrário, comparar apenas o path
   return route.path === props.to;
 });
+
+function handleClick(event: Event) {
+  if (props.link) {
+    // Se é um link externo, não fazer nada (o href já cuida)
+    return;
+  }
+  
+  if (props.to) {
+    event.preventDefault();
+    event.stopPropagation();
+    void router.push(props.to);
+    // Emitir evento para fechar o drawer se necessário
+    document.dispatchEvent(new CustomEvent('close-drawer'));
+  }
+}
 </script>
 
 <style lang="scss" scoped>

@@ -330,14 +330,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useQuasar } from 'quasar';
+import { useRoute, useRouter } from 'vue-router';
 import { PersistenceManager } from '../services/PersistenceManager';
 import { OpenAIService } from '../services/OpenAIService';
 import { Personagem } from '../classes/Personagem';
 import { useConfigStore } from '../stores/configStore';
 
 const $q = useQuasar();
+const route = useRoute();
+const router = useRouter();
 const configStore = useConfigStore();
 
 interface PersonagemData {
@@ -410,6 +413,41 @@ const modelosDisponiveis = ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo'];
 onMounted(() => {
   void carregarPersonagens();
   carregarConfiguracoes();
+
+  // Verificar se há uma aba específica na query string
+  const tabParam = route.query.tab as string;
+  if (tabParam && ['personagens', 'itens', 'mapas', 'config'].includes(tabParam)) {
+    abaAtiva.value = tabParam;
+  }
+});
+
+// Observar mudanças na query string para mudar a aba
+watch(
+  () => route.query.tab,
+  (newTab) => {
+    if (
+      newTab &&
+      typeof newTab === 'string' &&
+      ['personagens', 'itens', 'mapas', 'config'].includes(newTab)
+    ) {
+      abaAtiva.value = newTab;
+    } else if (!newTab) {
+      // Se não há tab especificada, volta para personagens
+      abaAtiva.value = 'personagens';
+    }
+  },
+  { immediate: true },
+);
+
+// Observar mudanças na aba ativa para atualizar a URL (apenas se necessário)
+watch(abaAtiva, (novaAba) => {
+  const currentTab = route.query.tab as string;
+  if (currentTab !== novaAba) {
+    void router.replace({
+      path: '/setup',
+      query: { tab: novaAba },
+    });
+  }
 });
 
 // Métodos
