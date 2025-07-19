@@ -4,7 +4,7 @@
       <q-splitter v-model="splitterModel" :limits="[20, 80]" class="full-height">
         <!-- Painel Esquerdo - Recursos -->
         <template v-slot:before>
-          <div class="q-pa-md full-height column">
+          <div class="left-menu">
             <!-- Cabeçalho do painel -->
             <div class="row items-center q-mb-md">
               <div class="col">
@@ -834,6 +834,8 @@ function getMensagemPersonagem(mensagem: Record<string, unknown>): string {
 </script>
 
 <style scoped>
+.left-menu {
+}
 .game-page {
   height: 100vh;
 }
