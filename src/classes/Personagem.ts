@@ -5,6 +5,10 @@ import {
   type EventoPersonagem,
   type ConhecimentoPersonagem,
   type Pericia,
+  type CapacidadeMagica,
+  type SlotsMagia,
+  type NivelMagia,
+  type AtributoTipo,
 } from '../types';
 import { Atributos } from './Atributos';
 import type { Item } from './Item';
@@ -58,6 +62,7 @@ export class Personagem {
   private status: StatusPersonagem;
   private pericias: Map<string, Pericia>;
   private experiencia: number;
+  private _capacidadesMagicas: CapacidadeMagica | null;
 
   // Slots de equipamento
   private static readonly SLOTS_EQUIPAMENTO = [
@@ -96,6 +101,7 @@ export class Personagem {
     this.status = StatusPersonagem.ATIVO;
     this.pericias = new Map();
     this.experiencia = 0;
+    this._capacidadesMagicas = this.inicializarCapacidadesMagicas();
 
     // Inicializa perícias baseadas na classe
     this.inicializarPericias();
@@ -364,6 +370,104 @@ export class Personagem {
   }
 
   /**
+   * Verifica se tem capacidades mágicas
+   */
+  get podeConjurar(): boolean {
+    return this._capacidadesMagicas !== null;
+  }
+
+  /**
+   * Obtém as capacidades mágicas do personagem
+   */
+  get capacidadesMagicas(): CapacidadeMagica | null {
+    return this._capacidadesMagicas;
+  }
+
+  /**
+   * Verifica se tem slots disponíveis de um nível específico
+   */
+  temSlotDisponivel(nivel: NivelMagia): boolean {
+    if (!this._capacidadesMagicas) return false;
+
+    const slot = this._capacidadesMagicas.slotsMagia[`nivel${nivel}` as keyof SlotsMagia];
+    return slot.total > slot.usados;
+  }
+
+  /**
+   * Gasta um slot de magia de nível específico
+   */
+  gastarSlotMagia(nivel: NivelMagia): boolean {
+    if (!this.temSlotDisponivel(nivel)) return false;
+
+    const slot = this._capacidadesMagicas!.slotsMagia[`nivel${nivel}` as keyof SlotsMagia];
+    slot.usados++;
+
+    this.adicionarEvento(`Gastou um slot de magia de nível ${nivel}.`, 'baixa');
+    return true;
+  }
+
+  /**
+   * Recupera todos os slots de magia (descanso longo)
+   */
+  recuperarSlotsMagia(): void {
+    if (!this._capacidadesMagicas) return;
+
+    Object.values(this._capacidadesMagicas.slotsMagia).forEach((slot) => {
+      slot.usados = 0;
+    });
+
+    this.adicionarEvento('Recuperou todos os slots de magia.', 'media');
+  }
+
+  /**
+   * Obtém slots disponíveis de um nível específico
+   */
+  obterSlotsDisponiveis(nivel: NivelMagia): { total: number; usados: number; disponiveis: number } {
+    if (!this._capacidadesMagicas) {
+      return { total: 0, usados: 0, disponiveis: 0 };
+    }
+
+    const slot = this._capacidadesMagicas.slotsMagia[`nivel${nivel}` as keyof SlotsMagia];
+    return {
+      total: slot.total,
+      usados: slot.usados,
+      disponiveis: slot.total - slot.usados,
+    };
+  }
+
+  /**
+   * Aprende uma nova magia
+   */
+  aprenderMagia(magiaId: string): boolean {
+    if (!this._capacidadesMagicas) return false;
+
+    if (!this._capacidadesMagicas.magiasConhecidas.includes(magiaId)) {
+      this._capacidadesMagicas.magiasConhecidas.push(magiaId);
+      this.adicionarEvento(`Aprendeu uma nova magia.`, 'media');
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Prepara uma magia conhecida
+   */
+  prepararMagia(magiaId: string): boolean {
+    if (!this._capacidadesMagicas) return false;
+
+    if (!this._capacidadesMagicas.magiasConhecidas.includes(magiaId)) return false;
+
+    if (!this._capacidadesMagicas.magiasPreparadas.includes(magiaId)) {
+      this._capacidadesMagicas.magiasPreparadas.push(magiaId);
+      this.adicionarEvento(`Preparou uma magia.`, 'baixa');
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
    * Calcula bônus de CA dos equipamentos
    */
   private calcularBonusCAEquipamentos(): number {
@@ -386,6 +490,104 @@ export class Personagem {
       sabedoria: 10,
       carisma: 10,
     };
+  }
+
+  /**
+   * Inicializa capacidades mágicas baseadas na classe
+   */
+  private inicializarCapacidadesMagicas(): CapacidadeMagica | null {
+    const classesMagicas = [
+      'Mago',
+      'Clérigo',
+      'Druida',
+      'Feiticeiro',
+      'Warlock',
+      'Bardo',
+      'Paladino',
+      'Ranger',
+    ];
+
+    if (!classesMagicas.includes(this.classe)) {
+      return null;
+    }
+
+    const slotsPorNivel = this.calcularSlotsPorNivel();
+    const atributoConjuracao = this.obterAtributoConjuracao();
+
+    return {
+      classeConjuradora: this.classe,
+      atributoConjuracao,
+      slotsMagia: slotsPorNivel,
+      magiasConhecidas: [],
+      magiasPreparadas: [],
+    };
+  }
+
+  /**
+   * Calcula slots de magia baseados no nível e classe
+   */
+  private calcularSlotsPorNivel(): SlotsMagia {
+    const nivel = this.nivel;
+    const slots: SlotsMagia = {
+      nivel1: { total: 0, usados: 0 },
+      nivel2: { total: 0, usados: 0 },
+      nivel3: { total: 0, usados: 0 },
+      nivel4: { total: 0, usados: 0 },
+      nivel5: { total: 0, usados: 0 },
+      nivel6: { total: 0, usados: 0 },
+      nivel7: { total: 0, usados: 0 },
+      nivel8: { total: 0, usados: 0 },
+      nivel9: { total: 0, usados: 0 },
+    };
+
+    // Tabela simplificada de slots para conjuradores completos (como Mago, Clérigo)
+    if (['Mago', 'Clérigo', 'Druida', 'Feiticeiro'].includes(this.classe)) {
+      if (nivel >= 1) slots.nivel1.total = Math.min(4, nivel + 1);
+      if (nivel >= 3) slots.nivel2.total = Math.min(3, Math.floor((nivel - 1) / 2));
+      if (nivel >= 5) slots.nivel3.total = Math.min(3, Math.floor((nivel - 3) / 2));
+      if (nivel >= 7) slots.nivel4.total = Math.min(3, Math.floor((nivel - 5) / 2));
+      if (nivel >= 9) slots.nivel5.total = Math.min(3, Math.floor((nivel - 7) / 2));
+      if (nivel >= 11) slots.nivel6.total = Math.min(1, Math.floor((nivel - 9) / 2));
+      if (nivel >= 13) slots.nivel7.total = Math.min(1, Math.floor((nivel - 11) / 2));
+      if (nivel >= 15) slots.nivel8.total = Math.min(1, Math.floor((nivel - 13) / 2));
+      if (nivel >= 17) slots.nivel9.total = Math.min(1, Math.floor((nivel - 15) / 2));
+    }
+    // Meio-conjuradores (Paladino, Ranger)
+    else if (['Paladino', 'Ranger'].includes(this.classe)) {
+      const nivelConjuracao = Math.floor(nivel / 2);
+      if (nivelConjuracao >= 1) slots.nivel1.total = Math.min(4, nivelConjuracao + 1);
+      if (nivelConjuracao >= 3)
+        slots.nivel2.total = Math.min(3, Math.floor((nivelConjuracao - 1) / 2));
+      if (nivelConjuracao >= 5)
+        slots.nivel3.total = Math.min(3, Math.floor((nivelConjuracao - 3) / 2));
+      if (nivelConjuracao >= 7)
+        slots.nivel4.total = Math.min(3, Math.floor((nivelConjuracao - 5) / 2));
+      if (nivelConjuracao >= 9)
+        slots.nivel5.total = Math.min(1, Math.floor((nivelConjuracao - 7) / 2));
+    }
+
+    return slots;
+  }
+
+  /**
+   * Obtém o atributo de conjuração baseado na classe
+   */
+  private obterAtributoConjuracao(): AtributoTipo {
+    switch (this.classe) {
+      case 'Mago':
+        return 'inteligencia';
+      case 'Clérigo':
+      case 'Druida':
+      case 'Ranger':
+        return 'sabedoria';
+      case 'Feiticeiro':
+      case 'Bardo':
+      case 'Paladino':
+      case 'Warlock':
+        return 'carisma';
+      default:
+        return 'inteligencia';
+    }
   }
 
   /**

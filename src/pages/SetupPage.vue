@@ -641,12 +641,11 @@ async function carregarItens() {
 }
 
 function abrirDialogNovoItem() {
-  $q.dialog({
+  const dialogRef = $q.dialog({
     component: EditarItemDialog,
-    componentProps: {
-      item: undefined, // Não passa item para criação
-    },
-  }).onOk((novoItem: ItemData) => {
+  });
+
+  dialogRef.onOk((novoItem: ItemData) => {
     try {
       // Como a store ainda não está implementada completamente,
       // vamos adicionar localmente
@@ -850,9 +849,11 @@ async function abrirConhecimento(personagemData: PersonagemData) {
 }
 
 function abrirGerenciamentoItens() {
-  $q.dialog({
+  const dialogRef = $q.dialog({
     component: GerenciamentoItensDialog,
-  }).onOk(() => {
+  });
+
+  dialogRef.onOk(() => {
     // Recarregar itens se necessário
     void carregarItens();
   });
