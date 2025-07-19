@@ -127,6 +127,13 @@
                     icon="add"
                     label="Novo Item"
                     @click="abrirDialogNovoItem"
+                    class="q-mr-sm"
+                  />
+                  <q-btn
+                    color="secondary"
+                    icon="tune"
+                    label="Gerenciar Itens"
+                    @click="abrirGerenciamentoItens"
                   />
                 </div>
               </div>
@@ -370,6 +377,7 @@ import { useItemStore } from '../stores/itemStore';
 import EditarItemDialog from '../components/EditarItemDialog.vue';
 import ConhecimentoEditor from '../components/ConhecimentoEditor.vue';
 import MapaViewer from '../components/MapaViewer.vue';
+import GerenciamentoItensDialog from '../components/GerenciamentoItensDialog.vue';
 
 const $q = useQuasar();
 const route = useRoute();
@@ -839,6 +847,15 @@ async function abrirConhecimento(personagemData: PersonagemData) {
       caption: String(error),
     });
   }
+}
+
+function abrirGerenciamentoItens() {
+  $q.dialog({
+    component: GerenciamentoItensDialog,
+  }).onOk(() => {
+    // Recarregar itens se necessário
+    void carregarItens();
+  });
 }
 </script>
 

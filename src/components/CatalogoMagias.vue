@@ -168,25 +168,6 @@
                       <q-item-label>{{ magiaSelecionada.duracao || 'Não informado' }}</q-item-label>
                     </q-item-section>
                   </q-item>
-
-                  <q-item v-if="magiaSelecionada.areaEfeito" dense>
-                    <q-item-section avatar><q-icon name="crop_free" /></q-item-section>
-                    <q-item-section>
-                      <q-item-label caption>Área de Efeito</q-item-label>
-                      <q-item-label>{{ magiaSelecionada.areaEfeito }}</q-item-label>
-                    </q-item-section>
-                  </q-item>
-
-                  <q-item
-                    v-if="magiaSelecionada.salvaguarda && magiaSelecionada.salvaguarda !== 'nenhum'"
-                    dense
-                  >
-                    <q-item-section avatar><q-icon name="security" /></q-item-section>
-                    <q-item-section>
-                      <q-item-label caption>Salvaguarda</q-item-label>
-                      <q-item-label>{{ magiaSelecionada.salvaguarda }}</q-item-label>
-                    </q-item-section>
-                  </q-item>
                 </q-list>
 
                 <!-- Descrição -->
@@ -290,8 +271,8 @@ import {
 } from '../classes/Magia';
 import EditarMagiaDialog from './EditarMagiaDialog.vue';
 
-// Type for magic data from the store
-interface DadosMagia {
+// Interface local para dados de magia
+interface DadosMagiaSerializados {
   id: string;
   nome: string;
   descricao: string;
@@ -315,7 +296,6 @@ interface DadosMagia {
   areaEfeito?: string;
   salvaguarda?: string;
 }
-
 // Props
 const showDialog = defineModel<boolean>('modelValue', { required: true });
 
@@ -325,10 +305,10 @@ const magiaStore = useMagiaStore();
 
 // Estado local
 const splitterModel = ref(40);
-const magiaSelecionada = ref<DadosMagia | null>(null);
+const magiaSelecionada = ref<DadosMagiaSerializados | null>(null);
 const personagemSelecionado = ref<{ id: string; nome: string } | null>(null);
 const mostrarEdicaoMagia = ref(false);
-const magiaParaEditar = ref<DadosMagia | null>(null);
+const magiaParaEditar = ref<DadosMagiaSerializados | null>(null);
 
 // Filtros
 const filtroEscola = ref<EscolaMagia | null>(null);
@@ -407,7 +387,7 @@ const personagensDisponiveis = computed(() => {
 });
 
 // Methods
-function selecionarMagia(magia: DadosMagia) {
+function selecionarMagia(magia: DadosMagiaSerializados) {
   magiaSelecionada.value = magia;
 }
 
@@ -496,7 +476,7 @@ function abrirDialogNovaMagia() {
   mostrarEdicaoMagia.value = true;
 }
 
-function salvarMagia(novaMagia: DadosMagia) {
+function salvarMagia(novaMagia: DadosMagiaSerializados) {
   console.log('Magia salva:', novaMagia);
   mostrarEdicaoMagia.value = false;
   magiaParaEditar.value = null;
