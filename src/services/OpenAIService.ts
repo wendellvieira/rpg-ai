@@ -36,8 +36,38 @@ export class OpenAIService {
   static getInstance(): OpenAIService {
     if (!OpenAIService.instance) {
       OpenAIService.instance = new OpenAIService();
+      // Auto-configurar se a API key estiver no .env
+      OpenAIService.instance.autoConfigurar();
     }
     return OpenAIService.instance;
+  }
+
+  /**
+   * Auto-configura usando variáveis de ambiente se disponíveis
+   */
+  private autoConfigurar(): void {
+    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+    const model = import.meta.env.VITE_OPENAI_MODEL;
+    const organization = import.meta.env.VITE_OPENAI_ORGANIZATION;
+
+    if (apiKey) {
+      console.log('🤖 API Key encontrada no .env - configurando OpenAI automaticamente');
+      this.configurar({
+        apiKey,
+        model: model || 'gpt-4o-mini',
+        temperature: 0.7,
+        maxTokens: 1000,
+      });
+
+      if (organization) {
+        // Se houver organização, reconfigurar o cliente com ela
+        this.client = new OpenAI({
+          apiKey,
+          organization,
+          dangerouslyAllowBrowser: true,
+        });
+      }
+    }
   }
 
   /**

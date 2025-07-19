@@ -222,7 +222,19 @@
                     OpenAI API
                   </div>
 
+                  <div v-if="temApiKeyNoEnv" class="q-mb-md">
+                    <q-banner rounded class="bg-positive text-white">
+                      <template v-slot:avatar>
+                        <q-icon name="check_circle" />
+                      </template>
+                      ✅ API Key configurada via arquivo .env
+                      <br />
+                      <small>••••••••••••••••••••••••••••••••••••••••••••••••••••</small>
+                    </q-banner>
+                  </div>
+
                   <q-input
+                    v-if="!temApiKeyNoEnv"
                     v-model="configuracoes.apiKey"
                     label="API Key"
                     type="password"
@@ -435,7 +447,16 @@ const dialogNovoMapa = ref(false);
 const testandoAPI = ref(false);
 
 // Configurações
-const configuracoes = ref({
+interface ConfiguracaoLocal {
+  apiKey: string;
+  modelo: string;
+  temperature: number;
+  maxTokens: number;
+  autoSave: boolean;
+  tema: 'claro' | 'escuro';
+}
+
+const configuracoes = ref<ConfiguracaoLocal>({
   apiKey: '',
   modelo: 'gpt-3.5-turbo',
   temperature: 0.7,
@@ -443,6 +464,9 @@ const configuracoes = ref({
   autoSave: true,
   tema: 'claro',
 });
+
+// Verifica se há API key no .env
+const temApiKeyNoEnv = !!import.meta.env.VITE_OPENAI_API_KEY;
 
 // Dados para formulários
 const novoPersonagem = ref({
@@ -775,17 +799,33 @@ function carregarConfiguracoes() {
 
 function salvarConfiguracoes() {
   try {
-    configStore.atualizarConfiguracao({
-      openaiApiKey: configuracoes.value.apiKey,
+    interface ConfigUpdate {
+      openaiApiKey?: string;
+      openaiModel: string;
+      openaiTemperature: number;
+      autoSave: boolean;
+      tema: 'dark' | 'auto' | 'light';
+    }
+
+    const configUpdate: ConfigUpdate = {
       openaiModel: configuracoes.value.modelo,
       openaiTemperature: configuracoes.value.temperature,
       autoSave: configuracoes.value.autoSave,
       tema: configuracoes.value.tema === 'claro' ? 'light' : 'dark',
-    });
+    };
+
+    // Só salvar a API key se não estiver no .env
+    if (!temApiKeyNoEnv) {
+      configUpdate.openaiApiKey = configuracoes.value.apiKey;
+    }
+
+    configStore.atualizarConfiguracao(configUpdate);
 
     $q.notify({
       type: 'positive',
-      message: 'Configurações salvas com sucesso!',
+      message: temApiKeyNoEnv
+        ? 'Configurações salvas! (API Key do .env sendo usada)'
+        : 'Configurações salvas com sucesso!',
     });
   } catch (error) {
     console.error('Erro ao salvar configurações:', error);
@@ -798,7 +838,10 @@ function salvarConfiguracoes() {
 }
 
 async function testarConexaoAPI() {
-  if (!configuracoes.value.apiKey) {
+  // Verificar se temos API key (do .env ou do formulário)
+  const apiKey = temApiKeyNoEnv ? import.meta.env.VITE_OPENAI_API_KEY : configuracoes.value.apiKey;
+
+  if (!apiKey) {
     $q.notify({
       type: 'warning',
       message: 'Informe a API Key primeiro',
@@ -810,7 +853,7 @@ async function testarConexaoAPI() {
   try {
     const openAI = OpenAIService.getInstance();
     openAI.configurar({
-      apiKey: configuracoes.value.apiKey,
+      apiKey,
       model: configuracoes.value.modelo,
       temperature: configuracoes.value.temperature,
       maxTokens: configuracoes.value.maxTokens,
@@ -820,7 +863,9 @@ async function testarConexaoAPI() {
 
     $q.notify({
       type: 'positive',
-      message: 'Conexão com OpenAI estabelecida com sucesso!',
+      message: temApiKeyNoEnv
+        ? 'Conexão com OpenAI estabelecida! (usando chave do .env)'
+        : 'Conexão com OpenAI estabelecida com sucesso!',
     });
   } catch (error) {
     console.error('Erro ao testar API:', error);

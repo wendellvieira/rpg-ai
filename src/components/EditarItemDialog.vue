@@ -23,6 +23,20 @@
                 <template v-slot:prepend>
                   <q-icon name="inventory_2" />
                 </template>
+                <template v-slot:append>
+                  <q-btn
+                    round
+                    dense
+                    flat
+                    icon="auto_awesome"
+                    color="primary"
+                    @click="gerarComIA"
+                    :disable="!form.nome.trim() || gerandoComIA"
+                    :loading="gerandoComIA"
+                  >
+                    <q-tooltip>Gerar propriedades com IA</q-tooltip>
+                  </q-btn>
+                </template>
               </q-input>
             </div>
             <div class="col">
@@ -43,12 +57,12 @@
             </div>
           </div>
 
-          <q-input 
-            v-model="form.descricao" 
-            label="Descrição" 
-            outlined 
-            type="textarea" 
-            rows="3" 
+          <q-input
+            v-model="form.descricao"
+            label="Descrição"
+            outlined
+            type="textarea"
+            rows="3"
             maxlength="300"
           >
             <template v-slot:prepend>
@@ -304,7 +318,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import { useDialogPluginComponent } from 'quasar';
+import { useDialogPluginComponent, useQuasar } from 'quasar';
 
 interface ItemForm {
   nome: string;
@@ -359,8 +373,10 @@ const props = defineProps<Props>();
 defineEmits([...useDialogPluginComponent.emits]);
 
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent();
+const $q = useQuasar();
 
 const salvando = ref(false);
+const gerandoComIA = ref(false);
 
 const form = ref<ItemForm>({
   nome: '',
@@ -540,6 +556,131 @@ function salvarItem() {
     console.error('Erro ao salvar item:', error);
   } finally {
     salvando.value = false;
+  }
+}
+
+async function gerarComIA() {
+  if (!form.value.nome.trim()) return;
+
+  gerandoComIA.value = true;
+
+  try {
+    // Importar dinamicamente o OpenAIService
+    const { OpenAIService } = await import('../services/OpenAIService');
+    const openAIService = OpenAIService.getInstance();
+
+    // Verificar se a IA está configurada
+    if (!openAIService.estaConfigurado()) {
+      $q.notify({
+        type: 'warning',
+        message: 'Configure a API da OpenAI nas configurações antes de usar a IA.',
+      });
+      return;
+    }
+
+    const prompt = `Analise o item "${form.value.nome}" e determine suas propriedades para um RPG D&D 5e.
+
+Retorne APENAS um objeto JSON válido com a seguinte estrutura:
+{
+  "tipo": "arma|armadura|escudo|consumivel|ferramenta|equipamento|tesouro|outro",
+  "descricao": "Descrição detalhada do item",
+  "peso": número_em_kg,
+  "valor": valor_em_moedas_de_ouro,
+  "raridade": "comum|incomum|raro|muito-raro|lendario",
+  "magico": true|false,
+  "propriedades": {
+    // Para armas:
+    "dano": "XdY" (se for arma),
+    "tipoDano": "cortante|perfurante|contundente|fogo|gelo|raio|acido|veneno|psiquico|necrotico|radiante",
+    "alcance": número_em_metros,
+    "categoriaArma": "corpo-a-corpo|distancia|arremesso",
+    "critico": 2,
+
+    // Para armaduras:
+    "bonusCA": número (se for armadura/escudo),
+    "maxDestreza": número_ou_null,
+    "forcaMinima": número_ou_null,
+
+    // Para consumíveis:
+    "efeito": "descrição do efeito",
+    "usos": número,
+    "tempoUso": "acao|acao-bonus|reacao|livre|1-minuto|10-minutos",
+
+    // Para itens mágicos:
+    "sintonizacao": true|false,
+    "cargas": número_ou_null,
+    "recarga": "amanhecer|anoitecer|lua-cheia|1d6-dias|nunca"
+  }
+}
+
+Seja criativo mas equilibrado. Para itens lendários como "Excalibur", torne-os poderosos mas não quebrados.`;
+
+    const response = await openAIService.enviarMensagem([
+      {
+        role: 'user',
+        content: prompt,
+      },
+    ]);
+
+    try {
+      const itemData = JSON.parse(response.conteudo);
+
+      // Aplicar os dados gerados ao formulário
+      if (itemData.tipo) form.value.tipo = itemData.tipo;
+      if (itemData.descricao) form.value.descricao = itemData.descricao;
+      if (itemData.peso !== undefined) form.value.peso = itemData.peso;
+      if (itemData.valor !== undefined) form.value.valor = itemData.valor;
+      if (itemData.raridade) form.value.raridade = itemData.raridade;
+      if (itemData.magico !== undefined) form.value.magico = itemData.magico;
+
+      // Aplicar propriedades específicas
+      if (itemData.propriedades) {
+        const props = itemData.propriedades;
+
+        // Propriedades de arma
+        if (props.dano) form.value.dano = props.dano;
+        if (props.tipoDano) form.value.tipoDano = props.tipoDano;
+        if (props.alcance !== undefined) form.value.alcance = props.alcance;
+        if (props.categoriaArma) form.value.categoriaArma = props.categoriaArma;
+        if (props.critico !== undefined) form.value.critico = props.critico;
+
+        // Propriedades de armadura
+        if (props.bonusCA !== undefined) form.value.bonusCA = props.bonusCA;
+        if (props.maxDestreza !== undefined) form.value.maxDestreza = props.maxDestreza;
+        if (props.forcaMinima !== undefined) form.value.forcaMinima = props.forcaMinima;
+
+        // Propriedades de consumível
+        if (props.efeito) form.value.efeito = props.efeito;
+        if (props.usos !== undefined) form.value.usos = props.usos;
+        if (props.tempoUso) form.value.tempoUso = props.tempoUso;
+
+        // Propriedades mágicas
+        if (props.sintonizacao !== undefined) form.value.sintonizacao = props.sintonizacao;
+        if (props.cargas !== undefined) form.value.cargas = props.cargas;
+        if (props.recarga) form.value.recarga = props.recarga;
+      }
+
+      // Mostrar notificação de sucesso
+      $q.notify({
+        type: 'positive',
+        message: 'Item gerado com sucesso pela IA!',
+        icon: 'auto_awesome',
+      });
+    } catch (parseError) {
+      console.error('Erro ao parsear resposta da IA:', parseError);
+      $q.notify({
+        type: 'negative',
+        message: 'Erro ao processar resposta da IA. Tente novamente.',
+      });
+    }
+  } catch (error) {
+    console.error('Erro ao gerar item com IA:', error);
+    $q.notify({
+      type: 'negative',
+      message: 'Erro ao conectar com a IA. Verifique sua configuração.',
+    });
+  } finally {
+    gerandoComIA.value = false;
   }
 }
 </script>
