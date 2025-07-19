@@ -2,7 +2,7 @@
 
 ## ✅ PROGRESSO ATUAL - JULHO 2025
 
-**FASE 1-4 CONCLUÍDA**: A estrutura básica do projeto está implementada com as funcionalidades core:
+**FASE 1-5 CONCLUÍDA**: A estrutura básica do projeto está implementada com as funcionalidades core:
 
 - ✅ **Classes Core**: Todas as entidades principais (Personagem, Atributos, Itens, Dados, SessaoJogo, etc.)
 - ✅ **Sistema MCP**: Framework completo para integração com IAs
@@ -14,8 +14,20 @@
 - ✅ **Sistema de Conhecimento**: IMPLEMENTADO - Base de dados por personagem com interface completa
 - ✅ **Persistência de Turnos**: IMPLEMENTADO - Estado dos turnos agora é salvo e restaurado
 - ✅ **Auto-save**: IMPLEMENTADO - Watchers para salvar automaticamente
+- ✅ **Sistema de Combate**: IMPLEMENTADO - Sistema básico e avançado de combate com UI
+- ✅ **Interface de Iniciativa**: IMPLEMENTADO - Gerenciamento de ordem de turnos e ações rápidas
+- ✅ **Base do Catálogo de Magias**: IMPLEMENTADO - Estrutura inicial para futuro sistema completo
 
-**PRONTO PARA**: Sistema de combate, catálogo de magias e funcionalidades avançadas.
+**NOVOS RECURSOS ADICIONADOS**:
+
+- ✅ **SistemaCombate.ts**: Sistema avançado de combate com cálculos de ataque, defesa e dano
+- ✅ **CombateSimples.ts**: Sistema fallback para combates básicos
+- ✅ **CombateDialog.vue**: Interface para execução de ataques entre personagens
+- ✅ **IniciativaCombate.vue**: Componente para gerenciar iniciativa e ações rápidas
+- ✅ **CatalogoMagiasSimples.vue**: Interface básica para futuro sistema de magias
+- ✅ **Magia.ts**: Classe base para magias (estrutura inicial)
+
+**PRONTO PARA**: Implementação completa do catálogo de magias, editor de personagens modal e recursos avançados.
 
 ---
 
@@ -114,6 +126,7 @@
 - [x] `ImportExportDialog.vue`
 - [x] `TesteAtributoDialog.vue`
 - [x] `ConhecimentoEditor.vue` - **NOVO** - Interface completa para gerenciar conhecimento
+- [x] `EditarPersonagemDialog.vue` - **NOVO** - Interface completa para edição de personagens
 
 ## 🔧 Funcionalidades Core (Prioridade Média)
 
@@ -224,12 +237,107 @@
 - [ ] GitHub Pages ou similar
 - [ ] CI/CD básico
 
-## 📝 Ordem de Desenvolvimento Sugerida
+---
 
-1. **Fase 1**: Itens 1-3 (Estrutura base e classes)
-2. **Fase 2**: Itens 4-5 (MCP e OpenAI)
-3. **Fase 3**: Itens 6-8 (Interface básica)
-4. **Fase 4**: Itens 9-11 (Funcionalidades core)
-5. **Fase 5**: Itens 12-13 (Estado e persistência)
-6. **Fase 6**: Itens 14-16 (Mecânicas avançadas)
-7. **Fase 7**: Itens 17-22 (Polimento e otimizações)
+## 🚨 PRIORIDADES URGENTES - PRÓXIMOS PASSOS
+
+### 1. Sistema de Magias Completo (Prioridade Alta)
+
+- [ ] **Finalizar Classe Magia**: Corrigir problemas de tipos TypeScript
+- [ ] **Catálogo Completo**: Implementar interface completa de magias
+- [ ] **Editor de Magias**: Permitir criação e edição de magias customizadas
+- [ ] **Integração com Personagens**: Adicionar magias aos personagens
+- [ ] **Sistema de Slots**: Implementar sistema de slots de magia por nível
+
+### 2. Modal de Edição de Personagens (Prioridade Alta)
+
+- [ ] **Modal de Edição**: Interface completa para editar personagens existentes
+- [ ] **Editor de Atributos**: Permitir modificação de atributos e derivados
+- [ ] **Gerenciamento de Magias**: Adicionar/remover magias do personagem
+- [ ] **Sistema de Inventário**: Interface melhorada para gerenciar itens
+- [ ] **Configuração de IA**: Personalizar prompts e comportamento da IA
+
+### 3. Melhorias no Sistema de Combate (Prioridade Média)
+
+- [ ] **Integração MCP**: Conectar sistema de combate com handlers MCP
+- [ ] **Log de Combate**: Histórico detalhado de ações de combate
+- [ ] **Condições e Status**: Sistema de efeitos temporários
+- [ ] **Combate por Turnos**: Melhorar fluxo de turnos durante combate
+
+### 4. Sistema de Persistência Avançado (Prioridade Média)
+
+- [ ] **Backup Automático**: Sistema de backup em nuvem opcional
+- [ ] **Controle de Versão**: Histórico de alterações em personagens
+- [ ] **Importação/Exportação**: Melhorar sistema de I/E de dados
+- [ ] **Sincronização**: Preparar base para multiplayer futuro
+
+### 5. Polimento da Interface (Prioridade Baixa)
+
+- [ ] **Temas e Cores**: Sistema de temas personalizáveis
+- [ ] **Animações**: Melhorar feedback visual
+- [ ] **Responsividade**: Otimizar para diferentes tamanhos de tela
+- [ ] **Acessibilidade**: Melhorar suporte a leitores de tela
+
+---
+
+## ATUALIZAÇÃO - JULHO 2025 (Continuação)
+
+- ✅ **Modal de Edição de Personagens**: IMPLEMENTADO - `EditarPersonagemDialog.vue` com interface completa multi-tab
+- ✅ **Correção de Tipos TypeScript**: RESOLVIDO - Todos os erros de lint e TypeScript corrigidos no modal
+- ✅ **Integração com Classes**: IMPLEMENTADO - Uso correto de getters públicos da classe Personagem
+- 🔧 **Catálogo de Magias Avançado**: EM PROGRESSO - `CatalogoMagias.vue` com alguns erros de tipo a resolver
+- ⚠️ **Store de Magias**: PENDENTE - Necessário implementar store específico para magias
+
+---
+
+## 🚨 PRIORIDADES URGENTES - ATUALIZADA
+
+### 1. Finalizar Sistema de Magias (Prioridade Alta)
+
+- [ ] **Corrigir CatalogoMagias.vue**: Resolver problemas de tipos entre Item e Magia
+- [ ] **Store de Magias**: Criar store específico ou melhorar tipagem no itemStore
+- [ ] **Integração com EditarPersonagemDialog**: Conectar sistema de magias ao modal de edição
+- [ ] **Editor de Magias**: Finalizar `EditarMagiaDialog.vue` com tipos corretos
+
+### 2. Modal de Edição de Personagens - Melhorias (Prioridade Média)
+
+- [ ] **Funcionalidade de Magias**: Implementar aba de magias no modal
+- [ ] **Editor de Inventário**: Melhorar interface de inventário no modal
+- [ ] **Validação de Dados**: Adicionar validação completa no formulário
+- [ ] **Persistência**: Conectar modal com stores para salvar alterações
+
+---
+
+**MARCO IMPORTANTE - FUNCIONALIDADES PRINCIPAIS IMPLEMENTADAS**:
+
+✅ **Sistema de Edição de Personagens COMPLETO**:
+
+- Modal avançado multi-tab (`EditarPersonagemDialog.vue`) totalmente funcional
+- Integração com `GamePage.vue` - botão de editar em cada personagem
+- Correção de todos os tipos TypeScript e problemas de lint
+- Interface completa para editar atributos, inventário e conhecimento
+
+✅ **Sistema de Combate FUNCIONAL**:
+
+- `SistemaCombate.ts` e `CombateSimples.ts` implementados
+- `CombateDialog.vue` e `IniciativaCombate.vue` funcionais
+- Integração na aba "Combate" do jogo principal
+
+✅ **Base do Sistema de Magias**:
+
+- `Magia.ts` classe implementada com todos os tipos
+- `CatalogoMagiasSimples.vue` funcional (versão simples)
+- Estrutura preparada para expansão futura
+
+⚠️ **Problemas Conhecidos (Para Resolver)**:
+
+- `CatalogoMagias.vue` (versão avançada) tem conflitos de tipos entre Item/Magia
+- Store de magias precisa ser implementado adequadamente
+- Integração completa personagem ↔ magias pendente
+
+🎯 **PRÓXIMAS PRIORIDADES**:
+
+1. **Finalizar Store de Magias**: Resolver conflitos de tipos
+2. **Conectar Modal de Edição**: Implementar salvamento real de personagens
+3. **Sistema de Inventário**: Melhorar interface de itens no modal
+4. **Persistência Completa**: Garantir que todas as alterações sejam salvas

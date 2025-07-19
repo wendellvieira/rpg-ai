@@ -252,7 +252,7 @@ export class MCPFunctions {
 }
 
 /**
- * Handler para ataques
+ * Handler para ataques - Integrado com SistemaCombate
  */
 class AtacarHandler implements MCPFunctionHandler {
   execute(params: Record<string, unknown>): Promise<AtaqueResult> {
@@ -260,6 +260,9 @@ class AtacarHandler implements MCPFunctionHandler {
     const arma = params.arma as string | undefined;
     const vantagem = params.vantagem as boolean | undefined;
     const desvantagem = params.desvantagem as boolean | undefined;
+
+    // TODO: Implementar integração com SistemaCombate quando personagens estiverem disponíveis no contexto
+    // Por enquanto, mantém a implementação simplificada atual
 
     // Simula rolagem de ataque
     let rolagemAtaque = Dados.rolar('d20');
@@ -291,6 +294,10 @@ class AtacarHandler implements MCPFunctionHandler {
         const danoArma = Dados.rolar('d8');
         dano += danoArma.total;
         tipoDano = 'cortante';
+      } else if (arma === 'arco') {
+        const danoArma = Dados.rolar('d6');
+        dano += danoArma.total;
+        tipoDano = 'perfurante';
       }
     }
 

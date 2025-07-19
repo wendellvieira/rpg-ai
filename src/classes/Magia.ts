@@ -1,0 +1,316 @@
+import { TipoItem, type RaridadeItem } from '../types';
+import { Item } from './Item';
+import { Dados } from './Dados';
+
+export enum EscolaMagia {
+  ABJURACAO = 'abjuração',
+  ADIVINHACAO = 'adivinhação',
+  CONJURACAO = 'conjuração',
+  ENCANTAMENTO = 'encantamento',
+  EVOCACAO = 'evocação',
+  ILUSAO = 'ilusão',
+  NECROMANCIA = 'necromancia',
+  TRANSMUTACAO = 'transmutação',
+}
+
+export enum ComponenteMagia {
+  VERBAL = 'verbal',
+  SOMATICO = 'somatico',
+  MATERIAL = 'material',
+}
+
+export enum AlcanceMagia {
+  TOQUE = 'toque',
+  PESSOAL = 'pessoal',
+  PES_5 = '5 pés',
+  PES_10 = '10 pés',
+  PES_30 = '30 pés',
+  PES_60 = '60 pés',
+  PES_120 = '120 pés',
+  PES_150 = '150 pés',
+  PES_300 = '300 pés',
+  PES_500 = '500 pés',
+  MILHA_1 = '1 milha',
+  ILIMITADO = 'ilimitado',
+  ESPECIAL = 'especial',
+}
+
+export enum DuracaoMagia {
+  INSTANTANEA = 'instantânea',
+  RODADA_1 = '1 rodada',
+  MINUTO_1 = '1 minuto',
+  MINUTO_10 = '10 minutos',
+  HORA_1 = '1 hora',
+  HORA_8 = '8 horas',
+  HORA_24 = '24 horas',
+  DIA_7 = '7 dias',
+  DIA_30 = '30 dias',
+  PERMANENTE = 'permanente',
+  CONCENTRACAO = 'concentração',
+  ATE_DISPARADA = 'até disparada',
+}
+
+export enum TempoConjuracao {
+  ACAO = '1 ação',
+  ACAO_BONUS = '1 ação bônus',
+  REACAO = '1 reação',
+  MINUTO_1 = '1 minuto',
+  MINUTO_10 = '10 minutos',
+  HORA_1 = '1 hora',
+  HORA_8 = '8 horas',
+  HORA_24 = '24 horas',
+  RITUAL = 'ritual',
+}
+
+export enum TipoSalvaguarda {
+  FORCA = 'força',
+  DESTREZA = 'destreza',
+  CONSTITUICAO = 'constituição',
+  INTELIGENCIA = 'inteligência',
+  SABEDORIA = 'sabedoria',
+  CARISMA = 'carisma',
+  NENHUM = 'nenhum',
+}
+
+export interface EfeitoMagia {
+  tipo: 'dano' | 'cura' | 'buff' | 'debuff' | 'utilidade' | 'controle';
+  dados?: string; // Ex: "3d6", "1d8+mod"
+  condicao?: string; // Ex: "enfeitiçado", "amedrontado"
+  duracao?: string;
+  descricao: string;
+}
+
+interface DadosMagia {
+  id?: string;
+  nome: string;
+  descricao: string;
+  escola: EscolaMagia;
+  nivel: number; // 0-9 (0 = truque)
+  tempoConjuracao: TempoConjuracao;
+  alcance: AlcanceMagia;
+  componentes: ComponenteMagia[];
+  componenteMaterial?: string; // Descrição do componente material
+  duracao: DuracaoMagia;
+  concentracao: boolean;
+  ritual: boolean;
+  efeitos: EfeitoMagia[];
+  salvaguarda?: TipoSalvaguarda;
+  cdSalvaguarda?: number; // Classe de Dificuldade padrão
+  areaEfeito?: string; // Ex: "esfera 20 pés", "cone 15 pés"
+  classes: string[]; // Classes que podem aprender esta magia
+  valor?: number; // Custo para aprender (pergaminhos, etc.)
+  raridade?: RaridadeItem;
+}
+
+export class Magia extends Item {
+  public readonly escola: EscolaMagia;
+  public readonly nivel: number;
+  public readonly tempoConjuracao: TempoConjuracao;
+  public readonly alcance: AlcanceMagia;
+  public readonly componentes: ComponenteMagia[];
+  public readonly componenteMaterial: string | undefined;
+  public readonly duracao: DuracaoMagia;
+  public readonly concentracao: boolean;
+  public readonly ritual: boolean;
+  public readonly efeitos: EfeitoMagia[];
+  public readonly salvaguarda: TipoSalvaguarda | undefined;
+  public readonly cdSalvaguarda: number | undefined;
+  public readonly areaEfeito: string | undefined;
+  public readonly classes: string[];
+
+  constructor(dados: DadosMagia) {
+    super({
+      ...dados,
+      tipo: TipoItem.MAGICO,
+      peso: 0, // Magias não têm peso físico
+      valor: dados.valor || 0, // Valor padrão se não especificado
+    });
+
+    this.escola = dados.escola;
+    this.nivel = dados.nivel;
+    this.tempoConjuracao = dados.tempoConjuracao;
+    this.alcance = dados.alcance;
+    this.componentes = dados.componentes;
+    this.componenteMaterial = dados.componenteMaterial;
+    this.duracao = dados.duracao;
+    this.concentracao = dados.concentracao;
+    this.ritual = dados.ritual;
+    this.efeitos = dados.efeitos;
+    this.salvaguarda = dados.salvaguarda;
+    this.cdSalvaguarda = dados.cdSalvaguarda;
+    this.areaEfeito = dados.areaEfeito;
+    this.classes = dados.classes;
+  }
+
+  /**
+   * Verifica se a magia é um truque (nível 0)
+   */
+  public ehTruque(): boolean {
+    return this.nivel === 0;
+  }
+
+  /**
+   * Verifica se a magia requer concentração
+   */
+  public requerConcentracao(): boolean {
+    return this.concentracao;
+  }
+
+  /**
+   * Verifica se a magia pode ser conjurada como ritual
+   */
+  public podeSerRitual(): boolean {
+    return this.ritual;
+  }
+
+  /**
+   * Verifica se a magia requer componente material
+   */
+  public requerMaterial(): boolean {
+    return this.componentes.includes(ComponenteMagia.MATERIAL);
+  }
+
+  /**
+   * Verifica se uma classe pode aprender esta magia
+   */
+  public classePojeAprender(classe: string): boolean {
+    return this.classes.includes(classe.toLowerCase());
+  }
+
+  /**
+   * Calcula o dano da magia baseado no nível do conjurador
+   */
+  public calcularDano(nivelConjurador: number, upcast?: number): number {
+    const efeito = this.efeitos.find((e) => e.tipo === 'dano');
+    if (!efeito || !efeito.dados) return 0;
+
+    // Para truques, aumenta com o nível do personagem
+    if (this.ehTruque()) {
+      const multiplicador = Math.floor((nivelConjurador - 1) / 5) + 1;
+      const rolagem = Dados.rolar(efeito.dados);
+      return rolagem.total * multiplicador;
+    }
+
+    // Para magias de nível, pode usar upcast
+    const nivelEfetivo = this.nivel + (upcast || 0);
+    const modificadorNivel = nivelEfetivo - this.nivel;
+
+    const rolagem = Dados.rolar(efeito.dados);
+    return rolagem.total + modificadorNivel;
+  }
+
+  /**
+   * Calcula a cura da magia
+   */
+  public calcularCura(nivelConjurador: number, upcast?: number): number {
+    const efeito = this.efeitos.find((e) => e.tipo === 'cura');
+    if (!efeito || !efeito.dados) return 0;
+
+    const nivelEfetivo = this.nivel + (upcast || 0);
+    const modificadorNivel = nivelEfetivo - this.nivel;
+
+    const rolagem = Dados.rolar(efeito.dados);
+    return rolagem.total + modificadorNivel;
+  }
+
+  /**
+   * Obtém a CD de salvaguarda baseada no modificador do conjurador
+   */
+  public obterCDSalvaguarda(modificadorConjuracao: number, bonusProficiencia: number): number {
+    return 8 + modificadorConjuracao + bonusProficiencia;
+  }
+
+  /**
+   * Formata os componentes da magia para exibição
+   */
+  public formatarComponentes(): string {
+    const simbolos = this.componentes.map((c) => {
+      switch (c) {
+        case ComponenteMagia.VERBAL:
+          return 'V';
+        case ComponenteMagia.SOMATICO:
+          return 'S';
+        case ComponenteMagia.MATERIAL:
+          return 'M';
+        default:
+          return '';
+      }
+    });
+
+    let resultado = simbolos.join(', ');
+
+    if (this.componenteMaterial) {
+      resultado += ` (${this.componenteMaterial})`;
+    }
+
+    return resultado;
+  }
+
+  /**
+   * Serializa a magia para persistência
+   */
+  public override serializar(): Record<string, unknown> {
+    return {
+      ...super.serializar(),
+      escola: this.escola,
+      nivel: this.nivel,
+      tempoConjuracao: this.tempoConjuracao,
+      alcance: this.alcance,
+      componentes: this.componentes,
+      componenteMaterial: this.componenteMaterial,
+      duracao: this.duracao,
+      concentracao: this.concentracao,
+      ritual: this.ritual,
+      efeitos: this.efeitos,
+      salvaguarda: this.salvaguarda,
+      cdSalvaguarda: this.cdSalvaguarda,
+      areaEfeito: this.areaEfeito,
+      classes: this.classes,
+    };
+  }
+
+  /**
+   * Deserializa dados para criar uma instância de Magia
+   */
+  public static deserializar(dados: Record<string, unknown>): Magia {
+    return new Magia({
+      id: dados.id as string,
+      nome: dados.nome as string,
+      descricao: dados.descricao as string,
+      valor: dados.valor as number,
+      raridade: dados.raridade as RaridadeItem,
+      escola: dados.escola as EscolaMagia,
+      nivel: dados.nivel as number,
+      tempoConjuracao: dados.tempoConjuracao as TempoConjuracao,
+      alcance: dados.alcance as AlcanceMagia,
+      componentes: dados.componentes as ComponenteMagia[],
+      componenteMaterial: dados.componenteMaterial as string,
+      duracao: dados.duracao as DuracaoMagia,
+      concentracao: dados.concentracao as boolean,
+      ritual: dados.ritual as boolean,
+      efeitos: dados.efeitos as EfeitoMagia[],
+      salvaguarda: dados.salvaguarda as TipoSalvaguarda,
+      cdSalvaguarda: dados.cdSalvaguarda as number,
+      areaEfeito: dados.areaEfeito as string,
+      classes: dados.classes as string[],
+    });
+  }
+
+  /**
+   * Verifica se a magia pode ser usada (implementação da classe abstrata Item)
+   */
+  public podeUsar(): boolean {
+    return true; // Magias sempre podem ser "usadas" (conjuradas)
+  }
+
+  /**
+   * Usa a magia (conjura ela)
+   */
+  public usar(usuarioId: string, alvoId?: string): { sucesso: boolean; mensagem: string } {
+    // Implementação básica - pode ser expandida para verificar recursos, etc.
+    return {
+      sucesso: true,
+      mensagem: `${this.nome} foi conjurada por ${usuarioId}${alvoId ? ` em ${alvoId}` : ''}.`,
+    };
+  }
+}

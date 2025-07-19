@@ -35,6 +35,8 @@
             >
               <q-tab name="personagens" icon="people" label="Personagens" />
               <q-tab name="itens" icon="inventory" label="Itens" />
+              <q-tab name="magias" icon="auto_fix_high" label="Magias" />
+              <q-tab name="combate" icon="swords" label="Combate" />
               <q-tab name="mapas" icon="map" label="Mapas" />
             </q-tabs>
 
@@ -87,15 +89,26 @@
                       </q-item-section>
 
                       <q-item-section side>
-                        <q-btn
-                          flat
-                          round
-                          icon="add_circle"
-                          size="sm"
-                          @click.stop="adicionarPersonagemNaSessao(personagem)"
-                        >
-                          <q-tooltip>Adicionar à sessão</q-tooltip>
-                        </q-btn>
+                        <div class="row q-gutter-xs">
+                          <q-btn
+                            flat
+                            round
+                            icon="edit"
+                            size="sm"
+                            @click.stop="editarPersonagem(personagem)"
+                          >
+                            <q-tooltip>Editar personagem</q-tooltip>
+                          </q-btn>
+                          <q-btn
+                            flat
+                            round
+                            icon="add_circle"
+                            size="sm"
+                            @click.stop="adicionarPersonagemNaSessao(personagem)"
+                          >
+                            <q-tooltip>Adicionar à sessão</q-tooltip>
+                          </q-btn>
+                        </div>
                       </q-item-section>
                     </q-item>
 
@@ -116,6 +129,28 @@
                     <q-icon name="inventory_2" size="3rem" />
                     <div class="text-caption">Em desenvolvimento</div>
                   </div>
+                </q-tab-panel>
+
+                <!-- Aba Magias -->
+                <q-tab-panel name="magias" class="q-pa-none">
+                  <div class="q-pa-md">
+                    <q-btn
+                      color="primary"
+                      icon="auto_fix_high"
+                      label="Abrir Catálogo de Magias"
+                      class="full-width"
+                      @click="abrirCatalogoMagias"
+                    />
+                    <div class="text-center text-grey-6 q-py-lg">
+                      <q-icon name="auto_fix_high" size="3rem" />
+                      <div class="text-caption">Gerencie magias conhecidas</div>
+                    </div>
+                  </div>
+                </q-tab-panel>
+
+                <!-- Aba Combate -->
+                <q-tab-panel name="combate" class="q-pa-none">
+                  <IniciativaCombate />
                 </q-tab-panel>
 
                 <!-- Aba Mapas -->
@@ -324,6 +359,16 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
+    <!-- Dialog para o catálogo de magias -->
+    <CatalogoMagias v-model="mostrarCatalogoMagias" />
+
+    <!-- Dialog para editar personagem -->
+    <EditarPersonagemDialog
+      v-model="mostrarEditarPersonagem"
+      :personagem="null"
+      @salvar="salvarPersonagemEditado"
+    />
   </q-page>
 </template>
 
@@ -336,6 +381,9 @@ import { PersistenceManager } from '../services/PersistenceManager';
 import { Dados } from '../classes/Dados';
 import { StatusSessao } from '../classes/SessaoJogo';
 import type { MensagemMestre } from '../types';
+import IniciativaCombate from '../components/IniciativaCombate.vue';
+import CatalogoMagias from '../components/CatalogoMagiasSimples.vue';
+import EditarPersonagemDialog from '../components/EditarPersonagemDialog.vue';
 
 interface PersonagemData {
   id: string;
@@ -357,6 +405,9 @@ const carregandoRecursos = ref(false);
 const personagensDisponiveis = ref<PersonagemData[]>([]);
 const novaMensagem = ref('');
 const iaProcessando = ref(false);
+const mostrarCatalogoMagias = ref(false);
+const mostrarEditarPersonagem = ref(false);
+const personagemParaEditar = ref<PersonagemData | null>(null);
 
 // Controles de dados
 const mostrarDialogDados = ref(false);
@@ -492,6 +543,33 @@ function adicionarPersonagemNaSessao(personagem: PersonagemData) {
   }
 }
 
+function editarPersonagem(personagem: PersonagemData) {
+  personagemParaEditar.value = personagem;
+  mostrarEditarPersonagem.value = true;
+}
+
+function salvarPersonagemEditado(dadosPersonagem: {
+  id?: string | undefined;
+  nome: string;
+  raca: string;
+  classe: string;
+  descricao: string;
+  isIA: boolean;
+  promptPersonalidade: string;
+}) {
+  // TODO: Implementar salvamento do personagem editado
+  console.log('Salvando personagem editado:', dadosPersonagem);
+
+  $q.notify({
+    type: 'positive',
+    message: 'Personagem salvo com sucesso!',
+    position: 'top',
+  });
+
+  mostrarEditarPersonagem.value = false;
+  void carregarRecursos(); // Recarregar lista de personagens
+}
+
 function enviarMensagem() {
   if (!novaMensagem.value.trim() || !sessaoAtual.value) return;
 
@@ -608,6 +686,10 @@ function finalizarSessao() {
       });
     }
   });
+}
+
+function abrirCatalogoMagias() {
+  mostrarCatalogoMagias.value = true;
 }
 
 // Utilidades
