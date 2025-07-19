@@ -10,10 +10,7 @@ export class Atributos {
   private nivel: number;
   private proficiencia: number;
 
-  constructor(
-    atributosPrimarios: AtributosPrimarios,
-    nivel: number = 1
-  ) {
+  constructor(atributosPrimarios: AtributosPrimarios, nivel: number = 1) {
     this.primarios = { ...atributosPrimarios };
     this.nivel = nivel;
     this.proficiencia = this.calcularBonusProficiencia(nivel);
@@ -21,27 +18,57 @@ export class Atributos {
   }
 
   // Getters para atributos primários
-  get forca(): number { return this.primarios.forca; }
-  get destreza(): number { return this.primarios.destreza; }
-  get constituicao(): number { return this.primarios.constituicao; }
-  get inteligencia(): number { return this.primarios.inteligencia; }
-  get sabedoria(): number { return this.primarios.sabedoria; }
-  get carisma(): number { return this.primarios.carisma; }
+  get forca(): number {
+    return this.primarios.forca;
+  }
+  get destreza(): number {
+    return this.primarios.destreza;
+  }
+  get constituicao(): number {
+    return this.primarios.constituicao;
+  }
+  get inteligencia(): number {
+    return this.primarios.inteligencia;
+  }
+  get sabedoria(): number {
+    return this.primarios.sabedoria;
+  }
+  get carisma(): number {
+    return this.primarios.carisma;
+  }
 
   // Getters para atributos derivados
-  get hp(): number { return this.derivados.hp; }
-  get hpMaximo(): number { return this.derivados.hpMaximo; }
-  get mp(): number { return this.derivados.mp; }
-  get mpMaximo(): number { return this.derivados.mpMaximo; }
-  get ca(): number { return this.derivados.ca; }
-  get iniciativa(): number { return this.derivados.iniciativa; }
-  get velocidade(): number { return this.derivados.velocidade; }
+  get hp(): number {
+    return this.derivados.hp;
+  }
+  get hpMaximo(): number {
+    return this.derivados.hpMaximo;
+  }
+  get mp(): number {
+    return this.derivados.mp;
+  }
+  get mpMaximo(): number {
+    return this.derivados.mpMaximo;
+  }
+  get ca(): number {
+    return this.derivados.ca;
+  }
+  get iniciativa(): number {
+    return this.derivados.iniciativa;
+  }
+  get velocidade(): number {
+    return this.derivados.velocidade;
+  }
 
   // Getter para bônus de proficiência
-  get bonusProficiencia(): number { return this.proficiencia; }
-  
+  get bonusProficiencia(): number {
+    return this.proficiencia;
+  }
+
   // Getter para nível
-  get nivelAtual(): number { return this.nivel; }
+  get nivelAtual(): number {
+    return this.nivel;
+  }
 
   /**
    * Calcula o modificador de um atributo específico
@@ -60,7 +87,7 @@ export class Atributos {
       constituicao: this.getModificador('constituicao'),
       inteligencia: this.getModificador('inteligencia'),
       sabedoria: this.getModificador('sabedoria'),
-      carisma: this.getModificador('carisma')
+      carisma: this.getModificador('carisma'),
     };
   }
 
@@ -71,7 +98,7 @@ export class Atributos {
     if (valor < 1 || valor > 30) {
       throw new Error(`Valor de atributo inválido: ${valor}. Deve estar entre 1 e 30.`);
     }
-    
+
     this.primarios[atributo] = valor;
     this.recalcularAtributosDerivados();
   }
@@ -94,11 +121,11 @@ export class Atributos {
 
     this.nivel = novoNivel;
     this.proficiencia = this.calcularBonusProficiencia(novoNivel);
-    
+
     // Aumenta HP máximo
     this.derivados.hpMaximo += aumentoHP;
     this.derivados.hp = Math.min(this.derivados.hp + aumentoHP, this.derivados.hpMaximo);
-    
+
     this.recalcularAtributosDerivados();
   }
 
@@ -164,8 +191,8 @@ export class Atributos {
     const modDestreza = this.getModificador('destreza');
 
     // HP base (8 + mod. Constituição no nível 1, +5 por nível adicional como base)
-    const hpBase = 8 + modConstituicao + ((this.nivel - 1) * (5 + modConstituicao));
-    
+    const hpBase = 8 + modConstituicao + (this.nivel - 1) * (5 + modConstituicao);
+
     // MP base (baseado em Inteligência para casters)
     const mpBase = Math.max(0, modInteligencia * this.nivel);
 
@@ -176,7 +203,7 @@ export class Atributos {
       mpMaximo: mpBase,
       ca: 10 + modDestreza, // CA base sem armadura
       iniciativa: modDestreza,
-      velocidade: 30 // Velocidade padrão em pés (9 metros)
+      velocidade: 30, // Velocidade padrão em pés (9 metros)
     };
   }
 
@@ -185,11 +212,11 @@ export class Atributos {
    */
   private recalcularAtributosDerivados(): void {
     const novosDerivados = this.calcularAtributosDerivados();
-    
+
     // Mantém HP e MP atuais, mas atualiza máximos
     const hpAtual = this.derivados.hp;
     const mpAtual = this.derivados.mp;
-    
+
     this.derivados = novosDerivados;
     this.derivados.hp = Math.min(hpAtual, this.derivados.hpMaximo);
     this.derivados.mp = Math.min(mpAtual, this.derivados.mpMaximo);
@@ -202,14 +229,18 @@ export class Atributos {
     return {
       primarios: { ...this.primarios },
       derivados: { ...this.derivados },
-      nivel: this.nivel
+      nivel: this.nivel,
     };
   }
 
   /**
    * Importa atributos de dados salvos
    */
-  static importar(dados: { primarios: AtributosPrimarios; derivados: AtributosDerivados; nivel: number }): Atributos {
+  static importar(dados: {
+    primarios: AtributosPrimarios;
+    derivados: AtributosDerivados;
+    nivel: number;
+  }): Atributos {
     const atributos = new Atributos(dados.primarios, dados.nivel);
     atributos.derivados = { ...dados.derivados };
     return atributos;
@@ -232,7 +263,7 @@ export class Atributos {
       constituicao: 13,
       inteligencia: 12,
       sabedoria: 10,
-      carisma: 8
+      carisma: 8,
     });
   }
 }

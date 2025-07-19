@@ -12,7 +12,7 @@ export abstract class Item {
   public readonly peso: number; // Em kg
   public readonly raridade: RaridadeItem;
   public readonly magico: boolean;
-  public readonly propriedades: Record<string, any>;
+  public readonly propriedades: Record<string, unknown>;
 
   constructor(dados: {
     id?: string;
@@ -23,7 +23,7 @@ export abstract class Item {
     peso: number;
     raridade?: RaridadeItem;
     magico?: boolean;
-    propriedades?: Record<string, any>;
+    propriedades?: Record<string, unknown>;
   }) {
     this.id = dados.id ?? this.gerarId();
     this.nome = dados.nome;
@@ -51,7 +51,7 @@ export abstract class Item {
   /**
    * Usa o item (implementação específica por tipo)
    */
-  abstract usar(usuarioId: string, alvoId?: string): any;
+  abstract usar(usuarioId: string, alvoId?: string): { sucesso: boolean; mensagem: string };
 
   /**
    * Verifica se o item pode ser equipado
@@ -72,7 +72,7 @@ export abstract class Item {
     if (Object.keys(this.propriedades).length > 0) {
       descricao += '\n\n**Propriedades:**\n';
       for (const [prop, valor] of Object.entries(this.propriedades)) {
-        descricao += `• ${prop}: ${valor}\n`;
+        descricao += `• ${prop}: ${String(valor)}\n`;
       }
     }
 
@@ -89,14 +89,14 @@ export abstract class Item {
   /**
    * Obtém valor de uma propriedade
    */
-  getPropriedade<T = any>(propriedade: string): T | undefined {
+  getPropriedade<T = unknown>(propriedade: string): T | undefined {
     return this.propriedades[propriedade] as T;
   }
 
   /**
    * Define uma propriedade (apenas para itens mutáveis)
    */
-  setPropriedade(propriedade: string, valor: any): void {
+  setPropriedade(propriedade: string, valor: unknown): void {
     this.propriedades[propriedade] = valor;
   }
 
@@ -111,7 +111,7 @@ export abstract class Item {
   /**
    * Serializa o item para persistência
    */
-  serializar(): any {
+  serializar(): Record<string, unknown> {
     return {
       id: this.id,
       nome: this.nome,
@@ -122,7 +122,7 @@ export abstract class Item {
       raridade: this.raridade,
       magico: this.magico,
       propriedades: this.propriedades,
-      className: this.constructor.name
+      className: this.constructor.name,
     };
   }
 
@@ -136,7 +136,7 @@ export abstract class Item {
       [RaridadeItem.RARO]: 25,
       [RaridadeItem.MUITO_RARO]: 125,
       [RaridadeItem.LENDARIO]: 625,
-      [RaridadeItem.ARTEFATO]: 3125
+      [RaridadeItem.ARTEFATO]: 3125,
     };
 
     return this.valor * multiplicadores[this.raridade];
@@ -173,7 +173,7 @@ export abstract class Item {
       RaridadeItem.RARO,
       RaridadeItem.MUITO_RARO,
       RaridadeItem.LENDARIO,
-      RaridadeItem.ARTEFATO
+      RaridadeItem.ARTEFATO,
     ];
 
     return ordemRaridade.indexOf(this.raridade) > ordemRaridade.indexOf(outroItem.raridade);

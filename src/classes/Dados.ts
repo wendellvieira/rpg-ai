@@ -14,7 +14,7 @@ export class Dados {
    */
   static rolar(notacao: string): ResultadoDados {
     const match = notacao.match(this.REGEX_DADOS);
-    
+
     if (!match) {
       throw new Error(`Notação de dados inválida: ${notacao}`);
     }
@@ -45,7 +45,7 @@ export class Dados {
       resultados,
       total: totalFinal,
       modificador,
-      critico
+      critico,
     };
   }
 
@@ -69,7 +69,7 @@ export class Dados {
   static rolarComVantagem(modificador: number = 0): ResultadoDados {
     const rolagem1 = this.rolarD20(0);
     const rolagem2 = this.rolarD20(0);
-    
+
     const melhorResultado = Math.max(rolagem1.total, rolagem2.total);
     const totalFinal = melhorResultado + modificador;
 
@@ -78,7 +78,7 @@ export class Dados {
       resultados: [rolagem1.resultados[0]!, rolagem2.resultados[0]!],
       total: totalFinal,
       modificador,
-      critico: Math.max(...rolagem1.resultados, ...rolagem2.resultados) === 20
+      critico: Math.max(...rolagem1.resultados, ...rolagem2.resultados) === 20,
     };
   }
 
@@ -88,7 +88,7 @@ export class Dados {
   static rolarComDesvantagem(modificador: number = 0): ResultadoDados {
     const rolagem1 = this.rolarD20(0);
     const rolagem2 = this.rolarD20(0);
-    
+
     const piorResultado = Math.min(rolagem1.total, rolagem2.total);
     const totalFinal = piorResultado + modificador;
 
@@ -97,7 +97,7 @@ export class Dados {
       resultados: [rolagem1.resultados[0]!, rolagem2.resultados[0]!],
       total: totalFinal,
       modificador,
-      critico: false // Desvantagem nunca pode ser crítico
+      critico: false, // Desvantagem nunca pode ser crítico
     };
   }
 
@@ -106,12 +106,12 @@ export class Dados {
    */
   static rolarAtributoInicial(): number {
     const resultados: number[] = [];
-    
+
     // Rola 4d6
     for (let i = 0; i < 4; i++) {
       resultados.push(Math.floor(Math.random() * 6) + 1);
     }
-    
+
     // Remove o menor valor
     resultados.sort((a, b) => b - a);
     return resultados.slice(0, 3).reduce((sum, val) => sum + val, 0);
@@ -127,7 +127,7 @@ export class Dados {
       constituicao: this.rolarAtributoInicial(),
       inteligencia: this.rolarAtributoInicial(),
       sabedoria: this.rolarAtributoInicial(),
-      carisma: this.rolarAtributoInicial()
+      carisma: this.rolarAtributoInicial(),
     };
   }
 
@@ -135,7 +135,7 @@ export class Dados {
    * Verifica se houve crítico (natural 20 ou máximo no dado)
    */
   private static verificarCritico(resultados: number[], lados: number): boolean {
-    return resultados.some(resultado => resultado === lados);
+    return resultados.some((resultado) => resultado === lados);
   }
 
   /**
@@ -149,12 +149,10 @@ export class Dados {
    * Formata resultado de dados para exibição
    */
   static formatarResultado(resultado: ResultadoDados): string {
-    const detalhes = resultado.resultados.length > 1 
-      ? ` (${resultado.resultados.join(', ')})` 
-      : '';
-    
+    const detalhes = resultado.resultados.length > 1 ? ` (${resultado.resultados.join(', ')})` : '';
+
     const critico = resultado.critico ? ' CRÍTICO!' : '';
-    
+
     return `${resultado.tipo}: ${resultado.total}${detalhes}${critico}`;
   }
 
@@ -174,6 +172,6 @@ export class Dados {
     MEDIO: 15,
     DIFICIL: 20,
     MUITO_DIFICIL: 25,
-    QUASE_IMPOSSIVEL: 30
+    QUASE_IMPOSSIVEL: 30,
   } as const;
 }

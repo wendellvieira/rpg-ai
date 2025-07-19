@@ -125,7 +125,7 @@ export enum StatusPersonagem {
   MORTO = 'morto',
   INCONSCIENTE = 'inconsciente',
   PETRIFICADO = 'petrificado',
-  PARALIZADO = 'paralizado'
+  PARALIZADO = 'paralizado',
 }
 
 export enum TipoItem {
@@ -136,7 +136,7 @@ export enum TipoItem {
   MAGICO = 'magico',
   FERRAMENTA = 'ferramenta',
   TESOURO = 'tesouro',
-  OUTRO = 'outro'
+  OUTRO = 'outro',
 }
 
 export enum RaridadeItem {
@@ -145,5 +145,5 @@ export enum RaridadeItem {
   RARO = 'raro',
   MUITO_RARO = 'muito-raro',
   LENDARIO = 'lendario',
-  ARTEFATO = 'artefato'
+  ARTEFATO = 'artefato',
 }

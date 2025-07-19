@@ -5,7 +5,7 @@ export enum CategoriaArmadura {
   LEVE = 'leve',
   MEDIA = 'media',
   PESADA = 'pesada',
-  ESCUDO = 'escudo'
+  ESCUDO = 'escudo',
 }
 
 interface DadosArmadura {
@@ -36,9 +36,7 @@ export class Armadura extends Item {
   public readonly resistencias: string[];
 
   constructor(dados: DadosArmadura) {
-    const tipo = dados.categoria === CategoriaArmadura.ESCUDO 
-      ? TipoItem.ESCUDO 
-      : TipoItem.ARMADURA;
+    const tipo = dados.categoria === CategoriaArmadura.ESCUDO ? TipoItem.ESCUDO : TipoItem.ARMADURA;
 
     super({
       ...dados,
@@ -49,8 +47,8 @@ export class Armadura extends Item {
         maxDestreza: dados.maxDestreza,
         penalidade: dados.penalidade,
         forcaMinima: dados.forcaMinima,
-        resistencias: dados.resistencias || []
-      }
+        resistencias: dados.resistencias || [],
+      },
     });
 
     this.categoria = dados.categoria;
@@ -71,10 +69,10 @@ export class Armadura extends Item {
   /**
    * "Usa" a armadura (a equipa)
    */
-  override usar(_usuarioId: string): { sucesso: boolean; mensagem: string } {
+  override usar(): { sucesso: boolean; mensagem: string } {
     return {
       sucesso: true,
-      mensagem: `${this.nome} foi equipada.`
+      mensagem: `${this.nome} foi equipada.`,
     };
   }
 
@@ -83,7 +81,7 @@ export class Armadura extends Item {
    */
   calcularCA(modificadorDestreza: number): number {
     let ca = this.bonusCA;
-    
+
     if (this.maxDestreza !== undefined) {
       // Aplica o máximo de bônus Destreza permitido
       ca += Math.min(modificadorDestreza, this.maxDestreza);
@@ -92,7 +90,7 @@ export class Armadura extends Item {
       ca += modificadorDestreza;
     }
     // Armadura pesada: não aplica bônus de Destreza (já incluído no bonusCA)
-    
+
     return ca;
   }
 
@@ -158,17 +156,17 @@ export class Armadura extends Item {
       magico: this.magico,
       categoria: this.categoria,
       bonusCA: this.bonusCA,
-      resistencias: [...this.resistencias]
+      resistencias: [...this.resistencias],
     };
 
     if (this.maxDestreza !== undefined) {
       dados.maxDestreza = this.maxDestreza;
     }
-    
+
     if (this.penalidade !== undefined) {
       dados.penalidade = this.penalidade;
     }
-    
+
     if (this.forcaMinima !== undefined) {
       dados.forcaMinima = this.forcaMinima;
     }
@@ -181,27 +179,27 @@ export class Armadura extends Item {
    */
   override getDescricaoCompleta(): string {
     let descricao = super.getDescricaoCompleta();
-    
+
     descricao += `\n\n**Estatísticas de Proteção:**\n`;
     descricao += `• CA Base: ${this.bonusCA}\n`;
     descricao += `• Categoria: ${this.categoria}\n`;
-    
+
     if (this.maxDestreza !== undefined) {
       descricao += `• Máx. Bônus Destreza: +${this.maxDestreza}\n`;
     }
-    
+
     if (this.penalidade) {
       descricao += `• Penalidade Furtividade: -${this.penalidade}\n`;
     }
-    
+
     if (this.forcaMinima) {
       descricao += `• Força Mínima: ${this.forcaMinima}\n`;
     }
-    
+
     if (this.resistencias.length > 0) {
       descricao += `• Resistências: ${this.resistencias.join(', ')}\n`;
     }
-    
+
     return descricao;
   }
 
@@ -213,7 +211,7 @@ export class Armadura extends Item {
       valor: 10,
       peso: 4.5,
       categoria: CategoriaArmadura.LEVE,
-      bonusCA: 11
+      bonusCA: 11,
     });
   }
 
@@ -225,7 +223,7 @@ export class Armadura extends Item {
       peso: 9,
       categoria: CategoriaArmadura.MEDIA,
       bonusCA: 13,
-      maxDestreza: 2
+      maxDestreza: 2,
     });
   }
 
@@ -238,7 +236,7 @@ export class Armadura extends Item {
       categoria: CategoriaArmadura.PESADA,
       bonusCA: 18,
       penalidade: 1,
-      forcaMinima: 15
+      forcaMinima: 15,
     });
   }
 
@@ -249,7 +247,7 @@ export class Armadura extends Item {
       valor: 10,
       peso: 2.7,
       categoria: CategoriaArmadura.ESCUDO,
-      bonusCA: 2
+      bonusCA: 2,
     });
   }
 
@@ -262,7 +260,7 @@ export class Armadura extends Item {
       categoria: CategoriaArmadura.ESCUDO,
       bonusCA: 3,
       penalidade: 2,
-      forcaMinima: 13
+      forcaMinima: 13,
     });
   }
 }

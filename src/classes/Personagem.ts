@@ -1,9 +1,10 @@
-import { 
+import {
   StatusPersonagem,
-  type AtributosPrimarios, 
-  type EventoPersonagem, 
+  type AtributosPrimarios,
+  type AtributosDerivados,
+  type EventoPersonagem,
   type ConhecimentoPersonagem,
-  type Pericia
+  type Pericia,
 } from '../types';
 import { Atributos } from './Atributos';
 import type { Item } from './Item';
@@ -28,7 +29,7 @@ interface PersonagemSerializado {
   isIA: boolean;
   promptPersonalidade: string | undefined;
   descricao: string;
-  atributos: any;
+  atributos: { primarios: AtributosPrimarios; derivados: AtributosDerivados; nivel: number };
   inventario: [string, number][];
   equipamentos: [string, string][];
   eventos: EventoPersonagem[];
@@ -71,7 +72,7 @@ export class Personagem {
     'colar',
     'anel1',
     'anel2',
-    'capa'
+    'capa',
   ] as const;
 
   constructor(config: PersonagemConfig) {
@@ -101,21 +102,43 @@ export class Personagem {
   }
 
   // Getters para atributos
-  get nivel(): number { return this.atributos.nivelAtual; }
-  get hp(): number { return this.atributos.hp; }
-  get hpMaximo(): number { return this.atributos.hpMaximo; }
-  get mp(): number { return this.atributos.mp; }
-  get mpMaximo(): number { return this.atributos.mpMaximo; }
-  get ca(): number { return this.atributos.ca + this.calcularBonusCAEquipamentos(); }
-  get iniciativa(): number { return this.atributos.iniciativa; }
-  get velocidade(): number { return this.atributos.velocidade; }
-  get bonusProficiencia(): number { return this.atributos.bonusProficiencia; }
+  get nivel(): number {
+    return this.atributos.nivelAtual;
+  }
+  get hp(): number {
+    return this.atributos.hp;
+  }
+  get hpMaximo(): number {
+    return this.atributos.hpMaximo;
+  }
+  get mp(): number {
+    return this.atributos.mp;
+  }
+  get mpMaximo(): number {
+    return this.atributos.mpMaximo;
+  }
+  get ca(): number {
+    return this.atributos.ca + this.calcularBonusCAEquipamentos();
+  }
+  get iniciativa(): number {
+    return this.atributos.iniciativa;
+  }
+  get velocidade(): number {
+    return this.atributos.velocidade;
+  }
+  get bonusProficiencia(): number {
+    return this.atributos.bonusProficiencia;
+  }
 
   // Getters para status
-  get statusAtual(): StatusPersonagem { return this.status; }
-  get estaVivo(): boolean { return this.status !== StatusPersonagem.MORTO; }
-  get estaConsciente(): boolean { 
-    return this.status === StatusPersonagem.ATIVO && this.hp > 0; 
+  get statusAtual(): StatusPersonagem {
+    return this.status;
+  }
+  get estaVivo(): boolean {
+    return this.status !== StatusPersonagem.MORTO;
+  }
+  get estaConsciente(): boolean {
+    return this.status === StatusPersonagem.ATIVO && this.hp > 0;
   }
 
   /**
@@ -145,7 +168,7 @@ export class Personagem {
    */
   removerItem(itemId: string, quantidade: number = 1): boolean {
     const quantidadeAtual = this.inventario.get(itemId) ?? 0;
-    
+
     if (quantidadeAtual < quantidade) {
       return false;
     }
@@ -224,7 +247,7 @@ export class Personagem {
       resumo,
       timestamp: new Date(),
       turno: 0, // Será definido pelo sistema de turnos
-      importancia
+      importancia,
     };
 
     this.eventos.push(evento);
@@ -246,10 +269,10 @@ export class Personagem {
    * Adiciona conhecimento
    */
   adicionarConhecimento(
-    topico: string, 
-    conteudo: string, 
+    topico: string,
+    conteudo: string,
     categoria: string = 'geral',
-    fonte: 'inicial' | 'descoberto' | 'aprendido' = 'descoberto'
+    fonte: 'inicial' | 'descoberto' | 'aprendido' = 'descoberto',
   ): void {
     const conhecimento: ConhecimentoPersonagem = {
       id: this.gerarId(),
@@ -257,7 +280,7 @@ export class Personagem {
       conteudo,
       categoria,
       criadoEm: new Date(),
-      fonte
+      fonte,
     };
 
     this.conhecimentos.push(conhecimento);
@@ -268,10 +291,11 @@ export class Personagem {
    */
   buscarConhecimento(termo: string): ConhecimentoPersonagem[] {
     const termoLower = termo.toLowerCase();
-    return this.conhecimentos.filter(c => 
-      c.topico.toLowerCase().includes(termoLower) ||
-      c.conteudo.toLowerCase().includes(termoLower) ||
-      c.categoria.toLowerCase().includes(termoLower)
+    return this.conhecimentos.filter(
+      (c) =>
+        c.topico.toLowerCase().includes(termoLower) ||
+        c.conteudo.toLowerCase().includes(termoLower) ||
+        c.categoria.toLowerCase().includes(termoLower),
     );
   }
 
@@ -280,11 +304,11 @@ export class Personagem {
    */
   receberDano(dano: number): void {
     this.atributos.receberDano(dano);
-    
+
     if (this.hp <= 0) {
       this.status = StatusPersonagem.INCONSCIENTE;
     }
-    
+
     this.adicionarEvento(`Recebeu ${dano} pontos de dano.`, 'media');
   }
 
@@ -295,11 +319,11 @@ export class Personagem {
     const hpAnterior = this.hp;
     this.atributos.curar(cura);
     const curaReal = this.hp - hpAnterior;
-    
+
     if (this.hp > 0 && this.status === StatusPersonagem.INCONSCIENTE) {
       this.status = StatusPersonagem.ATIVO;
     }
-    
+
     this.adicionarEvento(`Foi curado em ${curaReal} pontos de vida.`, 'baixa');
   }
 
@@ -335,7 +359,7 @@ export class Personagem {
       constituicao: 10,
       inteligencia: 10,
       sabedoria: 10,
-      carisma: 10
+      carisma: 10,
     };
   }
 
@@ -372,7 +396,7 @@ export class Personagem {
       eventos: this.eventos,
       conhecimentos: this.conhecimentos,
       status: this.status,
-      experiencia: this.experiencia
+      experiencia: this.experiencia,
     };
   }
 
@@ -386,8 +410,8 @@ export class Personagem {
       raca: dados.raca,
       classe: dados.classe,
       isIA: dados.isIA,
-      promptPersonalidade: dados.promptPersonalidade,
-      descricao: dados.descricao
+      ...(dados.promptPersonalidade && { promptPersonalidade: dados.promptPersonalidade }),
+      descricao: dados.descricao,
     });
 
     // Restaura atributos

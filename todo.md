@@ -21,19 +21,20 @@
   - [x] `Arma.ts` - Herda de Item
   - [x] `Armadura.ts` - Herda de Item
   - [x] `Consumivel.ts` - Herda de Item
-  - [ ] `Inventario.ts` - Gerencia itens do personagem
-  - [ ] `SessaoJogo.ts` - Gerencia estado da sessão
-  - [ ] `SistemaTurnos.ts` - Controla ordem e turnos
+  - [x] `Inventario.ts` - Gerencia itens do personagem
+  - [x] `SessaoJogo.ts` - Gerencia estado da sessão
+  - [x] `SistemaTurnos.ts` - Controla ordem e turnos
   - [x] `Dados.ts` - Sistema de rolagem de dados D&D
 
 ### 3. Persistência
 
-- [ ] Criar `src/services/`
-  - [ ] `PersistenceManager.ts` - Gerenciador principal
-  - [ ] `DatabaseService.ts` - Wrapper para LocalForage
-  - [ ] `BackupService.ts` - Import/Export de dados
-- [ ] Configurar stores LocalForage
-- [ ] Sistema de migração de versão
+- [x] Criar `src/services/`
+  - [x] `PersistenceManager.ts` - Gerenciador principal
+  - [x] `DatabaseService.ts` - Wrapper para LocalForage
+  - [x] `BackupService.ts` - Import/Export de dados
+  - [x] `OpenAIService.ts` - Integração com OpenAI
+- [x] Configurar stores LocalForage
+- [x] Sistema de migração de versão
 
 ## 🎯 MCP (Model Context Protocol) (Prioridade Alta)
 

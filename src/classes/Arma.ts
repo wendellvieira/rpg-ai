@@ -5,7 +5,7 @@ import { Dados } from './Dados';
 export enum CategoriaArma {
   CORPO_A_CORPO = 'corpo-a-corpo',
   DISTANCIA = 'distancia',
-  ARREMESSO = 'arremesso'
+  ARREMESSO = 'arremesso',
 }
 
 export enum TipoDano {
@@ -21,7 +21,7 @@ export enum TipoDano {
   VENENO = 'veneno',
   PSIQUICO = 'psiquico',
   RADIANTE = 'radiante',
-  TROVAO = 'trovao'
+  TROVAO = 'trovao',
 }
 
 export enum PropriedadeArma {
@@ -33,7 +33,7 @@ export enum PropriedadeArma {
   ARREMESSO = 'arremesso',
   MUNICAO = 'municao',
   RECARGA = 'recarga',
-  ESPECIAL = 'especial'
+  ESPECIAL = 'especial',
 }
 
 interface DadosArma {
@@ -79,8 +79,8 @@ export class Arma extends Item {
         propriedadesArma: dados.propriedades,
         critico: dados.critico,
         bonusAtaque: dados.bonusAtaque || 0,
-        bonusDano: dados.bonusDano || 0
-      }
+        bonusDano: dados.bonusDano || 0,
+      },
     });
 
     this.categoria = dados.categoria;
@@ -103,10 +103,10 @@ export class Arma extends Item {
   /**
    * "Usa" a arma (na verdade, a equipa)
    */
-  override usar(_usuarioId: string): { sucesso: boolean; mensagem: string } {
+  override usar(): { sucesso: boolean; mensagem: string } {
     return {
       sucesso: true,
-      mensagem: `${this.nome} foi equipada.`
+      mensagem: `${this.nome} foi equipada.`,
     };
   }
 
@@ -117,7 +117,7 @@ export class Arma extends Item {
     const resultado = Dados.rolar(this.dano);
     resultado.total += modificadorAtributo + this.bonusDano;
     resultado.modificador += this.bonusDano;
-    
+
     return resultado;
   }
 
@@ -128,15 +128,15 @@ export class Arma extends Item {
     // Crítico = rola o dano duas vezes + modificadores
     const dano1 = Dados.rolar(this.dano);
     const dano2 = Dados.rolar(this.dano);
-    
+
     const total = dano1.total + dano2.total + modificadorAtributo + this.bonusDano;
-    
+
     return {
       tipo: `${this.dano} x2 (crítico)`,
       resultados: [...dano1.resultados, ...dano2.resultados],
       total,
       modificador: modificadorAtributo + this.bonusDano,
-      critico: true
+      critico: true,
     };
   }
 
@@ -182,17 +182,18 @@ export class Arma extends Item {
     if (!this.isVersatil()) {
       return this.dano;
     }
-    
+
     // Aumenta o dado em um tamanho (d6->d8, d8->d10, etc.)
     const match = this.dano.match(/(\d*)d(\d+)(.*)$/);
     if (!match) return this.dano;
-    
+
     const quantidade = match[1] || '1';
     const lados = parseInt(match[2] || '6');
     const modificador = match[3] || '';
-    
-    const novosLados = lados === 4 ? 6 : lados === 6 ? 8 : lados === 8 ? 10 : lados === 10 ? 12 : lados;
-    
+
+    const novosLados =
+      lados === 4 ? 6 : lados === 6 ? 8 : lados === 8 ? 10 : lados === 10 ? 12 : lados;
+
     return `${quantidade}d${novosLados}${modificador}`;
   }
 
@@ -214,7 +215,7 @@ export class Arma extends Item {
       propriedades: [...this.propriedadesArma],
       critico: this.critico,
       bonusAtaque: this.bonusAtaque,
-      bonusDano: this.bonusDano
+      bonusDano: this.bonusDano,
     });
   }
 
@@ -223,28 +224,28 @@ export class Arma extends Item {
    */
   override getDescricaoCompleta(): string {
     let descricao = super.getDescricaoCompleta();
-    
+
     descricao += `\n\n**Estatísticas de Combate:**\n`;
     descricao += `• Dano: ${this.dano} ${this.tipoDano}\n`;
     descricao += `• Alcance: ${this.alcance}m\n`;
     descricao += `• Crítico: x${this.critico}\n`;
-    
+
     if (this.bonusAtaque > 0) {
       descricao += `• Bônus de Ataque: +${this.bonusAtaque}\n`;
     }
-    
+
     if (this.bonusDano > 0) {
       descricao += `• Bônus de Dano: +${this.bonusDano}\n`;
     }
-    
+
     if (this.propriedadesArma.length > 0) {
       descricao += `• Propriedades: ${this.propriedadesArma.join(', ')}\n`;
     }
-    
+
     if (this.isVersatil()) {
       descricao += `• Dano Versátil: ${this.getDanoVersatil()}\n`;
     }
-    
+
     return descricao;
   }
 
@@ -260,7 +261,7 @@ export class Arma extends Item {
       tipoDano: TipoDano.CORTANTE,
       alcance: 1.5,
       propriedades: [PropriedadeArma.VERSATIL],
-      critico: 2
+      critico: 2,
     });
   }
 
@@ -275,7 +276,7 @@ export class Arma extends Item {
       tipoDano: TipoDano.PERFURANTE,
       alcance: 150,
       propriedades: [PropriedadeArma.PESADA, PropriedadeArma.MUNICAO],
-      critico: 2
+      critico: 2,
     });
   }
 
@@ -290,7 +291,7 @@ export class Arma extends Item {
       tipoDano: TipoDano.PERFURANTE,
       alcance: 1.5,
       propriedades: [PropriedadeArma.LEVE, PropriedadeArma.SUTIL, PropriedadeArma.ARREMESSO],
-      critico: 2
+      critico: 2,
     });
   }
 }
