@@ -80,11 +80,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
+import type { Personagem } from '../classes/Personagem';
 import type { NivelMagia } from '../types';
 
 // Props
 interface Props {
-  personagem: unknown; // Aceita qualquer tipo de personagem
+  personagem: Personagem;
 }
 
 const props = defineProps<Props>();
@@ -97,13 +98,12 @@ const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
 // Computed
 const niveisComSlots = computed(() => {
-  const personagem = props.personagem as any;
-  if (!personagem?.podeConjurar) return [];
+  if (!props.personagem?.podeConjurar) return [];
 
   const niveis: NivelMagia[] = [];
   for (let i = 1; i <= 9; i++) {
     const nivel = i as NivelMagia;
-    const slots = personagem.obterSlotsDisponiveis(nivel);
+    const slots = props.personagem.obterSlotsDisponiveis(nivel);
     if (slots.total > 0) {
       niveis.push(nivel);
     }
@@ -113,22 +113,20 @@ const niveisComSlots = computed(() => {
 });
 
 const temSlotsGastos = computed(() => {
-  const personagem = props.personagem as any;
-  if (!personagem?.podeConjurar) return false;
+  if (!props.personagem?.podeConjurar) return false;
 
   return niveisComSlots.value.some((nivel) => {
-    const slots = personagem.obterSlotsDisponiveis(nivel);
+    const slots = props.personagem.obterSlotsDisponiveis(nivel);
     return slots.usados > 0;
   });
 });
 
 // Métodos
 function getSlotsInfo(nivel: NivelMagia) {
-  const personagem = props.personagem as any;
-  if (!personagem) {
+  if (!props.personagem) {
     return { total: 0, usados: 0, disponiveis: 0 };
   }
-  return personagem.obterSlotsDisponiveis(nivel);
+  return props.personagem.obterSlotsDisponiveis(nivel);
 }
 
 function getCorNivel(nivel: number): string {
@@ -148,15 +146,14 @@ function getCorNivel(nivel: number): string {
 }
 
 function recuperarSlots() {
-  const personagem = props.personagem as any;
-  if (!personagem?.podeConjurar) return;
+  if (!props.personagem?.podeConjurar) return;
 
-  personagem.recuperarSlotsMagia();
+  props.personagem.recuperarSlotsMagia();
 
   // Emit para notificar a atualização
   onDialogOK({
     action: 'slots-recuperados',
-    personagem: personagem,
+    personagem: props.personagem,
   });
 }
 </script>

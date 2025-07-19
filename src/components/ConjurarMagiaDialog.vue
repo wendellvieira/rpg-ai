@@ -74,7 +74,6 @@
             v-model="alvosEscolhidos"
             :options="alvosDisponiveis"
             option-label="nome"
-            option-value="id"
             label="Selecionar Alvos"
             outlined
             multiple
@@ -125,12 +124,13 @@ import { useDialogPluginComponent } from 'quasar';
 import { useMagiaStore, type DadosMagiaSerializados } from '../stores/magiaStore';
 import { SistemaCombate } from '../classes/SistemaCombate';
 import { Magia } from '../classes/Magia';
+import type { Personagem } from '../classes/Personagem';
 import type { NivelMagia } from '../types';
 
 // Props
 interface Props {
-  conjurador: unknown; // Personagem conjurador
-  alvosDisponiveis: unknown[]; // Lista de personagens disponíveis como alvos
+  conjurador: Personagem;
+  alvosDisponiveis: Personagem[];
 }
 
 const props = defineProps<Props>();
@@ -146,19 +146,18 @@ const magiaStore = useMagiaStore();
 const conjurando = ref(false);
 const magiaSelecionada = ref<DadosMagiaSerializados | null>(null);
 const nivelConjuracao = ref(1);
-const alvosEscolhidos = ref<any[]>([]);
+const alvosEscolhidos = ref<Personagem[]>([]);
 
 // Sistema de combate
 const sistemaCombate = new SistemaCombate();
 
 // Computed
 const magiasDisponiveis = computed(() => {
-  const conjurador = props.conjurador as any;
-  if (!conjurador || !conjurador.podeConjurar) {
+  if (!props.conjurador || !props.conjurador.podeConjurar) {
     return [];
   }
 
-  const capacidades = conjurador.capacidadesMagicas;
+  const capacidades = props.conjurador.capacidadesMagicas;
   if (!capacidades) return [];
 
   // Filtra magias conhecidas/preparadas pelo personagem
@@ -170,8 +169,7 @@ const magiasDisponiveis = computed(() => {
 });
 
 const niveisDisponiveis = computed(() => {
-  const conjurador = props.conjurador as any;
-  if (!magiaSelecionada.value || !conjurador) return [];
+  if (!magiaSelecionada.value || !props.conjurador) return [];
 
   const nivelBase = magiaSelecionada.value.nivel;
   if (nivelBase === 0) return []; // Truques não gastam slots
@@ -180,7 +178,7 @@ const niveisDisponiveis = computed(() => {
 
   // Verifica slots disponíveis para cada nível de magia
   for (let i = nivelBase; i <= 9; i++) {
-    const slotsInfo = conjurador.obterSlotsDisponiveis(i as NivelMagia);
+    const slotsInfo = props.conjurador.obterSlotsDisponiveis(i as NivelMagia);
     if (slotsInfo.disponiveis > 0) {
       opcoes.push({
         label: `Nível ${i} (${slotsInfo.disponiveis}/${slotsInfo.total} slots)`,
@@ -207,11 +205,10 @@ const podeConjurar = computed(() => {
   if (magiaSelecionada.value.nivel === 0) return true;
 
   // Verificar se há slots disponíveis para o nível selecionado
-  const conjurador = props.conjurador as any;
-  if (!conjurador) return false;
+  if (!props.conjurador) return false;
 
   const nivelMagia = nivelConjuracao.value as NivelMagia;
-  return conjurador.temSlotDisponivel(nivelMagia);
+  return props.conjurador.temSlotDisponivel(nivelMagia);
 });
 
 // Métodos
@@ -256,8 +253,6 @@ function conjurarMagia() {
   conjurando.value = true;
 
   try {
-    const conjurador = props.conjurador as any;
-
     // Verificar se é um truque (não gasta slot)
     const isTruque = magiaSelecionada.value.nivel === 0;
 
@@ -265,12 +260,12 @@ function conjurarMagia() {
     if (!isTruque) {
       const nivelMagia = nivelConjuracao.value as NivelMagia;
 
-      if (!conjurador.temSlotDisponivel(nivelMagia)) {
+      if (!props.conjurador.temSlotDisponivel(nivelMagia)) {
         throw new Error(`Não há slots de nível ${nivelMagia} disponíveis.`);
       }
 
       // Gasta o slot de magia
-      const slotGasto = conjurador.gastarSlotMagia(nivelMagia);
+      const slotGasto = props.conjurador.gastarSlotMagia(nivelMagia);
       if (!slotGasto) {
         throw new Error('Não foi possível gastar o slot de magia.');
       }
@@ -281,9 +276,9 @@ function conjurarMagia() {
 
     // Executar conjuração
     const resultado = sistemaCombate.conjurarMagia(
-      conjurador,
+      props.conjurador,
       magia,
-      alvosEscolhidos.value,
+      alvosEscolhidos.value as Personagem[],
       nivelConjuracao.value,
     );
 
