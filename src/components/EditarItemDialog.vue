@@ -43,11 +43,18 @@
             </div>
           </div>
 
-          <q-textarea v-model="form.descricao" label="Descrição" outlined rows="3" maxlength="300">
+          <q-input 
+            v-model="form.descricao" 
+            label="Descrição" 
+            outlined 
+            type="textarea" 
+            rows="3" 
+            maxlength="300"
+          >
             <template v-slot:prepend>
               <q-icon name="description" />
             </template>
-          </q-textarea>
+          </q-input>
 
           <!-- Propriedades Básicas -->
           <div class="row q-gutter-md">
