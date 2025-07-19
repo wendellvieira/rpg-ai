@@ -129,13 +129,18 @@
 
   <!-- Dialog de Conjuração de Magias -->
   <ConjurarMagiaDialog
+    v-if="conjuradorSelecionado"
     v-model="mostrarConjuracao"
-    :conjurador="conjuradorSelecionado"
-    :alvos-disponiveis="personagensDisponiveis"
+    :conjurador="conjuradorSelecionado as Personagem"
+    :alvos-disponiveis="personagensDisponiveis as Personagem[]"
   />
 
   <!-- Dialog de Slots de Magia -->
-  <SlotsDialog v-model="mostrarSlots" :personagem="personagemSlots" />
+  <SlotsDialog
+    v-if="personagemSlots"
+    v-model="mostrarSlots"
+    :personagem="personagemSlots as Personagem"
+  />
 
   <!-- Dialog de Aplicar Dano/Cura -->
   <q-dialog v-model="mostrarDanoCura" persistent>
@@ -207,7 +212,10 @@ const personagemTurnoAtual = computed(() => {
 
 const personagensDisponiveis = computed(() => {
   if (!sessaoStore.sessaoAtual) return [];
-  return sessaoStore.sessaoAtual.getParticipantes();
+  return sessaoStore.sessaoAtual
+    .getParticipantes()
+    .map((id: string) => personagemStore.obterPersonagemPorId(id))
+    .filter((p: Personagem | undefined): p is Personagem => p !== undefined);
 });
 
 // Methods
