@@ -1,12 +1,13 @@
 <template>
-  <q-dialog v-model="showDialog" persistent maximized>
-    <q-card>
-      <q-toolbar class="bg-secondary text-white">
-        <q-toolbar-title> {{ magia ? 'Editar' : 'Nova' }} Magia </q-toolbar-title>
-        <q-btn flat round dense icon="close" v-close-popup />
-      </q-toolbar>
+  <q-dialog ref="dialogRef" @hide="onDialogHide">
+    <q-card style="min-width: 700px; max-width: 800px">
+      <q-card-section class="row items-center q-pb-none">
+        <div class="text-h6">{{ magia ? 'Editar Magia' : 'Criar Nova Magia' }}</div>
+        <q-space />
+        <q-btn icon="close" flat round dense v-close-popup />
+      </q-card-section>
 
-      <q-card-section class="q-pa-md" style="max-height: 80vh; overflow-y: auto">
+      <q-card-section style="max-height: 70vh; overflow-y: auto">
         <div class="row q-gutter-md">
           <!-- Informações Básicas -->
           <div class="col-12 col-md-6">
@@ -134,7 +135,7 @@
             <div class="row q-gutter-md">
               <div class="col-12 col-md-3">
                 <q-select
-                  v-model="form.efeito.tipo"
+                  v-model="form.efeitos[0]?.tipo"
                   :options="opcoesEfeito"
                   label="Tipo de Efeito"
                   outlined
@@ -143,49 +144,65 @@
                 />
               </div>
               <div class="col-12 col-md-3">
-                <q-input v-model="form.efeito.dados" label="Dados (ex: 3d6, 1d8+mod)" outlined />
+                <q-input v-model="form.efeitos[0]?.dados" label="Dados (ex: 3d6, 1d8+mod)" outlined />
               </div>
               <div class="col-12 col-md-6">
-                <q-input v-model="form.efeito.descricao" label="Descrição do Efeito" outlined />
+                <q-input v-model="form.efeitos[0]?.descricao" label="Descrição do Efeito" outlined />
               </div>
             </div>
           </div>
         </div>
       </q-card-section>
 
-      <q-card-actions align="right" class="bg-grey-1">
-        <q-btn flat label="Cancelar" color="primary" v-close-popup />
-        <q-btn flat label="Salvar" color="primary" @click="salvar" :disable="!formValido" />
+      <q-card-actions align="right" class="q-pa-md">
+        <q-btn flat label="Cancelar" v-close-popup />
+        <q-btn
+          unelevated
+          label="Salvar"
+          color="primary"
+          @click="salvarMagia"
+          :loading="salvando"
+          :disable="!formValido"
+        />
       </q-card-actions>
     </q-card>
   </q-dialog>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, reactive } from 'vue';
+import { useDialogPluginComponent } from 'quasar';
+import { useMagiaStore } from '../stores/magiaStore';
 import {
+  Magia,
   EscolaMagia,
   TempoConjuracao,
   AlcanceMagia,
   DuracaoMagia,
   ComponenteMagia,
 } from '../classes/Magia';
-import type { Magia } from '../classes/Magia';
 
 // Props
-const showDialog = defineModel<boolean>('modelValue', { required: true });
+interface Props {
+  magia?: any; // Dados da magia para edição (opcional)
+}
 
-const props = defineProps<{
-  magia?: Magia | null;
-}>();
+const props = withDefaults(defineProps<Props>(), {
+  magia: undefined,
+});
 
 // Emits
-const emit = defineEmits<{
-  salvar: [magia: Record<string, unknown>]; // Using Record instead of any
-}>();
+defineEmits([...useDialogPluginComponent.emits]);
+
+// Composables
+const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
+const magiaStore = useMagiaStore();
+
+// Estado
+const salvando = ref(false);
 
 // Form data
-const form = ref({
+const form = reactive({
   nome: '',
   escola: EscolaMagia.EVOCACAO,
   nivel: 1,
@@ -198,11 +215,15 @@ const form = ref({
   concentracao: false,
   ritual: false,
   classes: [] as string[],
-  efeito: {
-    tipo: 'dano',
-    dados: '',
-    descricao: '',
-  },
+  efeitos: [
+    {
+      tipo: 'dano' as const,
+      dados: '',
+      descricao: '',
+      condicao: '',
+      duracao: '',
+    },
+  ],
 });
 
 // Opções para selects
@@ -259,40 +280,51 @@ const opcoesClasses = [
 // Computed
 const formValido = computed(() => {
   return (
-    form.value.nome.trim() !== '' &&
-    form.value.descricao.trim() !== '' &&
-    form.value.nivel >= 0 &&
-    form.value.nivel <= 9
+    form.nome.trim() !== '' &&
+    form.descricao.trim() !== '' &&
+    form.nivel >= 0 &&
+    form.nivel <= 9
   );
 });
 
 // Methods
-function salvar() {
+function salvarMagia() {
   if (!formValido.value) return;
 
-  const magiaData = {
-    id: props.magia?.id,
-    nome: form.value.nome,
-    escola: form.value.escola,
-    nivel: form.value.nivel,
-    descricao: form.value.descricao,
-    tempoConjuracao: form.value.tempoConjuracao,
-    alcance: form.value.alcance,
-    duracao: form.value.duracao,
-    componentes: form.value.componentes,
-    componenteMaterial: form.value.componenteMaterial || undefined,
-    concentracao: form.value.concentracao,
-    ritual: form.value.ritual,
-    classes: form.value.classes,
-    efeitos: [form.value.efeito],
-    valor: 0,
-  };
+  salvando.value = true;
+  
+  try {
+    const novaMagia = new Magia({
+      id: props.magia?.id || `magia-${Date.now()}`,
+      nome: form.nome,
+      escola: form.escola,
+      nivel: form.nivel,
+      descricao: form.descricao,
+      tempoConjuracao: form.tempoConjuracao,
+      alcance: form.alcance,
+      duracao: form.duracao,
+      componentes: form.componentes,
+      componenteMaterial: form.componenteMaterial || '',
+      concentracao: form.concentracao,
+      ritual: form.ritual,
+      classes: form.classes,
+      efeitos: form.efeitos,
+    });
 
-  emit('salvar', magiaData);
+    // Adicionar à store
+    magiaStore.adicionarMagia(novaMagia);
+    magiaStore.salvarMagias();
+
+    onDialogOK(novaMagia);
+  } catch (error) {
+    console.error('Erro ao salvar magia:', error);
+  } finally {
+    salvando.value = false;
+  }
 }
 
 function resetForm() {
-  form.value = {
+  Object.assign(form, {
     nome: '',
     escola: EscolaMagia.EVOCACAO,
     nivel: 1,
@@ -305,54 +337,42 @@ function resetForm() {
     concentracao: false,
     ritual: false,
     classes: [],
-    efeito: {
-      tipo: 'dano',
-      dados: '',
-      descricao: '',
-    },
-  };
+    efeitos: [
+      {
+        tipo: 'dano' as const,
+        dados: '',
+        descricao: '',
+        condicao: '',
+        duracao: '',
+      },
+    ],
+  });
 }
 
-// Watchers
-watch(
-  () => props.magia,
-  (magia) => {
-    if (magia) {
-      form.value = {
-        nome: magia.nome,
-        escola: magia.escola,
-        nivel: magia.nivel,
-        descricao: magia.descricao,
-        tempoConjuracao: magia.tempoConjuracao,
-        alcance: magia.alcance,
-        duracao: magia.duracao,
-        componentes: [...magia.componentes],
-        componenteMaterial: magia.componenteMaterial || '',
-        concentracao: magia.concentracao,
-        ritual: magia.ritual,
-        classes: [...magia.classes],
-        efeito: magia.efeitos[0]
-          ? {
-              tipo: magia.efeitos[0].tipo,
-              dados: magia.efeitos[0].dados || '',
-              descricao: magia.efeitos[0].descricao,
-            }
-          : {
-              tipo: 'dano',
-              dados: '',
-              descricao: '',
-            },
-      };
-    } else {
-      resetForm();
-    }
-  },
-  { immediate: true },
-);
-
-watch(showDialog, (show) => {
-  if (!show && !props.magia) {
-    resetForm();
-  }
-});
+// Preencher formulário se estiver editando
+if (props.magia) {
+  Object.assign(form, {
+    nome: props.magia.nome || '',
+    escola: props.magia.escola || EscolaMagia.EVOCACAO,
+    nivel: props.magia.nivel ?? 1,
+    descricao: props.magia.descricao || '',
+    tempoConjuracao: props.magia.tempoConjuracao || TempoConjuracao.ACAO,
+    alcance: props.magia.alcance || AlcanceMagia.PES_30,
+    duracao: props.magia.duracao || DuracaoMagia.INSTANTANEA,
+    componentes: props.magia.componentes || [],
+    componenteMaterial: props.magia.componenteMaterial || '',
+    concentracao: props.magia.concentracao || false,
+    ritual: props.magia.ritual || false,
+    classes: props.magia.classes || [],
+    efeitos: props.magia.efeitos?.length ? [...props.magia.efeitos] : [
+      {
+        tipo: 'dano' as const,
+        dados: '',
+        descricao: '',
+        condicao: '',
+        duracao: '',
+      },
+    ],
+  });
+}
 </script>

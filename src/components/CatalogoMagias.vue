@@ -55,6 +55,14 @@
                     <q-icon name="search" />
                   </template>
                 </q-input>
+                <q-space />
+                <q-btn
+                  color="primary"
+                  icon="add"
+                  label="Nova Magia"
+                  @click="abrirDialogNovaMagia"
+                  unelevated
+                />
               </div>
 
               <!-- Lista de Magias -->
