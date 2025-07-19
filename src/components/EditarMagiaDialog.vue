@@ -180,7 +180,7 @@
 <script setup lang="ts">
 import { ref, computed, reactive } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
-import { useMagiaStore } from '../stores/magiaStore';
+import { useMagiaStore, type DadosMagiaSerializados } from '../stores/magiaStore';
 import {
   Magia,
   EscolaMagia,
@@ -192,7 +192,7 @@ import {
 
 // Props
 interface Props {
-  magia?: DadosMagia | null; // Dados da magia para edição (opcional)
+  magia?: DadosMagiaSerializados | null; // Dados da magia para edição (opcional)
 }
 
 const props = defineProps<Props>();
@@ -203,31 +203,6 @@ defineEmits([...useDialogPluginComponent.emits]);
 // Composables
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 const magiaStore = useMagiaStore();
-
-// Interface para dados de magia serializados (para consistência)
-interface DadosMagia {
-  id: string;
-  nome: string;
-  descricao: string;
-  escola: EscolaMagia;
-  nivel: number;
-  tempoConjuracao: TempoConjuracao;
-  alcance: AlcanceMagia;
-  componentes: ComponenteMagia[];
-  componenteMaterial?: string;
-  duracao: DuracaoMagia;
-  concentracao: boolean;
-  ritual: boolean;
-  efeitos: Array<{
-    tipo: 'dano' | 'cura' | 'buff' | 'debuff' | 'utilidade' | 'controle';
-    dados?: string;
-    condicao?: string;
-    duracao?: string;
-    descricao: string;
-  }>;
-  classes: string[];
-  valor?: number;
-}
 
 // Estado
 const salvando = ref(false);
