@@ -16,6 +16,7 @@ interface DadosArmadura {
   peso: number;
   raridade?: RaridadeItem;
   magico?: boolean;
+  imagemUrl?: string;
   categoria: CategoriaArmadura;
   bonusCA: number;
   maxDestreza?: number; // Máximo de bônus Destreza aplicável

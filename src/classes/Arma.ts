@@ -44,6 +44,7 @@ interface DadosArma {
   peso: number;
   raridade?: RaridadeItem;
   magico?: boolean;
+  imagemUrl?: string;
   categoria: CategoriaArma;
   dano: string; // Ex: "1d8", "2d6+1"
   tipoDano: TipoDano;

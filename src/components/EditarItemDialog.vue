@@ -118,6 +118,58 @@
             </div>
           </div>
 
+          <!-- Seção de Imagem -->
+          <div class="q-mt-md">
+            <div class="text-subtitle2 q-mb-sm">Imagem do Item</div>
+
+            <div v-if="form.imagemUrl" class="q-mb-md text-center">
+              <q-img
+                :src="form.imagemUrl"
+                style="max-width: 200px; max-height: 200px"
+                class="rounded-borders"
+                fit="contain"
+              />
+              <div class="q-mt-sm">
+                <q-btn
+                  flat
+                  dense
+                  color="negative"
+                  icon="delete"
+                  label="Remover"
+                  @click="form.imagemUrl = ''"
+                />
+              </div>
+            </div>
+
+            <div class="row q-gutter-sm">
+              <q-btn
+                outline
+                color="primary"
+                icon="auto_awesome"
+                label="Gerar com IA"
+                @click="gerarImagemItem"
+                :loading="gerandoImagem"
+                :disable="!form.nome.trim() || gerandoImagem"
+              />
+
+              <q-btn
+                outline
+                color="secondary"
+                icon="upload"
+                label="Carregar"
+                @click="imageUpload?.click()"
+              />
+
+              <input
+                ref="imageUpload"
+                type="file"
+                accept="image/*"
+                style="display: none"
+                @change="handleImageUpload"
+              />
+            </div>
+          </div>
+
           <!-- Propriedades Específicas por Tipo -->
           <q-separator v-if="form.tipo" />
 
@@ -319,6 +371,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useDialogPluginComponent, useQuasar } from 'quasar';
+import { imageGenerationService } from '../services/ImageGenerationService';
 
 interface ItemForm {
   nome: string;
@@ -328,6 +381,7 @@ interface ItemForm {
   valor: number;
   raridade: string;
   magico: boolean;
+  imagemUrl?: string;
 
   // Propriedades de arma
   dano: string;
@@ -361,6 +415,7 @@ interface ItemData {
   peso: number;
   raridade: string;
   magico: boolean;
+  imagemUrl?: string;
   propriedades?: Record<string, unknown>;
 }
 
@@ -377,6 +432,8 @@ const $q = useQuasar();
 
 const salvando = ref(false);
 const gerandoComIA = ref(false);
+const gerandoImagem = ref(false);
+const imageUpload = ref<HTMLInputElement>();
 
 const form = ref<ItemForm>({
   nome: '',
@@ -386,6 +443,7 @@ const form = ref<ItemForm>({
   valor: 0,
   raridade: 'comum',
   magico: false,
+  imagemUrl: '',
 
   // Arma
   dano: '',
@@ -519,6 +577,11 @@ function salvarItem() {
       magico: form.value.magico,
       propriedades: {},
     };
+
+    // Adicionar imagemUrl se houver
+    if (form.value.imagemUrl) {
+      itemData.imagemUrl = form.value.imagemUrl;
+    }
 
     // Adicionar propriedades específicas baseadas no tipo
     if (form.value.tipo === 'arma') {
@@ -682,6 +745,154 @@ Seja criativo mas equilibrado. Para itens lendários como "Excalibur", torne-os 
   } finally {
     gerandoComIA.value = false;
   }
+}
+
+async function gerarImagemItem() {
+  if (!form.value.nome.trim()) {
+    $q.notify({
+      type: 'warning',
+      message: 'Informe o nome do item primeiro.',
+    });
+    return;
+  }
+
+  // Verificar se o serviço está configurado
+  if (!imageGenerationService.isConfigured()) {
+    $q.notify({
+      type: 'warning',
+      message: 'Configure a API da Stability AI no arquivo .env para gerar imagens.',
+    });
+    return;
+  }
+
+  gerandoImagem.value = true;
+
+  try {
+    // Criar prompt específico para o item
+    let prompt = `Fantasy RPG item: ${form.value.nome}`;
+
+    // Adicionar detalhes baseados no tipo
+    if (form.value.tipo) {
+      switch (form.value.tipo) {
+        case 'arma':
+          prompt += `, ${form.value.categoriaArma || 'melee'} weapon`;
+          if (form.value.tipoDano) {
+            prompt += `, ${form.value.tipoDano} damage type`;
+          }
+          break;
+        case 'armadura':
+          prompt += ', armor, protective gear';
+          break;
+        case 'escudo':
+          prompt += ', shield, defensive equipment';
+          break;
+        case 'consumivel':
+          prompt += ', consumable item, potion or scroll';
+          break;
+        default:
+          prompt += `, ${form.value.tipo} equipment`;
+      }
+    }
+
+    // Adicionar raridade ao prompt
+    if (form.value.raridade && form.value.raridade !== 'comum') {
+      prompt += `, ${form.value.raridade} rarity`;
+    }
+
+    // Adicionar se é mágico
+    if (form.value.magico) {
+      prompt += ', magical, glowing, enchanted';
+    }
+
+    // Adicionar descrição se houver
+    if (form.value.descricao) {
+      prompt += `, ${form.value.descricao}`;
+    }
+
+    // Completar o prompt com estilo
+    prompt +=
+      ', detailed illustration, fantasy art style, D&D style, high quality, item portrait, clean background';
+
+    const request = {
+      prompt,
+      negativePrompt:
+        'blurry, low quality, multiple items, cluttered, people, characters, text, watermark',
+      width: 512,
+      height: 512,
+      steps: 30,
+      cfgScale: 7,
+      style: 'fantasy-realistic',
+    };
+
+    const result = await imageGenerationService.generateImage(request);
+
+    if (result.success && result.imageUrl) {
+      form.value.imagemUrl = result.imageUrl;
+
+      $q.notify({
+        type: 'positive',
+        message: 'Imagem do item gerada com sucesso!',
+        icon: 'image',
+      });
+    } else {
+      throw new Error(result.error || 'Falha ao gerar imagem');
+    }
+  } catch (error) {
+    console.error('Erro ao gerar imagem do item:', error);
+    $q.notify({
+      type: 'negative',
+      message: `Erro ao gerar imagem: ${error instanceof Error ? error.message : 'Erro desconhecido'}`,
+    });
+  } finally {
+    gerandoImagem.value = false;
+  }
+}
+
+function handleImageUpload(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+
+  if (!file) return;
+
+  // Verificar se é uma imagem
+  if (!file.type.startsWith('image/')) {
+    $q.notify({
+      type: 'negative',
+      message: 'Por favor, selecione apenas arquivos de imagem.',
+    });
+    return;
+  }
+
+  // Verificar tamanho (máximo 5MB)
+  const maxSize = 5 * 1024 * 1024; // 5MB
+  if (file.size > maxSize) {
+    $q.notify({
+      type: 'negative',
+      message: 'Arquivo muito grande. Máximo permitido: 5MB.',
+    });
+    return;
+  }
+
+  // Converter para base64
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const result = e.target?.result as string;
+    form.value.imagemUrl = result;
+
+    $q.notify({
+      type: 'positive',
+      message: 'Imagem carregada com sucesso!',
+    });
+  };
+
+  reader.onerror = () => {
+    $q.notify({
+      type: 'negative',
+      message: 'Erro ao carregar a imagem.',
+    });
+  };
+
+  reader.readAsDataURL(file);
 }
 </script>
 

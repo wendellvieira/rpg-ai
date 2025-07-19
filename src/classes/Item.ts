@@ -13,6 +13,7 @@ export abstract class Item {
   public readonly raridade: RaridadeItem;
   public readonly magico: boolean;
   public readonly propriedades: Record<string, unknown>;
+  public readonly imagemUrl: string | undefined; // URL ou base64 da imagem do item
 
   constructor(dados: {
     id?: string;
@@ -24,6 +25,7 @@ export abstract class Item {
     raridade?: RaridadeItem;
     magico?: boolean;
     propriedades?: Record<string, unknown>;
+    imagemUrl?: string;
   }) {
     this.id = dados.id ?? this.gerarId();
     this.nome = dados.nome;
@@ -34,6 +36,7 @@ export abstract class Item {
     this.raridade = dados.raridade ?? RaridadeItem.COMUM;
     this.magico = dados.magico ?? false;
     this.propriedades = dados.propriedades ?? {};
+    this.imagemUrl = dados.imagemUrl;
   }
 
   /**
