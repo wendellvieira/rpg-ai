@@ -192,7 +192,7 @@ import {
 
 // Props
 interface Props {
-  magia?: DadosMagia; // Dados da magia para edição (opcional)
+  magia?: DadosMagia | null; // Dados da magia para edição (opcional)
 }
 
 const props = defineProps<Props>();
