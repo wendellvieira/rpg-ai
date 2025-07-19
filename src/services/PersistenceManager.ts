@@ -121,8 +121,9 @@ export class PersistenceManager {
     await this.verificarInicializacao();
     const dados = await this.dbService.getItem(`sessao_${id}`);
 
-    if (dados) {
-      return SessaoJogo.deserializar(dados);
+    if (dados && typeof dados === 'object') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return SessaoJogo.deserializar(dados as any);
     }
 
     return null;
@@ -136,7 +137,7 @@ export class PersistenceManager {
   > {
     await this.verificarInicializacao();
     const indice = (await this.dbService.getItem('indice_sessoes')) || [];
-    return indice;
+    return Array.isArray(indice) ? indice : [];
   }
 
   /**
@@ -164,7 +165,7 @@ export class PersistenceManager {
   async carregarItem(id: string): Promise<Record<string, unknown> | null> {
     await this.verificarInicializacao();
     const dados = await this.dbService.getItem(`item_${id}`);
-    return dados;
+    return dados && typeof dados === 'object' ? (dados as Record<string, unknown>) : null;
   }
 
   /**
@@ -175,7 +176,7 @@ export class PersistenceManager {
   > {
     await this.verificarInicializacao();
     const indice = (await this.dbService.getItem('indice_itens')) || [];
-    return indice;
+    return Array.isArray(indice) ? indice : [];
   }
 
   /**
@@ -258,7 +259,8 @@ export class PersistenceManager {
    * Atualiza índice de personagens
    */
   private async atualizarIndicePersonagens(personagem: Personagem): Promise<void> {
-    const indice = (await this.dbService.getItem('indice_personagens')) || [];
+    const indiceData = (await this.dbService.getItem('indice_personagens')) || [];
+    const indice = Array.isArray(indiceData) ? indiceData : [];
     const entrada = {
       id: personagem.id,
       nome: personagem.nome,
@@ -280,7 +282,8 @@ export class PersistenceManager {
    * Remove personagem do índice
    */
   private async removerDoIndicePersonagens(id: string): Promise<void> {
-    const indice = (await this.dbService.getItem('indice_personagens')) || [];
+    const indiceData = (await this.dbService.getItem('indice_personagens')) || [];
+    const indice = Array.isArray(indiceData) ? indiceData : [];
     const novoIndice = indice.filter((p: { id: string }) => p.id !== id);
     await this.dbService.setItem('indice_personagens', novoIndice);
   }
@@ -289,7 +292,8 @@ export class PersistenceManager {
    * Atualiza índice de sessões
    */
   private async atualizarIndiceSessoes(sessao: SessaoJogo): Promise<void> {
-    const indice = (await this.dbService.getItem('indice_sessoes')) || [];
+    const indiceData = (await this.dbService.getItem('indice_sessoes')) || [];
+    const indice = Array.isArray(indiceData) ? indiceData : [];
     const entrada = {
       id: sessao.id,
       nome: sessao.nome,
@@ -311,7 +315,8 @@ export class PersistenceManager {
    * Remove sessão do índice
    */
   private async removerDoIndiceSessoes(id: string): Promise<void> {
-    const indice = (await this.dbService.getItem('indice_sessoes')) || [];
+    const indiceData = (await this.dbService.getItem('indice_sessoes')) || [];
+    const indice = Array.isArray(indiceData) ? indiceData : [];
     const novoIndice = indice.filter((s: { id: string }) => s.id !== id);
     await this.dbService.setItem('indice_sessoes', novoIndice);
   }
@@ -320,7 +325,8 @@ export class PersistenceManager {
    * Atualiza índice de itens
    */
   private async atualizarIndiceItens(item: Item): Promise<void> {
-    const indice = (await this.dbService.getItem('indice_itens')) || [];
+    const indiceData = (await this.dbService.getItem('indice_itens')) || [];
+    const indice = Array.isArray(indiceData) ? indiceData : [];
     const entrada = {
       id: item.id,
       nome: item.nome,
@@ -342,7 +348,8 @@ export class PersistenceManager {
    * Remove item do índice
    */
   private async removerDoIndiceItens(id: string): Promise<void> {
-    const indice = (await this.dbService.getItem('indice_itens')) || [];
+    const indiceData = (await this.dbService.getItem('indice_itens')) || [];
+    const indice = Array.isArray(indiceData) ? indiceData : [];
     const novoIndice = indice.filter((i: { id: string }) => i.id !== id);
     await this.dbService.setItem('indice_itens', novoIndice);
   }

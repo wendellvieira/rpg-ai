@@ -296,6 +296,10 @@ class AtacarHandler implements MCPFunctionHandler {
 
     return {
       success: hit,
+      hit,
+      critico,
+      dano,
+      tipoDano,
       description: hit
         ? `Ataque ${critico ? 'crítico ' : ''}bem-sucedido contra ${alvo}, causando ${dano} pontos de dano ${tipoDano}`
         : `Ataque falhou contra ${alvo}`,
@@ -315,10 +319,6 @@ class AtacarHandler implements MCPFunctionHandler {
         modificadores: rolagemAtaque.modificador,
         total: rolagemAtaque.total,
       },
-      hit,
-      critico,
-      dano,
-      tipoDano,
     };
   }
 

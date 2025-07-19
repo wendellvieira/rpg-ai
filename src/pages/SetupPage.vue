@@ -71,7 +71,7 @@
                     <q-card-section>
                       <div class="row items-center no-wrap">
                         <q-avatar size="40px" color="primary" text-color="white">
-                          {{ personagem.nome[0].toUpperCase() }}
+                          {{ personagem.nome?.[0]?.toUpperCase() || '?' }}
                         </q-avatar>
                         <div class="col q-ml-md">
                           <div class="text-h6">{{ personagem.nome }}</div>

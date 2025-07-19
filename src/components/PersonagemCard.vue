@@ -3,7 +3,7 @@
     <q-card-section>
       <div class="row items-center no-wrap">
         <q-avatar size="48px" :color="personagem.isIA ? 'purple' : 'primary'" text-color="white">
-          {{ personagem.nome[0].toUpperCase() }}
+          {{ personagem.nome?.[0]?.toUpperCase() || '?' }}
         </q-avatar>
         <div class="col q-ml-md">
           <div class="text-h6">{{ personagem.nome }}</div>
@@ -46,7 +46,9 @@
           <div class="text-caption text-grey-6">HP</div>
           <q-linear-progress
             :value="
-              personagem.atributos?.derivados?.hp / personagem.atributos?.derivados?.hpMaximo || 0
+              personagem.atributos?.derivados?.hp && personagem.atributos?.derivados?.hpMaximo
+                ? personagem.atributos.derivados.hp / personagem.atributos.derivados.hpMaximo
+                : 0
             "
             color="red"
             size="6px"
@@ -62,7 +64,9 @@
           <div class="text-caption text-grey-6">MP</div>
           <q-linear-progress
             :value="
-              personagem.atributos?.derivados?.mp / personagem.atributos?.derivados?.mpMaximo || 0
+              personagem.atributos?.derivados?.mp && personagem.atributos?.derivados?.mpMaximo
+                ? personagem.atributos.derivados.mp / personagem.atributos.derivados.mpMaximo
+                : 0
             "
             color="blue"
             size="6px"
