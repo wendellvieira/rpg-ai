@@ -1,325 +1,329 @@
 <template>
   <q-page class="game-page">
-    <div class="full-height">
-      <q-splitter v-model="splitterModel" :limits="[20, 80]" class="full-height">
-        <!-- Painel Esquerdo - Recursos -->
-        <template v-slot:before>
-          <div class="q-pa-md full-height column">
-            <!-- Cabeçalho do painel -->
-            <div class="row items-center q-mb-md">
-              <div class="col">
-                <div class="text-h6">Recursos</div>
-              </div>
-              <div class="col-auto">
-                <q-btn
-                  flat
-                  round
-                  icon="refresh"
-                  size="sm"
-                  @click="atualizarRecursos"
-                  :loading="carregandoRecursos"
-                >
-                  <q-tooltip>Atualizar</q-tooltip>
-                </q-btn>
-              </div>
-            </div>
+    <q-splitter v-model="splitterModel" :limits="[20, 80]" class="full-height">
+      <!-- Painel Esquerdo - Recursos -->
+      <template v-slot:before>
+        <div class="container-header-aside">
+          <!-- Cabeçalho do painel -->
+          <div class="left-side-header q-px-md q-py-sm">
+            <div class="text-h6">Recursos</div>
 
-            <!-- Abas de recursos -->
+            <q-btn
+              flat
+              round
+              icon="refresh"
+              size="sm"
+              @click="atualizarRecursos"
+              :loading="carregandoRecursos"
+            >
+              <q-tooltip>Atualizar</q-tooltip>
+            </q-btn>
+          </div>
+
+          <!-- Abas de recursos -->
+          <div class="cnt-game-context">
             <q-tabs
               v-model="abaRecursos"
               vertical
-              class="text-grey-6"
+              class="tabs-area text-grey-6 q-pt-md"
               active-color="primary"
               indicator-color="primary"
               dense
             >
-              <q-tab name="personagens" icon="people" label="Personagens" />
-              <q-tab name="itens" icon="inventory" label="Itens" />
-              <q-tab name="magias" icon="auto_fix_high" label="Magias" />
-              <q-tab name="combate" icon="swords" label="Combate" />
-              <q-tab name="mapas" icon="map" label="Mapas" />
+              <q-tab name="personagens" icon="people">
+                <q-tooltip>Personagens</q-tooltip>
+              </q-tab>
+              <q-tab name="itens" icon="inventory">
+                <q-tooltip>Itens</q-tooltip>
+              </q-tab>
+              <q-tab name="magias" icon="auto_fix_high">
+                <q-tooltip>Magias</q-tooltip>
+              </q-tab>
+              <q-tab name="combate" icon="local_fire_department">
+                <q-tooltip>Combate</q-tooltip>
+              </q-tab>
+              <q-tab name="mapas" icon="map">
+                <q-tooltip>Mapas</q-tooltip>
+              </q-tab>
             </q-tabs>
 
-            <q-separator class="q-my-md" />
-
             <!-- Conteúdo das abas -->
-            <div class="col scroll">
-              <q-tab-panels
-                v-model="abaRecursos"
-                animated
-                vertical
-                transition-prev="jump-up"
-                transition-next="jump-up"
-              >
-                <!-- Aba Personagens -->
-                <q-tab-panel name="personagens" class="q-pa-none">
-                  <div class="q-mb-sm">
-                    <q-btn
-                      color="primary"
-                      icon="add"
-                      label="Adicionar"
-                      size="sm"
-                      class="full-width"
-                      @click="adicionarPersonagemASessao"
-                    />
-                  </div>
-
-                  <q-list dense>
-                    <q-item
-                      v-for="personagem in personagensDisponiveis"
-                      :key="personagem.id"
-                      clickable
-                      @click="visualizarPersonagem(personagem)"
-                    >
-                      <q-item-section avatar>
-                        <q-avatar
-                          size="32px"
-                          :color="personagem.isIA ? 'purple' : 'primary'"
-                          text-color="white"
-                        >
-                          {{ personagem.nome[0] }}
-                        </q-avatar>
-                      </q-item-section>
-
-                      <q-item-section>
-                        <q-item-label>{{ personagem.nome }}</q-item-label>
-                        <q-item-label caption
-                          >{{ personagem.raca }} {{ personagem.classe }}</q-item-label
-                        >
-                      </q-item-section>
-
-                      <q-item-section side>
-                        <div class="row q-gutter-xs">
-                          <q-btn
-                            flat
-                            round
-                            icon="edit"
-                            size="sm"
-                            @click.stop="editarPersonagem(personagem)"
-                          >
-                            <q-tooltip>Editar personagem</q-tooltip>
-                          </q-btn>
-                          <q-btn
-                            flat
-                            round
-                            icon="add_circle"
-                            size="sm"
-                            @click.stop="adicionarPersonagemNaSessao(personagem)"
-                          >
-                            <q-tooltip>Adicionar à sessão</q-tooltip>
-                          </q-btn>
-                        </div>
-                      </q-item-section>
-                    </q-item>
-
-                    <q-item v-if="personagensDisponiveis.length === 0">
-                      <q-item-section>
-                        <div class="text-center text-grey-6">
-                          <q-icon name="people_outline" size="2rem" />
-                          <div class="text-caption">Nenhum personagem</div>
-                        </div>
-                      </q-item-section>
-                    </q-item>
-                  </q-list>
-                </q-tab-panel>
-
-                <!-- Aba Itens -->
-                <q-tab-panel name="itens" class="q-pa-none">
-                  <div class="text-center text-grey-6 q-py-lg">
-                    <q-icon name="inventory_2" size="3rem" />
-                    <div class="text-caption">Em desenvolvimento</div>
-                  </div>
-                </q-tab-panel>
-
-                <!-- Aba Magias -->
-                <q-tab-panel name="magias" class="q-pa-none">
-                  <div class="q-pa-md">
-                    <q-btn
-                      color="primary"
-                      icon="auto_fix_high"
-                      label="Abrir Catálogo de Magias"
-                      class="full-width"
-                      @click="abrirCatalogoMagias"
-                    />
-                    <div class="text-center text-grey-6 q-py-lg">
-                      <q-icon name="auto_fix_high" size="3rem" />
-                      <div class="text-caption">Gerencie magias conhecidas</div>
-                    </div>
-                  </div>
-                </q-tab-panel>
-
-                <!-- Aba Combate -->
-                <q-tab-panel name="combate" class="q-pa-none">
-                  <IniciativaCombate />
-                </q-tab-panel>
-
-                <!-- Aba Mapas -->
-                <q-tab-panel name="mapas" class="q-pa-none">
-                  <MapaCanvas />
-                </q-tab-panel>
-              </q-tab-panels>
-            </div>
-          </div>
-        </template>
-
-        <!-- Painel Direito - Chat e Controles -->
-        <template v-slot:after>
-          <div class="full-height column">
-            <!-- Cabeçalho da sessão -->
-            <div class="q-pa-md bg-grey-1">
-              <div class="row items-center">
-                <div class="col">
-                  <div class="text-h6">{{ sessaoAtual?.nome || 'Nenhuma Sessão' }}</div>
-                  <div class="text-caption text-grey-6">
-                    {{ sessaoAtual?.descricao || 'Selecione ou crie uma sessão' }}
-                  </div>
-                </div>
-                <div class="col-auto">
-                  <q-chip
-                    :color="getCorStatus(sessaoAtual?.statusAtual)"
-                    text-color="white"
-                    :icon="getIconeStatus(sessaoAtual?.statusAtual)"
+            <q-tab-panels
+              v-model="abaRecursos"
+              animated
+              vertical
+              transition-prev="jump-up"
+              transition-next="jump-up"
+              class="full-height scroll q-pa-md"
+            >
+              <!-- Aba Personagens -->
+              <q-tab-panel name="personagens" class="q-pa-none">
+                <div class="q-mb-sm">
+                  <q-btn
+                    color="primary"
+                    icon="add"
+                    label="Adicionar"
                     size="sm"
-                  >
-                    {{ getTextoStatus(sessaoAtual?.statusAtual) }}
-                  </q-chip>
+                    class="full-width"
+                    @click="adicionarPersonagemASessao"
+                  />
                 </div>
-              </div>
 
-              <!-- Indicador de turno -->
-              <div v-if="sessaoAtual && participantesAtivos.length > 0" class="q-mt-sm">
-                <div class="text-caption text-grey-6 q-mb-xs">Turno atual:</div>
-                <div class="row items-center">
-                  <q-avatar size="24px" color="primary" text-color="white" class="q-mr-sm">
-                    {{ participanteAtual?.nome?.[0] || '?' }}
-                  </q-avatar>
-                  <span class="text-weight-medium">{{
-                    participanteAtual?.nome || 'Aguardando...'
-                  }}</span>
-                  <q-space />
-                  <div class="text-caption">
-                    Rodada {{ sessaoAtual.rodadaAtual }} • Turno
-                    {{ sessaoAtual.turnoAtualIndex + 1 }}/{{ participantesAtivos.length }}
+                <q-list dense>
+                  <q-item
+                    v-for="personagem in personagensDisponiveis"
+                    :key="personagem.id"
+                    clickable
+                    @click="visualizarPersonagem(personagem)"
+                  >
+                    <q-item-section avatar>
+                      <q-avatar
+                        size="32px"
+                        :color="personagem.isIA ? 'purple' : 'primary'"
+                        text-color="white"
+                      >
+                        {{ personagem.nome[0] }}
+                      </q-avatar>
+                    </q-item-section>
+
+                    <q-item-section>
+                      <q-item-label>{{ personagem.nome }}</q-item-label>
+                      <q-item-label caption
+                        >{{ personagem.raca }} {{ personagem.classe }}</q-item-label
+                      >
+                    </q-item-section>
+
+                    <q-item-section side>
+                      <div class="row q-gutter-xs">
+                        <q-btn
+                          flat
+                          round
+                          icon="edit"
+                          size="sm"
+                          @click.stop="editarPersonagem(personagem)"
+                        >
+                          <q-tooltip>Editar personagem</q-tooltip>
+                        </q-btn>
+                        <q-btn
+                          flat
+                          round
+                          icon="add_circle"
+                          size="sm"
+                          @click.stop="adicionarPersonagemNaSessao(personagem)"
+                        >
+                          <q-tooltip>Adicionar à sessão</q-tooltip>
+                        </q-btn>
+                      </div>
+                    </q-item-section>
+                  </q-item>
+
+                  <q-item v-if="personagensDisponiveis.length === 0">
+                    <q-item-section>
+                      <div class="text-center text-grey-6">
+                        <q-icon name="people_outline" size="2rem" />
+                        <div class="text-caption">Nenhum personagem</div>
+                      </div>
+                    </q-item-section>
+                  </q-item>
+                </q-list>
+              </q-tab-panel>
+
+              <!-- Aba Itens -->
+              <q-tab-panel name="itens" class="q-pa-none">
+                <div class="text-center text-grey-6 q-py-lg">
+                  <q-icon name="inventory_2" size="3rem" />
+                  <div class="text-caption">Em desenvolvimento</div>
+                </div>
+              </q-tab-panel>
+
+              <!-- Aba Magias -->
+              <q-tab-panel name="magias" class="q-pa-none">
+                <div class="q-pa-md">
+                  <q-btn
+                    color="primary"
+                    icon="auto_fix_high"
+                    label="Abrir Catálogo de Magias"
+                    class="full-width"
+                    @click="abrirCatalogoMagias"
+                  />
+                  <div class="text-center text-grey-6 q-py-lg">
+                    <q-icon name="auto_fix_high" size="3rem" />
+                    <div class="text-caption">Gerencie magias conhecidas</div>
                   </div>
                 </div>
+              </q-tab-panel>
+
+              <!-- Aba Combate -->
+              <q-tab-panel name="combate" class="q-pa-none">
+                <IniciativaCombate />
+              </q-tab-panel>
+
+              <!-- Aba Mapas -->
+              <q-tab-panel name="mapas" class="q-pa-none">
+                <MapaCanvas />
+              </q-tab-panel>
+            </q-tab-panels>
+          </div>
+        </div>
+      </template>
+
+      <!-- Painel Direito - Chat e Controles -->
+      <template v-slot:after>
+        <div class="full-height column">
+          <!-- Cabeçalho da sessão -->
+          <div class="q-pa-md bg-grey-1">
+            <div class="row items-center">
+              <div class="col">
+                <div class="text-h6">{{ sessaoAtual?.nome || 'Nenhuma Sessão' }}</div>
+                <div class="text-caption text-grey-6">
+                  {{ sessaoAtual?.descricao || 'Selecione ou crie uma sessão' }}
+                </div>
+              </div>
+              <div class="col-auto">
+                <q-chip
+                  :color="getCorStatus(sessaoAtual?.statusAtual)"
+                  text-color="white"
+                  :icon="getIconeStatus(sessaoAtual?.statusAtual)"
+                  size="sm"
+                >
+                  {{ getTextoStatus(sessaoAtual?.statusAtual) }}
+                </q-chip>
               </div>
             </div>
 
-            <q-separator />
-
-            <!-- Área do chat -->
-            <div class="col scroll q-pa-md chat-area">
-              <div v-if="!sessaoAtual" class="text-center text-grey-6 q-py-xl">
-                <q-icon name="chat_bubble_outline" size="4rem" class="q-mb-md" />
-                <div class="text-h6">Nenhuma sessão ativa</div>
-                <div class="q-mt-sm">Volte ao início para criar ou carregar uma sessão</div>
-                <q-btn
-                  color="primary"
-                  label="Voltar ao Início"
-                  class="q-mt-md"
-                  @click="$router.push('/')"
-                />
-              </div>
-
-              <div v-else>
-                <!-- Mensagens do chat -->
-                <div v-for="(mensagem, index) in mensagensChat" :key="index" class="q-mb-md">
-                  <q-chat-message
-                    :text="[getMensagemConteudo(mensagem)]"
-                    :sent="mensagem.tipo === 'mestre'"
-                    :bg-color="getCorMensagem(mensagem.tipo)"
-                    :text-color="getCorTextoMensagem(mensagem.tipo)"
-                    :name="getMensagemPersonagem(mensagem)"
-                    :stamp="formatarHoraMensagem(mensagem.timestamp)"
-                  >
-                    <template v-slot:avatar>
-                      <q-avatar
-                        :color="getCorAvatar(mensagem.tipo, getMensagemPersonagem(mensagem))"
-                        text-color="white"
-                        size="32px"
-                      >
-                        {{ getInicialAvatar(getMensagemPersonagem(mensagem) || mensagem.tipo) }}
-                      </q-avatar>
-                    </template>
-                  </q-chat-message>
+            <!-- Indicador de turno -->
+            <div v-if="sessaoAtual && participantesAtivos.length > 0" class="q-mt-sm">
+              <div class="text-caption text-grey-6 q-mb-xs">Turno atual:</div>
+              <div class="row items-center">
+                <q-avatar size="24px" color="primary" text-color="white" class="q-mr-sm">
+                  {{ participanteAtual?.nome?.[0] || '?' }}
+                </q-avatar>
+                <span class="text-weight-medium">{{
+                  participanteAtual?.nome || 'Aguardando...'
+                }}</span>
+                <q-space />
+                <div class="text-caption">
+                  Rodada {{ sessaoAtual.rodadaAtual }} • Turno
+                  {{ sessaoAtual.turnoAtualIndex + 1 }}/{{ participantesAtivos.length }}
                 </div>
-
-                <!-- Mensagem de carregamento quando IA está pensando -->
-                <div v-if="iaProcessando" class="q-mb-md">
-                  <q-chat-message
-                    :text="['Pensando...']"
-                    :sent="false"
-                    bg-color="grey-3"
-                    text-color="grey-8"
-                    name="IA"
-                  >
-                    <template v-slot:avatar>
-                      <q-avatar color="purple" text-color="white" size="32px">
-                        <q-spinner />
-                      </q-avatar>
-                    </template>
-                  </q-chat-message>
-                </div>
-              </div>
-            </div>
-
-            <!-- Controles do mestre -->
-            <div v-if="sessaoAtual" class="q-pa-md bg-grey-1">
-              <div class="row q-gutter-sm">
-                <div class="col">
-                  <q-input
-                    v-model="novaMensagem"
-                    placeholder="Digite uma mensagem ou ação..."
-                    outlined
-                    dense
-                    @keyup.enter="enviarMensagem"
-                  >
-                    <template v-slot:append>
-                      <q-btn
-                        flat
-                        round
-                        icon="send"
-                        @click="enviarMensagem"
-                        :disable="!novaMensagem.trim()"
-                      />
-                    </template>
-                  </q-input>
-                </div>
-              </div>
-
-              <div class="row q-gutter-sm q-mt-sm">
-                <q-btn
-                  size="sm"
-                  icon="skip_next"
-                  label="Próximo Turno"
-                  @click="avancarTurno"
-                  :disable="participantesAtivos.length === 0"
-                />
-                <q-btn
-                  size="sm"
-                  icon="casino"
-                  label="Rolar Dados"
-                  @click="mostrarDialogDados = true"
-                />
-                <q-btn
-                  size="sm"
-                  :icon="sessaoAtual.statusAtual === 'ativa' ? 'pause' : 'play_arrow'"
-                  :label="sessaoAtual.statusAtual === 'ativa' ? 'Pausar' : 'Continuar'"
-                  @click="alternarStatusSessao"
-                />
-                <q-btn
-                  size="sm"
-                  icon="stop"
-                  label="Finalizar"
-                  color="negative"
-                  @click="finalizarSessao"
-                />
               </div>
             </div>
           </div>
-        </template>
-      </q-splitter>
-    </div>
+
+          <q-separator />
+
+          <!-- Área do chat -->
+          <div class="col scroll q-pa-md chat-area">
+            <div v-if="!sessaoAtual" class="text-center text-grey-6 q-py-xl">
+              <q-icon name="chat_bubble_outline" size="4rem" class="q-mb-md" />
+              <div class="text-h6">Nenhuma sessão ativa</div>
+              <div class="q-mt-sm">Volte ao início para criar ou carregar uma sessão</div>
+              <q-btn
+                color="primary"
+                label="Voltar ao Início"
+                class="q-mt-md"
+                @click="$router.push('/')"
+              />
+            </div>
+
+            <div v-else>
+              <!-- Mensagens do chat -->
+              <div v-for="(mensagem, index) in mensagensChat" :key="index" class="q-mb-md">
+                <q-chat-message
+                  :text="[getMensagemConteudo(mensagem)]"
+                  :sent="mensagem.tipo === 'mestre'"
+                  :bg-color="getCorMensagem(mensagem.tipo)"
+                  :text-color="getCorTextoMensagem(mensagem.tipo)"
+                  :name="getMensagemPersonagem(mensagem)"
+                  :stamp="formatarHoraMensagem(mensagem.timestamp)"
+                >
+                  <template v-slot:avatar>
+                    <q-avatar
+                      :color="getCorAvatar(mensagem.tipo, getMensagemPersonagem(mensagem))"
+                      text-color="white"
+                      size="32px"
+                    >
+                      {{ getInicialAvatar(getMensagemPersonagem(mensagem) || mensagem.tipo) }}
+                    </q-avatar>
+                  </template>
+                </q-chat-message>
+              </div>
+
+              <!-- Mensagem de carregamento quando IA está pensando -->
+              <div v-if="iaProcessando" class="q-mb-md">
+                <q-chat-message
+                  :text="['Pensando...']"
+                  :sent="false"
+                  bg-color="grey-3"
+                  text-color="grey-8"
+                  name="IA"
+                >
+                  <template v-slot:avatar>
+                    <q-avatar color="purple" text-color="white" size="32px">
+                      <q-spinner />
+                    </q-avatar>
+                  </template>
+                </q-chat-message>
+              </div>
+            </div>
+          </div>
+
+          <!-- Controles do mestre -->
+          <div v-if="sessaoAtual" class="q-pa-md bg-grey-1">
+            <div class="row q-gutter-sm">
+              <div class="col">
+                <q-input
+                  v-model="novaMensagem"
+                  placeholder="Digite uma mensagem ou ação..."
+                  outlined
+                  dense
+                  @keyup.enter="enviarMensagem"
+                >
+                  <template v-slot:append>
+                    <q-btn
+                      flat
+                      round
+                      icon="send"
+                      @click="enviarMensagem"
+                      :disable="!novaMensagem.trim()"
+                    />
+                  </template>
+                </q-input>
+              </div>
+            </div>
+
+            <div class="row q-gutter-sm q-mt-sm">
+              <q-btn
+                size="sm"
+                icon="skip_next"
+                label="Próximo Turno"
+                @click="avancarTurno"
+                :disable="participantesAtivos.length === 0"
+              />
+              <q-btn
+                size="sm"
+                icon="casino"
+                label="Rolar Dados"
+                @click="mostrarDialogDados = true"
+              />
+              <q-btn
+                size="sm"
+                :icon="sessaoAtual.statusAtual === 'ativa' ? 'pause' : 'play_arrow'"
+                :label="sessaoAtual.statusAtual === 'ativa' ? 'Pausar' : 'Continuar'"
+                @click="alternarStatusSessao"
+              />
+              <q-btn
+                size="sm"
+                icon="stop"
+                label="Finalizar"
+                color="negative"
+                @click="finalizarSessao"
+              />
+            </div>
+          </div>
+        </div>
+      </template>
+    </q-splitter>
 
     <!-- Dialog para rolar dados -->
     <q-dialog v-model="mostrarDialogDados">
@@ -833,13 +837,36 @@ function getMensagemPersonagem(mensagem: Record<string, unknown>): string {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+.container-header-aside {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+.left-side-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border-bottom: 1px solid $grey-5;
+}
+
+.cnt-game-context {
+  display: grid;
+  grid-template-columns: 50px 1fr;
+  height: 100%;
+}
 .game-page {
-  height: 100vh;
+  height: calc(100vh - 64px); /* Ajuste para cabeçalho */
 }
 
 .chat-area {
   background-color: #fafafa;
+}
+.tabs-area {
+  border-right: 1px solid $grey-5;
 }
 
 .full-height {
