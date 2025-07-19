@@ -8,7 +8,12 @@
       </q-card-section>
 
       <q-card-section class="q-pa-none">
-        <q-tabs v-model="abaAtiva" class="text-grey" active-color="primary" indicator-color="primary">
+        <q-tabs
+          v-model="abaAtiva"
+          class="text-grey"
+          active-color="primary"
+          indicator-color="primary"
+        >
           <q-tab name="propriedades" icon="settings" label="Propriedades" />
           <q-tab name="geracao" icon="auto_awesome" label="Geração IA" />
           <q-tab name="paint" icon="brush" label="Modo Paint" :disable="!temImagemBase" />
@@ -137,9 +142,15 @@
                     label="Mostrar grade por padrão"
                   />
 
-                  <q-toggle v-model="formulario.configuracoes.mostrarReguas" label="Mostrar réguas" />
+                  <q-toggle
+                    v-model="formulario.configuracoes.mostrarReguas"
+                    label="Mostrar réguas"
+                  />
 
-                  <q-toggle v-model="formulario.configuracoes.snap" label="Encaixar objetos na grade" />
+                  <q-toggle
+                    v-model="formulario.configuracoes.snap"
+                    label="Encaixar objetos na grade"
+                  />
                 </div>
               </q-expansion-item>
             </q-form>
@@ -151,7 +162,7 @@
               <!-- Controles de geração -->
               <div class="col-md-6 col-sm-12">
                 <div class="text-h6 q-mb-md">Geração de Mapa com IA</div>
-                
+
                 <!-- Template -->
                 <q-select
                   v-model="geracao.template"
@@ -239,7 +250,7 @@
                     @click="gerarImagem"
                     :disable="!geracao.prompt.trim()"
                   />
-                  
+
                   <q-btn
                     flat
                     icon="refresh"
@@ -264,7 +275,7 @@
                       <q-spinner-gears color="primary" size="50px" />
                     </template>
                   </q-img>
-                  
+
                   <div v-else class="preview-placeholder">
                     <q-icon name="image" size="60px" color="grey-5" />
                     <div class="text-grey-5 q-mt-sm">Preview aparecerá aqui</div>
@@ -279,7 +290,7 @@
                     label="Usar Esta Imagem"
                     @click="usarImagemGerada"
                   />
-                  
+
                   <q-btn
                     flat
                     icon="refresh"
@@ -298,7 +309,7 @@
               <!-- Controles do Paint -->
               <div class="col-md-4 col-sm-12">
                 <div class="text-h6 q-mb-md">Controles de Pintura</div>
-                
+
                 <!-- Brush settings -->
                 <div class="q-gutter-md">
                   <q-slider
@@ -323,7 +334,7 @@
                     v-model="paint.tool"
                     :options="[
                       { label: 'Pincel', value: 'brush', icon: 'brush' },
-                      { label: 'Borracha', value: 'eraser', icon: 'auto_fix_normal' }
+                      { label: 'Borracha', value: 'eraser', icon: 'auto_fix_normal' },
                     ]"
                     color="primary"
                     toggle-color="accent"
@@ -351,7 +362,7 @@
                     @click="gerarPreviewPaint"
                     :disable="!temMascaraAtiva || !paint.areaPrompt.trim()"
                   />
-                  
+
                   <q-btn
                     color="positive"
                     icon="check"
@@ -376,12 +387,7 @@
                     @click="redoPaint"
                   />
 
-                  <q-btn
-                    flat
-                    icon="clear"
-                    label="Limpar Máscara"
-                    @click="limparMascara"
-                  />
+                  <q-btn flat icon="clear" label="Limpar Máscara" @click="limparMascara" />
                 </div>
               </div>
 
@@ -397,32 +403,16 @@
                     @mouseleave="finalizarPintura"
                     class="paint-canvas"
                   />
-                  
-                  <canvas
-                    ref="maskCanvas"
-                    class="mask-overlay"
-                  />
+
+                  <canvas ref="maskCanvas" class="mask-overlay" />
                 </div>
 
                 <!-- Controles de zoom -->
                 <div class="q-mt-md">
-                  <q-btn
-                    flat
-                    icon="zoom_out"
-                    @click="zoomOut"
-                  />
+                  <q-btn flat icon="zoom_out" @click="zoomOut" />
                   <span class="q-mx-md">{{ Math.round(paintZoom * 100) }}%</span>
-                  <q-btn
-                    flat
-                    icon="zoom_in"
-                    @click="zoomIn"
-                  />
-                  <q-btn
-                    flat
-                    icon="center_focus_strong"
-                    @click="resetZoom"
-                    class="q-ml-md"
-                  />
+                  <q-btn flat icon="zoom_in" @click="zoomIn" />
+                  <q-btn flat icon="center_focus_strong" @click="resetZoom" class="q-ml-md" />
                 </div>
               </div>
             </div>
@@ -559,25 +549,25 @@ const formularioValido = computed(() => {
 
 // Options para selects
 const templateOptions = computed(() => {
-  return imageGenerationService.getMapTemplates().map(template => ({
+  return imageGenerationService.getMapTemplates().map((template) => ({
     label: template.name,
     value: template.id,
-    description: template.prompt
+    description: template.prompt,
   }));
 });
 
 const estiloOptions = computed(() => {
-  return imageGenerationService.getArtStyles().map(style => ({
+  return imageGenerationService.getArtStyles().map((style) => ({
     label: style.label,
     value: style.value,
-    description: style.description
+    description: style.description,
   }));
 });
 
 const qualidadeOptions = computed(() => [
   { label: 'Rápida', value: 'draft', description: 'Menor qualidade, mais rápido' },
   { label: 'Padrão', value: 'standard', description: 'Qualidade equilibrada' },
-  { label: 'Alta', value: 'high', description: 'Alta qualidade, mais lento' }
+  { label: 'Alta', value: 'high', description: 'Alta qualidade, mais lento' },
 ]);
 
 // Métodos de geração de imagem
@@ -605,7 +595,7 @@ async function gerarImagem(): Promise<void> {
 
     if (result.success && result.imageUrl) {
       previewImagem.value = result.imageUrl;
-      
+
       $q.notify({
         type: 'positive',
         message: 'Imagem gerada com sucesso!',
@@ -625,9 +615,10 @@ async function gerarImagem(): Promise<void> {
 }
 
 function aplicarTemplate(): void {
-  const template = imageGenerationService.getMapTemplates()
-    .find(t => t.id === geracao.value.template);
-  
+  const template = imageGenerationService
+    .getMapTemplates()
+    .find((t) => t.id === geracao.value.template);
+
   if (template) {
     geracao.value.prompt = template.prompt;
     geracao.value.negativePrompt = template.negativePrompt;
@@ -651,7 +642,7 @@ function usarImagemGerada(): void {
   if (previewImagem.value) {
     formulario.value.imagemUrl = previewImagem.value;
     abaAtiva.value = 'propriedades';
-    
+
     $q.notify({
       type: 'positive',
       message: 'Imagem aplicada ao mapa!',
@@ -663,7 +654,7 @@ function selecionarImagem(): void {
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = 'image/*';
-  
+
   input.onchange = (e) => {
     const file = (e.target as HTMLInputElement).files?.[0];
     if (file) {
@@ -674,7 +665,7 @@ function selecionarImagem(): void {
       reader.readAsDataURL(file);
     }
   };
-  
+
   input.click();
 }
 
@@ -686,12 +677,12 @@ function limparImagem(): void {
 // Métodos do modo paint
 function iniciarPintura(event: MouseEvent): void {
   if (!paintCanvas.value) return;
-  
+
   isPainting.value = true;
   const rect = paintCanvas.value.getBoundingClientRect();
   lastPoint.value = {
     x: event.clientX - rect.left,
-    y: event.clientY - rect.top
+    y: event.clientY - rect.top,
   };
 
   // Salvar estado para undo
@@ -704,7 +695,7 @@ function pintar(event: MouseEvent): void {
   const rect = paintCanvas.value.getBoundingClientRect();
   const currentPoint = {
     x: event.clientX - rect.left,
-    y: event.clientY - rect.top
+    y: event.clientY - rect.top,
   };
 
   const ctx = maskCanvas.value.getContext('2d');
@@ -732,19 +723,22 @@ function finalizarPintura(): void {
 
 function salvarEstadoPaint(): void {
   if (!maskCanvas.value) return;
-  
+
   const ctx = maskCanvas.value.getContext('2d');
   if (!ctx) return;
 
   const imageData = ctx.getImageData(0, 0, maskCanvas.value.width, maskCanvas.value.height);
-  
+
   // Remover estados futuros se estamos no meio do histórico
-  paintHistory.value.history = paintHistory.value.history.slice(0, paintHistory.value.currentIndex + 1);
-  
+  paintHistory.value.history = paintHistory.value.history.slice(
+    0,
+    paintHistory.value.currentIndex + 1,
+  );
+
   // Adicionar novo estado
   paintHistory.value.history.push(imageData);
   paintHistory.value.currentIndex++;
-  
+
   // Limitar histórico a 20 estados
   if (paintHistory.value.history.length > 20) {
     paintHistory.value.history.shift();
@@ -753,12 +747,13 @@ function salvarEstadoPaint(): void {
 
   // Atualizar flags
   paintHistory.value.canUndo = paintHistory.value.currentIndex > 0;
-  paintHistory.value.canRedo = paintHistory.value.currentIndex < paintHistory.value.history.length - 1;
+  paintHistory.value.canRedo =
+    paintHistory.value.currentIndex < paintHistory.value.history.length - 1;
 }
 
 function undoPaint(): void {
   if (!paintHistory.value.canUndo || !maskCanvas.value) return;
-  
+
   paintHistory.value.currentIndex--;
   const ctx = maskCanvas.value.getContext('2d');
   if (!ctx) return;
@@ -774,7 +769,7 @@ function undoPaint(): void {
 
 function redoPaint(): void {
   if (!paintHistory.value.canRedo || !maskCanvas.value) return;
-  
+
   paintHistory.value.currentIndex++;
   const ctx = maskCanvas.value.getContext('2d');
   if (!ctx) return;
@@ -784,20 +779,21 @@ function redoPaint(): void {
     ctx.putImageData(imageData, 0, 0);
   }
 
-  paintHistory.value.canRedo = paintHistory.value.currentIndex < paintHistory.value.history.length - 1;
+  paintHistory.value.canRedo =
+    paintHistory.value.currentIndex < paintHistory.value.history.length - 1;
   paintHistory.value.canUndo = true;
 }
 
 function limparMascara(): void {
   if (!maskCanvas.value) return;
-  
+
   const ctx = maskCanvas.value.getContext('2d');
   if (!ctx) return;
 
   ctx.clearRect(0, 0, maskCanvas.value.width, maskCanvas.value.height);
   temMascaraAtiva.value = false;
   temPreviewPaint.value = false;
-  
+
   // Salvar estado limpo
   salvarEstadoPaint();
 }
@@ -816,10 +812,10 @@ async function gerarPreviewPaint(): Promise<void> {
 
     // Aqui seria feita a chamada para o inpainting
     // Por enquanto, vamos simular
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
     temPreviewPaint.value = true;
-    
+
     $q.notify({
       type: 'positive',
       message: 'Preview gerado! Verifique o resultado.',
@@ -962,7 +958,7 @@ function inicializarCanvas(): void {
     if (paintCanvas.value && maskCanvas.value) {
       const paintCtx = paintCanvas.value.getContext('2d');
       const maskCtx = maskCanvas.value.getContext('2d');
-      
+
       if (paintCtx && maskCtx) {
         // Configurar canvas
         paintCanvas.value.width = formulario.value.largura;
@@ -1021,7 +1017,7 @@ watch(
     if (novaAba === 'paint') {
       inicializarCanvas();
     }
-  }
+  },
 );
 
 // Lifecycle
@@ -1107,7 +1103,7 @@ onMounted(() => {
   .paint-canvas-container {
     min-height: 250px;
   }
-  
+
   .preview-image {
     max-height: 250px;
   }

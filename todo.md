@@ -54,9 +54,10 @@
 - ✅ **EditarMapaDialog.vue**: Dialog completo para criação e edição de mapas
 - ✅ **Integração**: Sistema totalmente integrado em SetupPage e GamePage com abas dedicadas
 
-**PRÓXIMAS PRIORIDADES**: 
+**PRÓXIMAS PRIORIDADES**:
 
 🎨 **SISTEMA DE GERAÇÃO DE IMAGENS COM IA** (EM IMPLEMENTAÇÃO):
+
 - ✅ **ImageGenerationService.ts**: Serviço para integração com Stability AI IMPLEMENTADO
   - ✅ Text-to-image generation usando Stable Image Core/Ultra
   - ✅ Inpainting com masks para edição seletiva

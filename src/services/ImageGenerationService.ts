@@ -59,51 +59,57 @@ export class ImageGenerationService {
       {
         id: 'dungeon-stone',
         name: 'Dungeon de Pedra',
-        prompt: 'Top-down dungeon map, stone corridors, medieval fantasy, rooms connected by hallways, RPG battle map style, detailed stone texture',
+        prompt:
+          'Top-down dungeon map, stone corridors, medieval fantasy, rooms connected by hallways, RPG battle map style, detailed stone texture',
         negativePrompt: 'blurry, 3d, perspective, characters, monsters, text, UI elements',
         style: 'fantasy-realistic',
-        category: 'dungeon'
+        category: 'dungeon',
       },
       {
         id: 'forest-ancient',
         name: 'Floresta Antiga',
-        prompt: 'Ancient forest map from above, tall trees, winding paths, clearings, mystical atmosphere, fantasy RPG map, top-down view',
+        prompt:
+          'Ancient forest map from above, tall trees, winding paths, clearings, mystical atmosphere, fantasy RPG map, top-down view',
         negativePrompt: 'modern buildings, roads, cars, people, 3d perspective, blurry',
         style: 'fantasy-realistic',
-        category: 'nature'
+        category: 'nature',
       },
       {
         id: 'medieval-town',
         name: 'Vila Medieval',
-        prompt: 'Medieval fantasy town map, cobblestone streets, market square, houses with thatched roofs, walls, RPG map style, bird eye view',
+        prompt:
+          'Medieval fantasy town map, cobblestone streets, market square, houses with thatched roofs, walls, RPG map style, bird eye view',
         negativePrompt: 'modern elements, cars, technology, 3d, perspective, characters',
         style: 'fantasy-realistic',
-        category: 'urban'
+        category: 'urban',
       },
       {
         id: 'mountain-pass',
         name: 'Passagem nas Montanhas',
-        prompt: 'Mountain pass battle map, rocky terrain, narrow paths, cliffs, fantasy RPG style, top-down tactical view',
+        prompt:
+          'Mountain pass battle map, rocky terrain, narrow paths, cliffs, fantasy RPG style, top-down tactical view',
         negativePrompt: 'flat terrain, water, buildings, modern elements, 3d perspective',
         style: 'fantasy-realistic',
-        category: 'nature'
+        category: 'nature',
       },
       {
         id: 'tavern-interior',
         name: 'Interior de Taverna',
-        prompt: 'Fantasy tavern interior map, wooden tables, bar counter, fireplace, stairs, RPG battle map, top-down view',
+        prompt:
+          'Fantasy tavern interior map, wooden tables, bar counter, fireplace, stairs, RPG battle map, top-down view',
         negativePrompt: 'outdoor, people, modern furniture, 3d perspective, blurry',
         style: 'fantasy-realistic',
-        category: 'dungeon'
+        category: 'dungeon',
       },
       {
         id: 'castle-courtyard',
         name: 'Pátio do Castelo',
-        prompt: 'Castle courtyard battle map, stone walls, towers, training grounds, medieval fantasy, tactical RPG map',
+        prompt:
+          'Castle courtyard battle map, stone walls, towers, training grounds, medieval fantasy, tactical RPG map',
         negativePrompt: 'modern buildings, vehicles, people, 3d perspective, blurry',
         style: 'fantasy-realistic',
-        category: 'fantasy'
-      }
+        category: 'fantasy',
+      },
     ];
   }
 
@@ -115,28 +121,28 @@ export class ImageGenerationService {
       {
         label: 'Realista Fantasia',
         value: 'fantasy-realistic',
-        description: 'Estilo realista com elementos fantásticos'
+        description: 'Estilo realista com elementos fantásticos',
       },
       {
         label: 'Desenho à Mão',
         value: 'hand-drawn',
-        description: 'Estilo manuscrito medieval'
+        description: 'Estilo manuscrito medieval',
       },
       {
         label: 'Pixel Art',
         value: 'pixel-art',
-        description: 'Arte em pixels para estilo retro'
+        description: 'Arte em pixels para estilo retro',
       },
       {
         label: 'Isométrico',
         value: 'isometric',
-        description: 'Visão isométrica 3D'
+        description: 'Visão isométrica 3D',
       },
       {
         label: 'Aquarela',
         value: 'watercolor',
-        description: 'Estilo pintado em aquarela'
-      }
+        description: 'Estilo pintado em aquarela',
+      },
     ];
   }
 
@@ -147,23 +153,23 @@ export class ImageGenerationService {
     if (!this.apiKey) {
       return {
         success: false,
-        error: 'API key da Stability AI não configurada'
+        error: 'API key da Stability AI não configurada',
       };
     }
 
     try {
       const formData = new FormData();
       formData.append('prompt', this.enhancePrompt(request.prompt, request.style));
-      
+
       if (request.negativePrompt) {
         formData.append('negative_prompt', request.negativePrompt);
       }
-      
+
       formData.append('width', (request.width || 1024).toString());
       formData.append('height', (request.height || 1024).toString());
       formData.append('steps', (request.steps || 30).toString());
       formData.append('cfg_scale', (request.cfgScale || 7).toString());
-      
+
       if (request.seed) {
         formData.append('seed', request.seed.toString());
       }
@@ -172,15 +178,17 @@ export class ImageGenerationService {
       const response = await fetch(`${this.baseUrl}/v2beta/stable-image/generate/core`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Accept': 'application/json'
+          Authorization: `Bearer ${this.apiKey}`,
+          Accept: 'application/json',
         },
-        body: formData
+        body: formData,
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `API Error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          errorData.message || `API Error: ${response.status} ${response.statusText}`,
+        );
       }
 
       const data = await response.json();
@@ -196,14 +204,13 @@ export class ImageGenerationService {
         success: true,
         imageUrl,
         imageBase64,
-        seed: data.seed || request.seed
+        seed: data.seed || request.seed,
       };
-
     } catch (error) {
       console.error('Erro ao gerar imagem:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Erro desconhecido'
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
       };
     }
   }
@@ -215,14 +222,14 @@ export class ImageGenerationService {
     if (!this.apiKey) {
       return {
         success: false,
-        error: 'API key da Stability AI não configurada'
+        error: 'API key da Stability AI não configurada',
       };
     }
 
     try {
       // Preparar FormData para upload de imagens
       const formData = new FormData();
-      
+
       // Converter base64 para blob
       const imageBlob = this.base64ToBlob(request.image);
       const maskBlob = this.base64ToBlob(request.mask);
@@ -230,15 +237,15 @@ export class ImageGenerationService {
       formData.append('image', imageBlob, 'image.png');
       formData.append('mask', maskBlob, 'mask.png');
       formData.append('prompt', this.enhancePrompt(request.prompt, request.style));
-      
+
       if (request.negativePrompt) {
         formData.append('negative_prompt', request.negativePrompt);
       }
-      
+
       formData.append('strength', '0.8'); // Default strength for inpainting
       formData.append('steps', (request.steps || 30).toString());
       formData.append('cfg_scale', (request.cfgScale || 7).toString());
-      
+
       if (request.seed) {
         formData.append('seed', request.seed.toString());
       }
@@ -247,15 +254,17 @@ export class ImageGenerationService {
       const response = await fetch(`${this.baseUrl}/v2beta/stable-image/edit/inpaint`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Accept': 'application/json'
+          Authorization: `Bearer ${this.apiKey}`,
+          Accept: 'application/json',
         },
-        body: formData
+        body: formData,
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `API Error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          errorData.message || `API Error: ${response.status} ${response.statusText}`,
+        );
       }
 
       const data = await response.json();
@@ -271,14 +280,13 @@ export class ImageGenerationService {
         success: true,
         imageUrl,
         imageBase64,
-        ...(request.seed && { seed: request.seed })
+        ...(request.seed && { seed: request.seed }),
       };
-
     } catch (error) {
       console.error('Erro ao fazer inpainting:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Erro desconhecido'
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
       };
     }
   }
@@ -308,7 +316,11 @@ export class ImageGenerationService {
     }
 
     // Garantir que seja um mapa top-down
-    if (!enhancedPrompt.includes('top-down') && !enhancedPrompt.includes('bird') && !enhancedPrompt.includes('aerial')) {
+    if (
+      !enhancedPrompt.includes('top-down') &&
+      !enhancedPrompt.includes('bird') &&
+      !enhancedPrompt.includes('aerial')
+    ) {
       enhancedPrompt += ', top-down view';
     }
 
@@ -328,14 +340,14 @@ export class ImageGenerationService {
   private base64ToBlob(base64: string): Blob {
     // Remove data URL prefix se presente
     const base64Data = base64.replace(/^data:image\/[a-z]+;base64,/, '');
-    
+
     const byteCharacters = atob(base64Data);
     const byteNumbers = new Array(byteCharacters.length);
-    
+
     for (let i = 0; i < byteCharacters.length; i++) {
       byteNumbers[i] = byteCharacters.charCodeAt(i);
     }
-    
+
     const byteArray = new Uint8Array(byteNumbers);
     return new Blob([byteArray], { type: 'image/png' });
   }
@@ -354,7 +366,7 @@ export class ImageGenerationService {
     return {
       configured: this.isConfigured(),
       model: this.model,
-      baseUrl: this.baseUrl
+      baseUrl: this.baseUrl,
     };
   }
 }

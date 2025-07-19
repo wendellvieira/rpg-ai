@@ -274,6 +274,7 @@ $sidebar-width: 350px;
 ### Geração de Imagens (Text-to-Image)
 
 **Funcionalidades:**
+
 - Geração de mapas completos usando prompts
 - Templates pré-definidos para diferentes biomas
 - Configurações de resolução (512x512, 1024x1024, etc.)
@@ -281,6 +282,7 @@ $sidebar-width: 350px;
 - Integração com Stability AI API
 
 **Interface:**
+
 ```vue
 <q-card class="map-generation">
   <q-input v-model="prompt" label="Descreva o mapa..." />
@@ -293,6 +295,7 @@ $sidebar-width: 350px;
 ### Modo Paint (Inpainting)
 
 **Funcionalidades:**
+
 - Canvas interativo sobre o mapa existente
 - Ferramentas de pintura (brush, eraser)
 - Seleção de áreas para modificação
@@ -300,12 +303,14 @@ $sidebar-width: 350px;
 - Preview das mudanças antes de aplicar
 
 **Casos de Uso:**
+
 - Adicionar cadeias de montanhas
 - Modificar biomas específicos
 - Adicionar estruturas (castelos, pontes)
 - Correções pontuais no mapa
 
 **Interface:**
+
 ```vue
 <q-card class="paint-mode">
   <canvas ref="paintCanvas" @mousedown="startPaint" />
@@ -321,6 +326,7 @@ $sidebar-width: 350px;
 ### Templates de Mapas
 
 **Biomas Disponíveis:**
+
 - `dungeon`: "Top-down dungeon map, stone corridors, rooms, RPG style"
 - `forest`: "Fantasy forest map from above, trees, paths, clearings"
 - `city`: "Medieval fantasy city map, buildings, streets, town square"
@@ -329,6 +335,7 @@ $sidebar-width: 350px;
 - `coastal`: "Coastal region map, beaches, cliffs, harbors"
 
 **Estilos Artísticos:**
+
 - `fantasy-realistic`: Para mapas detalhados e realistas
 - `hand-drawn`: Estilo manuscrito medieval
 - `pixel-art`: Para jogos retro

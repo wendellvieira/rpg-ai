@@ -54,7 +54,7 @@
 - **OpenAI GPT**: Inteligência artificial para personagens e narrativa
 - **Stability AI**: Geração de imagens para mapas e elementos visuais
   - Stable Image Core: Text-to-image de alta qualidade
-  - Stable Image Ultra: Geração ultra realista 
+  - Stable Image Ultra: Geração ultra realista
   - Inpainting: Edição precisa de áreas com máscaras
   - Templates: Dungeons, florestas, cidades, batalhas
 - **Model Context Protocol (MCP)**: Comunicação entre IAs
