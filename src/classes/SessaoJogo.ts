@@ -1,4 +1,5 @@
 import type { Mensagem } from '../types';
+import { SistemaTurnos } from './SistemaTurnos';
 
 export enum StatusSessao {
   ATIVA = 'ativa',
@@ -27,6 +28,7 @@ interface SessaoSerializada {
   turnoAtual: number;
   rodada: number;
   status: StatusSessao;
+  sistemaTurnos?: Record<string, unknown>; // Estado serializado do SistemaTurnos
 }
 
 /**
@@ -44,6 +46,7 @@ export class SessaoJogo {
   private turnoAtual: number;
   private rodada: number;
   private status: StatusSessao;
+  private sistemaTurnos: SistemaTurnos;
 
   constructor(config: ConfiguracaoSessao) {
     this.id = config.id ?? this.gerarId();
@@ -57,6 +60,7 @@ export class SessaoJogo {
     this.turnoAtual = config.turnoAtual ?? 0;
     this.rodada = config.rodada ?? 1;
     this.status = config.status ?? StatusSessao.ATIVA;
+    this.sistemaTurnos = new SistemaTurnos();
   }
 
   // Getters
@@ -74,6 +78,9 @@ export class SessaoJogo {
   }
   get historicoMensagens(): Mensagem[] {
     return [...this.mensagens];
+  }
+  get getSistemaTurnos(): SistemaTurnos {
+    return this.sistemaTurnos;
   }
 
   /**
@@ -311,6 +318,7 @@ export class SessaoJogo {
       turnoAtual: this.turnoAtual,
       rodada: this.rodada,
       status: this.status,
+      sistemaTurnos: this.sistemaTurnos.serializar(),
     };
   }
 
@@ -340,6 +348,11 @@ export class SessaoJogo {
       ...msg,
       timestamp: new Date(msg.timestamp),
     }));
+
+    // Restaura sistema de turnos se disponível
+    if (dados.sistemaTurnos) {
+      sessao.sistemaTurnos = SistemaTurnos.deserializar(dados.sistemaTurnos);
+    }
 
     return sessao;
   }

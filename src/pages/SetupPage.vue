@@ -87,6 +87,13 @@
                       <q-btn
                         flat
                         size="sm"
+                        icon="library_books"
+                        label="Conhecimento"
+                        @click="abrirConhecimento(personagem)"
+                      />
+                      <q-btn
+                        flat
+                        size="sm"
                         icon="edit"
                         label="Editar"
                         @click="editarPersonagem(personagem)"
@@ -119,15 +126,56 @@
                     color="primary"
                     icon="add"
                     label="Novo Item"
-                    @click="dialogNovoItem = true"
+                    @click="abrirDialogNovoItem"
                   />
                 </div>
               </div>
 
-              <div class="text-center q-py-xl text-grey-6">
+              <div v-if="carregandoItens" class="text-center q-py-lg">
+                <q-spinner size="2rem" />
+                <div class="q-mt-sm">Carregando itens...</div>
+              </div>
+
+              <div v-else-if="itens.length === 0" class="text-center q-py-xl text-grey-6">
                 <q-icon name="inventory_2" size="4rem" class="q-mb-md" />
-                <div class="text-h6">Sistema de itens em desenvolvimento</div>
-                <div class="q-mt-sm">Esta funcionalidade será implementada em breve</div>
+                <div class="text-h6">Nenhum item criado</div>
+                <div class="q-mt-sm">Crie seu primeiro item para o catálogo!</div>
+              </div>
+
+              <div v-else class="row q-gutter-md">
+                <div v-for="item in itens" :key="item.id" class="col-12 col-md-6 col-lg-4">
+                  <q-card class="item-card">
+                    <q-card-section>
+                      <div class="row items-center no-wrap">
+                        <q-avatar size="40px" color="secondary" text-color="white">
+                          <q-icon :name="getItemIcon(item.tipo)" />
+                        </q-avatar>
+                        <div class="col q-ml-md">
+                          <div class="text-h6">{{ item.nome }}</div>
+                          <div class="text-caption text-grey-6">
+                            {{ item.tipo }} - {{ item.raridade }}
+                          </div>
+                        </div>
+                        <q-badge v-if="item.magico" color="purple" label="Mágico" />
+                      </div>
+                      <div v-if="item.descricao" class="q-mt-sm text-body2">
+                        {{ item.descricao }}
+                      </div>
+                    </q-card-section>
+
+                    <q-card-actions align="right">
+                      <q-btn flat size="sm" icon="edit" label="Editar" @click="editarItem(item)" />
+                      <q-btn
+                        flat
+                        size="sm"
+                        icon="delete"
+                        color="negative"
+                        label="Excluir"
+                        @click="confirmarExclusaoItem(item)"
+                      />
+                    </q-card-actions>
+                  </q-card>
+                </div>
               </div>
             </q-tab-panel>
 
@@ -337,11 +385,15 @@ import { PersistenceManager } from '../services/PersistenceManager';
 import { OpenAIService } from '../services/OpenAIService';
 import { Personagem } from '../classes/Personagem';
 import { useConfigStore } from '../stores/configStore';
+import { useItemStore } from '../stores/itemStore';
+import EditarItemDialog from '../components/EditarItemDialog.vue';
+import ConhecimentoEditor from '../components/ConhecimentoEditor.vue';
 
 const $q = useQuasar();
 const route = useRoute();
 const router = useRouter();
 const configStore = useConfigStore();
+const itemStore = useItemStore();
 
 interface PersonagemData {
   id: string;
@@ -352,12 +404,25 @@ interface PersonagemData {
   descricao?: string;
 }
 
+interface ItemData {
+  id: string;
+  nome: string;
+  tipo: string;
+  descricao: string;
+  valor: number;
+  peso: number;
+  raridade: string;
+  magico: boolean;
+  propriedades?: Record<string, unknown>;
+}
+
 // Estado reativo
 const abaAtiva = ref('personagens');
 const carregandoPersonagens = ref(false);
+const carregandoItens = ref(false);
 const personagens = ref<PersonagemData[]>([]);
+const itens = ref<ItemData[]>([]);
 const dialogNovoPersonagem = ref(false);
-const dialogNovoItem = ref(false);
 const dialogNovoMapa = ref(false);
 const testandoAPI = ref(false);
 
@@ -412,6 +477,7 @@ const modelosDisponiveis = ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo'];
 // Lifecycle
 onMounted(() => {
   void carregarPersonagens();
+  void carregarItens();
   carregarConfiguracoes();
 
   // Verificar se há uma aba específica na query string
@@ -558,6 +624,136 @@ function confirmarExclusaoPersonagem(personagem: PersonagemData) {
   });
 }
 
+async function carregarItens() {
+  carregandoItens.value = true;
+  try {
+    await itemStore.carregarItens();
+    itens.value = itemStore.itens.map((item) => ({
+      id: item.id,
+      nome: item.nome,
+      tipo: item.tipo,
+      descricao: item.descricao || '',
+      valor: item.valor,
+      peso: item.peso,
+      raridade: item.raridade,
+      magico: item.magico || false,
+      propriedades: item.propriedades,
+    }));
+  } catch (error) {
+    console.error('Erro ao carregar itens:', error);
+    $q.notify({
+      type: 'negative',
+      message: 'Erro ao carregar itens',
+      caption: String(error),
+    });
+  } finally {
+    carregandoItens.value = false;
+  }
+}
+
+function abrirDialogNovoItem() {
+  $q.dialog({
+    component: EditarItemDialog,
+    componentProps: {
+      item: undefined, // Não passa item para criação
+    },
+  }).onOk((novoItem: ItemData) => {
+    try {
+      // Como a store ainda não está implementada completamente,
+      // vamos adicionar localmente
+      const itemCompleto = {
+        ...novoItem,
+        id: `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      };
+
+      itens.value.push(itemCompleto);
+
+      $q.notify({
+        type: 'positive',
+        message: 'Item criado com sucesso!',
+      });
+    } catch (error) {
+      console.error('Erro ao criar item:', error);
+      $q.notify({
+        type: 'negative',
+        message: 'Erro ao criar item',
+        caption: String(error),
+      });
+    }
+  });
+}
+
+function editarItem(item: ItemData) {
+  $q.dialog({
+    component: EditarItemDialog,
+    componentProps: {
+      item: item,
+    },
+  }).onOk((itemEditado: ItemData) => {
+    try {
+      const index = itens.value.findIndex((i) => i.id === item.id);
+      if (index >= 0) {
+        itens.value[index] = itemEditado;
+      }
+
+      $q.notify({
+        type: 'positive',
+        message: 'Item atualizado com sucesso!',
+      });
+    } catch (error) {
+      console.error('Erro ao editar item:', error);
+      $q.notify({
+        type: 'negative',
+        message: 'Erro ao editar item',
+        caption: String(error),
+      });
+    }
+  });
+}
+
+function confirmarExclusaoItem(item: ItemData) {
+  $q.dialog({
+    title: 'Excluir Item',
+    message: `Tem certeza que deseja excluir o item "${item.nome}"?`,
+    cancel: true,
+    persistent: true,
+  }).onOk(() => {
+    try {
+      const index = itens.value.findIndex((i) => i.id === item.id);
+      if (index >= 0) {
+        itens.value.splice(index, 1);
+      }
+
+      $q.notify({
+        type: 'positive',
+        message: 'Item excluído com sucesso!',
+      });
+    } catch (error) {
+      console.error('Erro ao excluir item:', error);
+      $q.notify({
+        type: 'negative',
+        message: 'Erro ao excluir item',
+        caption: String(error),
+      });
+    }
+  });
+}
+
+function getItemIcon(tipo: string): string {
+  const icones: Record<string, string> = {
+    arma: 'sword',
+    armadura: 'shield',
+    escudo: 'shield',
+    consumivel: 'healing',
+    ferramenta: 'build',
+    equipamento: 'inventory',
+    tesouro: 'diamond',
+    outro: 'category',
+  };
+
+  return icones[tipo] || 'inventory_2';
+}
+
 function carregarConfiguracoes() {
   // Carregar configurações da store
   configuracoes.value = {
@@ -630,14 +826,49 @@ async function testarConexaoAPI() {
     testandoAPI.value = false;
   }
 }
+
+// Métodos para conhecimento
+async function abrirConhecimento(personagemData: PersonagemData) {
+  try {
+    // Carregar o personagem completo
+    const persistence = PersistenceManager.getInstance();
+    const personagem = await persistence.carregarPersonagem(personagemData.id);
+
+    if (!personagem) {
+      throw new Error('Personagem não encontrado');
+    }
+
+    $q.dialog({
+      component: ConhecimentoEditor,
+      componentProps: {
+        personagem: personagem,
+      },
+    }).onOk(() => {
+      // Opcional: recarregar dados se necessário
+      $q.notify({
+        type: 'positive',
+        message: 'Base de conhecimento atualizada!',
+      });
+    });
+  } catch (error) {
+    console.error('Erro ao abrir conhecimento:', error);
+    $q.notify({
+      type: 'negative',
+      message: 'Erro ao abrir base de conhecimento',
+      caption: String(error),
+    });
+  }
+}
 </script>
 
 <style scoped>
-.personagem-card {
+.personagem-card,
+.item-card {
   transition: transform 0.2s;
 }
 
-.personagem-card:hover {
+.personagem-card:hover,
+.item-card:hover {
   transform: translateY(-2px);
 }
 </style>

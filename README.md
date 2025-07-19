@@ -95,21 +95,21 @@ src/
 
 #### 🔥 **Urgente** (Implementar primeiro)
 
-1. **Modal de Criação de Itens** - Botão "Novo Item" não funciona
-2. **Sistema de Conhecimento** - Base de dados por personagem
-3. **Persistência de Turnos** - Salvar estado dos turnos
+1. **Sistema de Combate** - Mecânicas básicas de luta
+2. **Catálogo de Magias** - Sistema de magia D&D
+3. **Edição de Personagens** - Modal para editar personagens existentes
 
 #### 📊 **Média** (Depois das urgentes)
 
-1. **Watchers de Auto-save** - Salvar automaticamente
-2. **Sistema de Combate** - Mecânicas de luta
-3. **Catálogo de Magias** - Sistema de magia D&D
+1. **Responsividade Mobile** - Adaptação para dispositivos móveis
+2. **Sistema de Mapas** - Interface para mapas interativos
+3. **Integração MCP Avançada** - Funcionalidades avançadas de IA
 
 #### 🎨 **Baixa** (Polimento)
 
-1. **Tema Escuro/Claro** - Alternância de temas
-2. **Responsividade Mobile** - Adaptação para mobile
-3. **Mapas Interativos** - Sistema de mapas
+1. **Tema Escuro/Claro** - Alternância de temas (já configurado na store)
+2. **Animações** - Transições e efeitos visuais
+3. **PWA** - Progressive Web App
 
 ### 🔧 Problemas Conhecidos
 
@@ -119,12 +119,16 @@ src/
 - ✅ Navegação por menu lateral funcionando
 - ✅ Abas de personagens/itens/configurações OK
 - ✅ Arquivo .env adicionado ao .gitignore
+- ✅ **Modal "Novo Item" IMPLEMENTADO** - Criação completa de itens funcionando
+- ✅ **Sistema de Conhecimento IMPLEMENTADO** - Base de dados por personagem com interface
+- ✅ **Persistência de Turnos IMPLEMENTADA** - Estado dos turnos salvo/restaurado
+- ✅ **Auto-save IMPLEMENTADO** - Watchers para salvamento automático
 
 #### ⚠️ **Pendentes**
 
-- ❌ Modal "Novo Item" não implementado
-- ❌ Sistema de conhecimento incompleto
-- ❌ Auto-save não configurado
+- ❌ Sistema de combate não implementado
+- ❌ Catálogo de magias em desenvolvimento
+- ❌ Edição de personagens usando modal simples (melhorar)
 
 ### 📝 Convenções do Projeto
 

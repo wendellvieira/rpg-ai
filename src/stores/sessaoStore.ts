@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { SessaoJogo, StatusSessao } from '../classes/SessaoJogo';
 import { PersistenceManager } from '../services/PersistenceManager';
+import { useConfigStore } from './configStore';
 
 export const useSessaoStore = defineStore('sessao', () => {
   // Estado
@@ -9,6 +10,10 @@ export const useSessaoStore = defineStore('sessao', () => {
   const sessaoAtual = ref<SessaoJogo | null>(null);
   const carregando = ref(false);
   const erro = ref<string | null>(null);
+
+  // Auto-save
+  let autoSaveTimer: NodeJS.Timeout | null = null;
+  const pendenteSalvamento = ref(false);
 
   // Computed
   const totalSessoes = computed(() => sessoes.value.length);
@@ -257,6 +262,82 @@ export const useSessaoStore = defineStore('sessao', () => {
     }) as SessaoJogo[];
   }
 
+  // Auto-save functions
+  function iniciarAutoSave() {
+    const configStore = useConfigStore();
+
+    if (!configStore.configuracao.autoSave) {
+      return;
+    }
+
+    pararAutoSave();
+
+    autoSaveTimer = setInterval(() => {
+      void (async () => {
+        if (pendenteSalvamento.value && sessaoAtual.value) {
+          try {
+            await salvarSessao(sessaoAtual.value as SessaoJogo);
+            pendenteSalvamento.value = false;
+            console.log('Auto-save executado:', sessaoAtual.value.nome);
+          } catch (error) {
+            console.error('Erro no auto-save:', error);
+          }
+        }
+      })();
+    }, configStore.configuracao.autoSaveInterval * 1000);
+  }
+
+  function pararAutoSave() {
+    if (autoSaveTimer) {
+      clearInterval(autoSaveTimer);
+      autoSaveTimer = null;
+    }
+  }
+
+  function marcarParaSalvar() {
+    pendenteSalvamento.value = true;
+  }
+
+  // Watcher para mudanças na sessão atual
+  watch(
+    () => sessaoAtual.value,
+    (novaSessao, sessaoAnterior) => {
+      if (novaSessao && novaSessao !== sessaoAnterior) {
+        iniciarAutoSave();
+
+        // Adicionar watcher para mudanças no conteúdo da sessão
+        if (novaSessao) {
+          // Monitorar mudanças nos dados da sessão
+          const unwatch = watch(
+            () => ({
+              participantes: novaSessao.getParticipantes(),
+              mensagens: novaSessao.historicoMensagens.length,
+              turno: novaSessao.turnoAtualIndex,
+              rodada: novaSessao.rodadaAtual,
+              status: novaSessao.statusAtual,
+            }),
+            () => marcarParaSalvar(),
+            { deep: true },
+          );
+
+          // Limpar watcher quando a sessão mudar
+          watch(
+            () => sessaoAtual.value,
+            (novaAtual) => {
+              if (novaAtual !== novaSessao) {
+                unwatch();
+              }
+            },
+            { immediate: true },
+          );
+        }
+      } else if (!novaSessao) {
+        pararAutoSave();
+      }
+    },
+    { immediate: true },
+  );
+
   return {
     // Estado
     sessoes,
@@ -284,5 +365,11 @@ export const useSessaoStore = defineStore('sessao', () => {
     obterSessaoPorId,
     ordenarSessoes,
     filtrarSessoes,
+
+    // Auto-save
+    iniciarAutoSave,
+    pararAutoSave,
+    marcarParaSalvar,
+    pendenteSalvamento: computed(() => pendenteSalvamento.value),
   };
 });

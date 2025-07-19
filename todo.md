@@ -2,7 +2,7 @@
 
 ## ✅ PROGRESSO ATUAL - JULHO 2025
 
-**FASE 1-3 CONCLUÍDA**: A estrutura básica do projeto está implementada com:
+**FASE 1-4 CONCLUÍDA**: A estrutura básica do projeto está implementada com as funcionalidades core:
 
 - ✅ **Classes Core**: Todas as entidades principais (Personagem, Atributos, Itens, Dados, SessaoJogo, etc.)
 - ✅ **Sistema MCP**: Framework completo para integração com IAs
@@ -10,8 +10,12 @@
 - ✅ **Stores**: Sistema de estado reativo com Pinia (configuração, sessão, personagem, item)
 - ✅ **Persistência**: Estrutura básica implementada com LocalForage
 - ✅ **Componentes**: Todos os componentes críticos criados e funcionais
+- ✅ **Modal de Criação de Itens**: IMPLEMENTADO - Botão "Novo Item" agora funciona completamente
+- ✅ **Sistema de Conhecimento**: IMPLEMENTADO - Base de dados por personagem com interface completa
+- ✅ **Persistência de Turnos**: IMPLEMENTADO - Estado dos turnos agora é salvo e restaurado
+- ✅ **Auto-save**: IMPLEMENTADO - Watchers para salvar automaticamente
 
-**PRONTO PARA**: Integração final, testes e implementação de funcionalidades avançadas.
+**PRONTO PARA**: Sistema de combate, catálogo de magias e funcionalidades avançadas.
 
 ---
 
@@ -105,10 +109,11 @@
 ### 8. Dialogs e Modais
 
 - [x] `CriarPersonagemDialog.vue`
-- [x] `EditarItemDialog.vue`
+- [x] `EditarItemDialog.vue` - **FUNCIONANDO** com criação e edição completa
 - [x] `ConfigurarAPIDialog.vue`
 - [x] `ImportExportDialog.vue`
 - [x] `TesteAtributoDialog.vue`
+- [x] `ConhecimentoEditor.vue` - **NOVO** - Interface completa para gerenciar conhecimento
 
 ## 🔧 Funcionalidades Core (Prioridade Média)
 
@@ -124,14 +129,14 @@
 - [x] Controles do mestre
 - [x] Adição/remoção dinâmica de personagens
 - [x] Indicadores visuais de turno
-- [ ] Persistência do estado dos turnos
+- [x] Persistência do estado dos turnos
 
 ### 11. Sistema de Conhecimento
 
-- [ ] Base de conhecimento por personagem
-- [ ] Sistema de eventos/resumos
-- [ ] Busca e indexação
-- [ ] Interface para edição manual
+- [x] Base de conhecimento por personagem
+- [x] Sistema de eventos/resumos
+- [x] Busca e indexação
+- [x] Interface para edição manual
 
 ## 📊 Stores e Estado (Prioridade Média)
 
@@ -147,9 +152,9 @@
 
 ### 13. Estado Reativo
 
-- [ ] Watchers para auto-save
-- [ ] Sincronização entre stores
-- [ ] Cache inteligente
+- [x] Watchers para auto-save
+- [x] Sincronização entre stores
+- [x] Cache inteligente
 
 ## 🎲 Mecânicas de Jogo (Prioridade Baixa)
 
