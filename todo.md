@@ -1,5 +1,20 @@
 # TODO - Lista de Tarefas para Desenvolvimento
 
+## ✅ PROGRESSO ATUAL - JULHO 2025
+
+**FASE 1-3 CONCLUÍDA**: A estrutura básica do projeto está implementada com:
+
+- ✅ **Classes Core**: Todas as entidades principais (Personagem, Atributos, Itens, Dados, SessaoJogo, etc.)
+- ✅ **Sistema MCP**: Framework completo para integração com IAs
+- ✅ **Interface Base**: Layout principal, componentes essenciais e diálogos
+- ✅ **Stores**: Sistema de estado reativo com Pinia (configuração, sessão, personagem, item)
+- ✅ **Persistência**: Estrutura básica implementada com LocalForage
+- ✅ **Componentes**: Todos os componentes críticos criados e funcionais
+
+**PRONTO PARA**: Integração final, testes e implementação de funcionalidades avançadas.
+
+---
+
 ## 🏗️ Estrutura Base (Prioridade Alta)
 
 ### 1. Dependências e Configuração
@@ -70,45 +85,45 @@
 ### 6. Layouts e Páginas Base
 
 - [x] Criar `src/layouts/MainLayout.vue`
-- [ ] Atualizar páginas:
-  - [ ] `IndexPage.vue` - Lista de sessões
-  - [ ] `SetupPage.vue` - Gerenciamento de recursos
-  - [ ] `GamePage.vue` - Tela principal do jogo
-- [ ] Configurar roteamento
+- [x] Atualizar páginas:
+  - [x] `IndexPage.vue` - Lista de sessões
+  - [x] `SetupPage.vue` - Gerenciamento de recursos
+  - [x] `GamePage.vue` - Tela principal do jogo
+- [x] Configurar roteamento
 
 ### 7. Componentes Principais
 
 - [x] Criar `src/components/`
   - [x] `EssentialLink.vue` - Link de navegação
-  - [ ] `PersonagemCard.vue` - Card de personagem
-  - [ ] `MensagemChat.vue` - Mensagem no chat
-  - [ ] `AtributoEditor.vue` - Editor de atributos
-  - [ ] `InventarioViewer.vue` - Visualizar inventário
-  - [ ] `SplitterLayout.vue` - Layout dividido
-  - [ ] `TurnoIndicator.vue` - Indicador de turno atual
+  - [x] `PersonagemCard.vue` - Card de personagem
+  - [x] `MensagemChat.vue` - Mensagem no chat
+  - [x] `AtributoEditor.vue` - Editor de atributos
+  - [x] `InventarioViewer.vue` - Visualizar inventário
+  - [x] `SplitterLayout.vue` - Layout dividido
+  - [x] `TurnoIndicator.vue` - Indicador de turno atual
 
 ### 8. Dialogs e Modais
 
-- [ ] `CriarPersonagemDialog.vue`
-- [ ] `EditarItemDialog.vue`
-- [ ] `ConfigurarAPIDialog.vue`
-- [ ] `ImportExportDialog.vue`
-- [ ] `TesteAtributoDialog.vue`
+- [x] `CriarPersonagemDialog.vue`
+- [x] `EditarItemDialog.vue`
+- [x] `ConfigurarAPIDialog.vue`
+- [x] `ImportExportDialog.vue`
+- [x] `TesteAtributoDialog.vue`
 
 ## 🔧 Funcionalidades Core (Prioridade Média)
 
 ### 9. Sistema de Chat
 
-- [ ] Componente de chat com histórico
-- [ ] Tipos de mensagem (fala, ação, sistema)
-- [ ] Auto-scroll e performance
-- [ ] Formatação de mensagens especiais
+- [x] Componente de chat com histórico
+- [x] Tipos de mensagem (fala, ação, sistema)
+- [x] Auto-scroll e performance
+- [x] Formatação de mensagens especiais
 
 ### 10. Gerenciamento de Turnos
 
-- [ ] Controles do mestre
-- [ ] Adição/remoção dinâmica de personagens
-- [ ] Indicadores visuais de turno
+- [x] Controles do mestre
+- [x] Adição/remoção dinâmica de personagens
+- [x] Indicadores visuais de turno
 - [ ] Persistência do estado dos turnos
 
 ### 11. Sistema de Conhecimento
@@ -125,10 +140,10 @@
 - [x] Criar `src/stores/`
   - [x] `configStore.ts` - Configurações globais
   - [x] `sessaoStore.ts` - Estado da sessão atual
-  - [ ] `personagemStore.ts` - Personagens ativos
-  - [ ] `itemStore.ts` - Catálogo de itens
-- [ ] Integração com persistência
-- [ ] Computed properties e getters
+  - [x] `personagemStore.ts` - Personagens ativos
+  - [x] `itemStore.ts` - Catálogo de itens
+- [x] Integração com persistência
+- [x] Computed properties e getters
 
 ### 13. Estado Reativo
 

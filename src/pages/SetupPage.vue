@@ -1,0 +1,593 @@
+<template>
+  <q-page padding>
+    <div class="row justify-center">
+      <div class="col-12">
+        <!-- Header da página -->
+        <div class="text-center q-mb-lg">
+          <h4 class="text-h4 q-my-md">
+            <q-icon name="tune" size="2rem" class="q-mr-md" color="primary" />
+            Gerenciamento de Recursos
+          </h4>
+          <p class="text-subtitle1 text-grey-6">
+            Configure personagens, itens e configurações do sistema
+          </p>
+        </div>
+
+        <!-- Abas principais -->
+        <q-card>
+          <q-tabs
+            v-model="abaAtiva"
+            dense
+            class="text-grey"
+            active-color="primary"
+            indicator-color="primary"
+            align="justify"
+            narrow-indicator
+          >
+            <q-tab name="personagens" icon="people" label="Personagens" />
+            <q-tab name="itens" icon="inventory" label="Itens" />
+            <q-tab name="mapas" icon="map" label="Mapas" />
+            <q-tab name="config" icon="settings" label="Configurações" />
+          </q-tabs>
+
+          <q-separator />
+
+          <q-tab-panels v-model="abaAtiva" animated>
+            <!-- Aba Personagens -->
+            <q-tab-panel name="personagens">
+              <div class="row items-center q-mb-md">
+                <div class="col">
+                  <div class="text-h6">Personagens</div>
+                  <div class="text-caption text-grey-6">Gerencie seus personagens</div>
+                </div>
+                <div class="col-auto">
+                  <q-btn
+                    color="primary"
+                    icon="add"
+                    label="Novo Personagem"
+                    @click="dialogNovoPersonagem = true"
+                  />
+                </div>
+              </div>
+
+              <div v-if="carregandoPersonagens" class="text-center q-py-lg">
+                <q-spinner size="2rem" />
+                <div class="q-mt-sm">Carregando personagens...</div>
+              </div>
+
+              <div v-else-if="personagens.length === 0" class="text-center q-py-xl text-grey-6">
+                <q-icon name="people_outline" size="4rem" class="q-mb-md" />
+                <div class="text-h6">Nenhum personagem criado</div>
+                <div class="q-mt-sm">Crie seu primeiro personagem para começar!</div>
+              </div>
+
+              <div v-else class="row q-gutter-md">
+                <div
+                  v-for="personagem in personagens"
+                  :key="personagem.id"
+                  class="col-12 col-md-6 col-lg-4"
+                >
+                  <q-card class="personagem-card">
+                    <q-card-section>
+                      <div class="row items-center no-wrap">
+                        <q-avatar size="40px" color="primary" text-color="white">
+                          {{ personagem.nome[0].toUpperCase() }}
+                        </q-avatar>
+                        <div class="col q-ml-md">
+                          <div class="text-h6">{{ personagem.nome }}</div>
+                          <div class="text-caption text-grey-6">
+                            {{ personagem.raca }} {{ personagem.classe }}
+                          </div>
+                        </div>
+                        <q-badge v-if="personagem.isIA" color="purple" label="IA" />
+                      </div>
+                    </q-card-section>
+
+                    <q-card-actions align="right">
+                      <q-btn
+                        flat
+                        size="sm"
+                        icon="edit"
+                        label="Editar"
+                        @click="editarPersonagem(personagem)"
+                      />
+                      <q-btn
+                        flat
+                        size="sm"
+                        icon="delete"
+                        color="negative"
+                        label="Excluir"
+                        @click="confirmarExclusaoPersonagem(personagem)"
+                      />
+                    </q-card-actions>
+                  </q-card>
+                </div>
+              </div>
+            </q-tab-panel>
+
+            <!-- Aba Itens -->
+            <q-tab-panel name="itens">
+              <div class="row items-center q-mb-md">
+                <div class="col">
+                  <div class="text-h6">Itens</div>
+                  <div class="text-caption text-grey-6">
+                    Catálogo de armas, armaduras e consumíveis
+                  </div>
+                </div>
+                <div class="col-auto">
+                  <q-btn
+                    color="primary"
+                    icon="add"
+                    label="Novo Item"
+                    @click="dialogNovoItem = true"
+                  />
+                </div>
+              </div>
+
+              <div class="text-center q-py-xl text-grey-6">
+                <q-icon name="inventory_2" size="4rem" class="q-mb-md" />
+                <div class="text-h6">Sistema de itens em desenvolvimento</div>
+                <div class="q-mt-sm">Esta funcionalidade será implementada em breve</div>
+              </div>
+            </q-tab-panel>
+
+            <!-- Aba Mapas -->
+            <q-tab-panel name="mapas">
+              <div class="row items-center q-mb-md">
+                <div class="col">
+                  <div class="text-h6">Mapas</div>
+                  <div class="text-caption text-grey-6">Cenários e localizações</div>
+                </div>
+                <div class="col-auto">
+                  <q-btn
+                    color="primary"
+                    icon="add"
+                    label="Novo Mapa"
+                    @click="dialogNovoMapa = true"
+                  />
+                </div>
+              </div>
+
+              <div class="text-center q-py-xl text-grey-6">
+                <q-icon name="map" size="4rem" class="q-mb-md" />
+                <div class="text-h6">Sistema de mapas em desenvolvimento</div>
+                <div class="q-mt-sm">Esta funcionalidade será implementada em breve</div>
+              </div>
+            </q-tab-panel>
+
+            <!-- Aba Configurações -->
+            <q-tab-panel name="config">
+              <div class="text-h6 q-mb-md">Configurações do Sistema</div>
+
+              <!-- Configurações da API OpenAI -->
+              <q-card class="q-mb-md">
+                <q-card-section>
+                  <div class="text-subtitle1 q-mb-md">
+                    <q-icon name="key" class="q-mr-sm" />
+                    OpenAI API
+                  </div>
+
+                  <q-input
+                    v-model="configuracoes.apiKey"
+                    label="API Key"
+                    type="password"
+                    outlined
+                    class="q-mb-md"
+                    hint="Sua chave de API da OpenAI"
+                  />
+
+                  <q-select
+                    v-model="configuracoes.modelo"
+                    :options="modelosDisponiveis"
+                    label="Modelo"
+                    outlined
+                    class="q-mb-md"
+                    hint="Modelo de IA a ser utilizado"
+                  />
+
+                  <div class="row q-gutter-md">
+                    <div class="col">
+                      <q-slider
+                        v-model="configuracoes.temperature"
+                        :min="0"
+                        :max="2"
+                        :step="0.1"
+                        label
+                        label-always
+                        class="q-mb-md"
+                      />
+                      <div class="text-caption">Temperature ({{ configuracoes.temperature }})</div>
+                    </div>
+                    <div class="col">
+                      <q-slider
+                        v-model="configuracoes.maxTokens"
+                        :min="100"
+                        :max="4000"
+                        :step="100"
+                        label
+                        label-always
+                        class="q-mb-md"
+                      />
+                      <div class="text-caption">Max Tokens ({{ configuracoes.maxTokens }})</div>
+                    </div>
+                  </div>
+
+                  <div class="row q-gutter-md">
+                    <q-btn
+                      color="positive"
+                      label="Testar Conexão"
+                      @click="testarConexaoAPI"
+                      :loading="testandoAPI"
+                    />
+                    <q-btn
+                      color="primary"
+                      label="Salvar Configurações"
+                      @click="salvarConfiguracoes"
+                    />
+                  </div>
+                </q-card-section>
+              </q-card>
+
+              <!-- Configurações Gerais -->
+              <q-card>
+                <q-card-section>
+                  <div class="text-subtitle1 q-mb-md">
+                    <q-icon name="tune" class="q-mr-sm" />
+                    Configurações Gerais
+                  </div>
+
+                  <q-toggle
+                    v-model="configuracoes.autoSave"
+                    label="Auto-save ativado"
+                    class="q-mb-md"
+                  />
+
+                  <q-select
+                    v-model="configuracoes.tema"
+                    :options="['claro', 'escuro']"
+                    label="Tema"
+                    outlined
+                    class="q-mb-md"
+                  />
+
+                  <q-btn
+                    color="primary"
+                    label="Salvar Configurações"
+                    @click="salvarConfiguracoes"
+                  />
+                </q-card-section>
+              </q-card>
+            </q-tab-panel>
+          </q-tab-panels>
+        </q-card>
+      </div>
+    </div>
+
+    <!-- Dialog para novo personagem -->
+    <q-dialog v-model="dialogNovoPersonagem" persistent>
+      <q-card style="min-width: 500px">
+        <q-card-section>
+          <div class="text-h6">Criar Novo Personagem</div>
+        </q-card-section>
+
+        <q-card-section>
+          <q-input v-model="novoPersonagem.nome" label="Nome" outlined autofocus class="q-mb-md" />
+
+          <div class="row q-gutter-md q-mb-md">
+            <div class="col">
+              <q-select
+                v-model="novoPersonagem.raca"
+                :options="racasDisponiveis"
+                label="Raça"
+                outlined
+              />
+            </div>
+            <div class="col">
+              <q-select
+                v-model="novoPersonagem.classe"
+                :options="classesDisponiveis"
+                label="Classe"
+                outlined
+              />
+            </div>
+          </div>
+
+          <q-toggle v-model="novoPersonagem.isIA" label="Controlado por IA" class="q-mb-md" />
+
+          <q-input
+            v-if="novoPersonagem.isIA"
+            v-model="novoPersonagem.promptPersonalidade"
+            label="Prompt de Personalidade"
+            type="textarea"
+            outlined
+            rows="3"
+            hint="Descreva a personalidade e características do personagem para a IA"
+            class="q-mb-md"
+          />
+
+          <q-input
+            v-model="novoPersonagem.descricao"
+            label="Descrição"
+            type="textarea"
+            outlined
+            rows="2"
+          />
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Cancelar" color="grey" @click="dialogNovoPersonagem = false" />
+          <q-btn
+            flat
+            label="Criar"
+            color="primary"
+            @click="criarPersonagem"
+            :disable="!novoPersonagem.nome || !novoPersonagem.raca || !novoPersonagem.classe"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+  </q-page>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+import { useQuasar } from 'quasar';
+import { PersistenceManager } from '../services/PersistenceManager';
+import { OpenAIService } from '../services/OpenAIService';
+import { Personagem } from '../classes/Personagem';
+import { useConfigStore } from '../stores/configStore';
+
+const $q = useQuasar();
+const configStore = useConfigStore();
+
+// Estado reativo
+const abaAtiva = ref('personagens');
+const carregandoPersonagens = ref(false);
+const personagens = ref<any[]>([]);
+const dialogNovoPersonagem = ref(false);
+const dialogNovoItem = ref(false);
+const dialogNovoMapa = ref(false);
+const testandoAPI = ref(false);
+
+// Configurações
+const configuracoes = ref({
+  apiKey: '',
+  modelo: 'gpt-3.5-turbo',
+  temperature: 0.7,
+  maxTokens: 1000,
+  autoSave: true,
+  tema: 'claro',
+});
+
+// Dados para formulários
+const novoPersonagem = ref({
+  nome: '',
+  raca: '',
+  classe: '',
+  isIA: false,
+  promptPersonalidade: '',
+  descricao: '',
+});
+
+// Opções
+const racasDisponiveis = [
+  'Humano',
+  'Elfo',
+  'Anão',
+  'Halfling',
+  'Draconato',
+  'Gnomo',
+  'Meio-Elfo',
+  'Meio-Orc',
+  'Tiefling',
+];
+
+const classesDisponiveis = [
+  'Guerreiro',
+  'Mago',
+  'Ladino',
+  'Clérigo',
+  'Bárbaro',
+  'Bardo',
+  'Druida',
+  'Feiticeiro',
+  'Paladino',
+  'Patrulheiro',
+];
+
+const modelosDisponiveis = ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo'];
+
+// Lifecycle
+onMounted(() => {
+  carregarPersonagens();
+  carregarConfiguracoes();
+});
+
+// Métodos
+async function carregarPersonagens() {
+  carregandoPersonagens.value = true;
+  try {
+    const persistence = PersistenceManager.getInstance();
+    await persistence.inicializar();
+    const personagensIndice = await persistence.listarPersonagens();
+
+    // Carregar dados completos dos personagens
+    const personagensCompletos = [];
+    for (const indice of personagensIndice) {
+      const personagem = await persistence.carregarPersonagem(indice.id);
+      if (personagem) {
+        personagensCompletos.push(personagem);
+      }
+    }
+
+    personagens.value = personagensCompletos;
+  } catch (error) {
+    console.error('Erro ao carregar personagens:', error);
+    $q.notify({
+      type: 'negative',
+      message: 'Erro ao carregar personagens',
+      caption: String(error),
+    });
+  } finally {
+    carregandoPersonagens.value = false;
+  }
+}
+
+async function criarPersonagem() {
+  try {
+    const novoPersonagemData = new Personagem({
+      nome: novoPersonagem.value.nome,
+      raca: novoPersonagem.value.raca,
+      classe: novoPersonagem.value.classe,
+      isIA: novoPersonagem.value.isIA,
+      promptPersonalidade: novoPersonagem.value.promptPersonalidade || '',
+      descricao: novoPersonagem.value.descricao || '',
+    });
+
+    const persistence = PersistenceManager.getInstance();
+    await persistence.salvarPersonagem(novoPersonagemData);
+
+    await carregarPersonagens();
+    dialogNovoPersonagem.value = false;
+
+    // Limpar formulário
+    novoPersonagem.value = {
+      nome: '',
+      raca: '',
+      classe: '',
+      isIA: false,
+      promptPersonalidade: '',
+      descricao: '',
+    };
+
+    $q.notify({
+      type: 'positive',
+      message: 'Personagem criado com sucesso!',
+    });
+  } catch (error) {
+    console.error('Erro ao criar personagem:', error);
+    $q.notify({
+      type: 'negative',
+      message: 'Erro ao criar personagem',
+      caption: String(error),
+    });
+  }
+}
+
+function editarPersonagem(personagem: any) {
+  $q.notify({
+    type: 'info',
+    message: 'Edição de personagens em desenvolvimento',
+  });
+}
+
+function confirmarExclusaoPersonagem(personagem: any) {
+  $q.dialog({
+    title: 'Excluir Personagem',
+    message: `Tem certeza que deseja excluir o personagem "${personagem.nome}"?`,
+    cancel: true,
+    persistent: true,
+  }).onOk(async () => {
+    try {
+      const persistence = PersistenceManager.getInstance();
+      await persistence.removerPersonagem(personagem.id);
+      await carregarPersonagens();
+
+      $q.notify({
+        type: 'positive',
+        message: 'Personagem excluído com sucesso!',
+      });
+    } catch (error) {
+      console.error('Erro ao excluir personagem:', error);
+      $q.notify({
+        type: 'negative',
+        message: 'Erro ao excluir personagem',
+        caption: String(error),
+      });
+    }
+  });
+}
+
+function carregarConfiguracoes() {
+  // Carregar configurações da store
+  configuracoes.value = {
+    apiKey: configStore.configuracao.openaiApiKey || '',
+    modelo: configStore.configuracao.openaiModel || 'gpt-3.5-turbo',
+    temperature: configStore.configuracao.openaiTemperature || 0.7,
+    maxTokens: 1000, // Campo não existe na store, usar valor padrão
+    autoSave: configStore.configuracao.autoSave ?? true,
+    tema: configStore.configuracao.tema === 'light' ? 'claro' : 'escuro',
+  };
+}
+
+async function salvarConfiguracoes() {
+  try {
+    await configStore.atualizarConfiguracao({
+      openaiApiKey: configuracoes.value.apiKey,
+      openaiModel: configuracoes.value.modelo,
+      openaiTemperature: configuracoes.value.temperature,
+      autoSave: configuracoes.value.autoSave,
+      tema: configuracoes.value.tema === 'claro' ? 'light' : 'dark',
+    });
+
+    $q.notify({
+      type: 'positive',
+      message: 'Configurações salvas com sucesso!',
+    });
+  } catch (error) {
+    console.error('Erro ao salvar configurações:', error);
+    $q.notify({
+      type: 'negative',
+      message: 'Erro ao salvar configurações',
+      caption: String(error),
+    });
+  }
+}
+
+async function testarConexaoAPI() {
+  if (!configuracoes.value.apiKey) {
+    $q.notify({
+      type: 'warning',
+      message: 'Informe a API Key primeiro',
+    });
+    return;
+  }
+
+  testandoAPI.value = true;
+  try {
+    const openAI = OpenAIService.getInstance();
+    openAI.configurar({
+      apiKey: configuracoes.value.apiKey,
+      model: configuracoes.value.modelo,
+      temperature: configuracoes.value.temperature,
+      maxTokens: configuracoes.value.maxTokens,
+    });
+
+    await openAI.enviarMensagem([{ role: 'user', content: 'Teste de conexão' }]);
+
+    $q.notify({
+      type: 'positive',
+      message: 'Conexão com OpenAI estabelecida com sucesso!',
+    });
+  } catch (error) {
+    console.error('Erro ao testar API:', error);
+    $q.notify({
+      type: 'negative',
+      message: 'Erro ao conectar com OpenAI',
+      caption: String(error),
+    });
+  } finally {
+    testandoAPI.value = false;
+  }
+}
+</script>
+
+<style scoped>
+.personagem-card {
+  transition: transform 0.2s;
+}
+
+.personagem-card:hover {
+  transform: translateY(-2px);
+}
+</style>
