@@ -382,7 +382,7 @@ import { Dados } from '../classes/Dados';
 import { StatusSessao } from '../classes/SessaoJogo';
 import type { MensagemMestre } from '../types';
 import IniciativaCombate from '../components/IniciativaCombate.vue';
-import CatalogoMagias from '../components/CatalogoMagiasSimples.vue';
+import CatalogoMagias from '../components/CatalogoMagias.vue';
 import EditarPersonagemDialog from '../components/EditarPersonagemDialog.vue';
 
 interface PersonagemData {

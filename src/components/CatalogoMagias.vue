@@ -69,27 +69,15 @@
                   <q-item-section>
                     <q-item-label class="text-h6">{{ magia.nome }}</q-item-label>
                     <q-item-label caption>
-                      {{ (magia as ItemMagia).escola || 'Evocação' }} • Nível
-                      {{
-                        ((magia as ItemMagia).nivel ?? 0) === 0
-                          ? 'Truque'
-                          : ((magia as ItemMagia).nivel ?? 0)
-                      }}
-                      {{ (magia as ItemMagia).concentracao ? ' • Concentração' : '' }}
-                      {{ (magia as ItemMagia).ritual ? ' • Ritual' : '' }}
+                      {{ magia.escola || 'Evocação' }} • Nível
+                      {{ magia.nivel === 0 ? 'Truque' : magia.nivel }}
+                      {{ magia.concentracao ? ' • Concentração' : '' }}
+                      {{ magia.ritual ? ' • Ritual' : '' }}
                     </q-item-label>
                   </q-item-section>
                   <q-item-section side>
-                    <q-chip
-                      :color="getCorNivel((magia as ItemMagia).nivel ?? 0)"
-                      text-color="white"
-                      size="sm"
-                    >
-                      {{
-                        ((magia as ItemMagia).nivel ?? 0) === 0
-                          ? 'T'
-                          : ((magia as ItemMagia).nivel ?? 0)
-                      }}
+                    <q-chip :color="getCorNivel(magia.nivel)" text-color="white" size="sm">
+                      {{ magia.nivel === 0 ? 'T' : magia.nivel }}
                     </q-chip>
                   </q-item-section>
                 </q-item>
@@ -142,7 +130,7 @@
                     <q-item-section>
                       <q-item-label caption>Tempo de Conjuração</q-item-label>
                       <q-item-label>{{
-                        (magiaSelecionada as ItemMagia).tempoConjuracao || 'Não informado'
+                        magiaSelecionada.tempoConjuracao || 'Não informado'
                       }}</q-item-label>
                     </q-item-section>
                   </q-item>
@@ -151,9 +139,7 @@
                     <q-item-section avatar><q-icon name="straighten" /></q-item-section>
                     <q-item-section>
                       <q-item-label caption>Alcance</q-item-label>
-                      <q-item-label>{{
-                        (magiaSelecionada as ItemMagia).alcance || 'Não informado'
-                      }}</q-item-label>
+                      <q-item-label>{{ magiaSelecionada.alcance || 'Não informado' }}</q-item-label>
                     </q-item-section>
                   </q-item>
 
@@ -162,7 +148,7 @@
                     <q-item-section>
                       <q-item-label caption>Componentes</q-item-label>
                       <q-item-label>{{
-                        magiaSelecionada ? getComponentesTexto(magiaSelecionada as ItemMagia) : ''
+                        magiaSelecionada ? getComponentesTexto(magiaSelecionada) : ''
                       }}</q-item-label>
                     </q-item-section>
                   </q-item>
@@ -171,31 +157,26 @@
                     <q-item-section avatar><q-icon name="timelapse" /></q-item-section>
                     <q-item-section>
                       <q-item-label caption>Duração</q-item-label>
-                      <q-item-label>{{
-                        (magiaSelecionada as ItemMagia).duracao || 'Não informado'
-                      }}</q-item-label>
+                      <q-item-label>{{ magiaSelecionada.duracao || 'Não informado' }}</q-item-label>
                     </q-item-section>
                   </q-item>
 
-                  <q-item v-if="(magiaSelecionada as ItemMagia).areaEfeito" dense>
+                  <q-item v-if="magiaSelecionada.areaEfeito" dense>
                     <q-item-section avatar><q-icon name="crop_free" /></q-item-section>
                     <q-item-section>
                       <q-item-label caption>Área de Efeito</q-item-label>
-                      <q-item-label>{{ (magiaSelecionada as ItemMagia).areaEfeito }}</q-item-label>
+                      <q-item-label>{{ magiaSelecionada.areaEfeito }}</q-item-label>
                     </q-item-section>
                   </q-item>
 
                   <q-item
-                    v-if="
-                      (magiaSelecionada as ItemMagia).salvaguarda &&
-                      (magiaSelecionada as ItemMagia).salvaguarda !== 'nenhum'
-                    "
+                    v-if="magiaSelecionada.salvaguarda && magiaSelecionada.salvaguarda !== 'nenhum'"
                     dense
                   >
                     <q-item-section avatar><q-icon name="security" /></q-item-section>
                     <q-item-section>
                       <q-item-label caption>Salvaguarda</q-item-label>
-                      <q-item-label>{{ (magiaSelecionada as ItemMagia).salvaguarda }}</q-item-label>
+                      <q-item-label>{{ magiaSelecionada.salvaguarda }}</q-item-label>
                     </q-item-section>
                   </q-item>
                 </q-list>
@@ -211,19 +192,12 @@
 
                 <!-- Efeitos -->
                 <div
-                  v-if="
-                    (magiaSelecionada as ItemMagia).efeitos &&
-                    (magiaSelecionada as ItemMagia).efeitos!.length > 0
-                  "
+                  v-if="magiaSelecionada.efeitos && magiaSelecionada.efeitos.length > 0"
                   class="q-mb-md"
                 >
                   <div class="text-h6 q-mb-sm">Efeitos</div>
                   <q-list>
-                    <q-item
-                      v-for="(efeito, index) in (magiaSelecionada as ItemMagia).efeitos"
-                      :key="index"
-                      dense
-                    >
+                    <q-item v-for="(efeito, index) in magiaSelecionada.efeitos" :key="index" dense>
                       <q-item-section avatar>
                         <q-chip :color="getCorEfeito(efeito.tipo)" text-color="white" size="sm">
                           {{ efeito.tipo }}
@@ -241,16 +215,13 @@
 
                 <!-- Classes que podem aprender -->
                 <div
-                  v-if="
-                    (magiaSelecionada as ItemMagia).classes &&
-                    (magiaSelecionada as ItemMagia).classes!.length > 0
-                  "
+                  v-if="magiaSelecionada.classes && magiaSelecionada.classes.length > 0"
                   class="q-mb-md"
                 >
                   <div class="text-h6 q-mb-sm">Classes</div>
                   <div class="row q-gutter-sm">
                     <q-chip
-                      v-for="classe in (magiaSelecionada as ItemMagia).classes"
+                      v-for="classe in magiaSelecionada.classes"
                       :key="classe"
                       color="blue-grey"
                       text-color="white"
@@ -304,37 +275,33 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { usePersonagemStore } from '../stores/personagemStore';
-import { useItemStore } from '../stores/itemStore';
-import type { Magia } from '../classes/Magia';
+import { useMagiaStore } from '../stores/magiaStore';
 import { EscolaMagia, ComponenteMagia } from '../classes/Magia';
-import { TipoItem } from '../types';
-// import EditarMagiaDialog from './EditarMagiaDialog.vue'; // TODO: Corrigir tipos
 
-// Interface temporária para itens que representam magias
-interface ItemMagia {
+// Type for magic data from the store
+interface DadosMagia {
   id: string;
   nome: string;
-  tipo: TipoItem;
   descricao: string;
-  escola?: EscolaMagia;
-  nivel?: number;
-  concentracao?: boolean;
-  ritual?: boolean;
-  componentes?: ComponenteMagia[];
+  escola: EscolaMagia;
+  nivel: number;
+  tempoConjuracao: string;
+  alcance: string;
+  componentes: ComponenteMagia[];
   componenteMaterial?: string;
-  classes?: string[];
-  tempoConjuracao?: string;
-  alcance?: string;
-  duracao?: string;
-  areaEfeito?: string;
-  salvaguarda?: string;
-  efeitos?: Array<{
+  duracao: string;
+  concentracao: boolean;
+  ritual: boolean;
+  efeitos: Array<{
     tipo: string;
     dados?: string;
     condicao?: string;
     duracao?: string;
     descricao: string;
   }>;
+  classes: string[];
+  areaEfeito?: string;
+  salvaguarda?: string;
 }
 
 // Props
@@ -342,14 +309,14 @@ const showDialog = defineModel<boolean>('modelValue', { required: true });
 
 // Stores
 const personagemStore = usePersonagemStore();
-const itemStore = useItemStore();
+const magiaStore = useMagiaStore();
 
 // Estado local
 const splitterModel = ref(40);
-const magiaSelecionada = ref<ItemMagia | null>(null);
+const magiaSelecionada = ref<DadosMagia | null>(null);
 const personagemSelecionado = ref<{ id: string; nome: string } | null>(null);
 const mostrarEdicaoMagia = ref(false);
-const magiaParaEditar = ref<ItemMagia | null>(null);
+const magiaParaEditar = ref<DadosMagia | null>(null);
 
 // Filtros
 const filtroEscola = ref<EscolaMagia | null>(null);
@@ -386,7 +353,7 @@ const opcoesClasse = [
 
 // Computed
 const magias = computed(() => {
-  return itemStore.itens.filter((item) => item.tipo === TipoItem.MAGICO);
+  return magiaStore.magias;
 });
 
 const magiasFiltradas = computed(() => {
@@ -394,20 +361,18 @@ const magiasFiltradas = computed(() => {
 
   // Filtro por escola
   if (filtroEscola.value) {
-    resultado = resultado.filter((m) => (m as ItemMagia).escola === filtroEscola.value);
+    resultado = resultado.filter((m) => m.escola === filtroEscola.value);
   }
 
   // Filtro por nível
   if (filtroNivel.value !== null) {
-    resultado = resultado.filter((m) => (m as ItemMagia).nivel === filtroNivel.value);
+    resultado = resultado.filter((m) => m.nivel === filtroNivel.value);
   }
 
   // Filtro por classe
   if (filtroClasse.value) {
     resultado = resultado.filter((m) =>
-      (m as ItemMagia).classes?.some((c: string) =>
-        c.toLowerCase().includes(filtroClasse.value!.toLowerCase()),
-      ),
+      m.classes?.some((c: string) => c.toLowerCase().includes(filtroClasse.value!.toLowerCase())),
     );
   }
 
@@ -420,9 +385,7 @@ const magiasFiltradas = computed(() => {
   }
 
   return resultado.sort((a, b) => {
-    const aItem = a as ItemMagia;
-    const bItem = b as ItemMagia;
-    if ((aItem.nivel ?? 0) !== (bItem.nivel ?? 0)) return (aItem.nivel ?? 0) - (bItem.nivel ?? 0);
+    if (a.nivel !== b.nivel) return a.nivel - b.nivel;
     return a.nome.localeCompare(b.nome);
   });
 });
@@ -432,7 +395,7 @@ const personagensDisponiveis = computed(() => {
 });
 
 // Methods
-function selecionarMagia(magia: ItemMagia) {
+function selecionarMagia(magia: DadosMagia) {
   magiaSelecionada.value = magia;
 }
 
@@ -516,16 +479,10 @@ function novaMagia() {
   mostrarEdicaoMagia.value = true;
 }
 
-function salvarMagia(magia: Magia) {
-  // TODO: Implementar salvamento da magia
-  console.log('Salvando magia:', magia);
-  mostrarEdicaoMagia.value = false;
-}
-
 // Lifecycle
 onMounted(() => {
   // Carregar magias se necessário
-  void itemStore.carregarItens();
+  magiaStore.carregarMagias();
 });
 </script>
 
