@@ -69,27 +69,15 @@
                   <q-item-section>
                     <q-item-label class="text-h6">{{ magia.nome }}</q-item-label>
                     <q-item-label caption>
-                      {{ (magia as ItemMagia).escola || 'Evocação' }} • Nível
-                      {{
-                        ((magia as ItemMagia).nivel ?? 0) === 0
-                          ? 'Truque'
-                          : ((magia as ItemMagia).nivel ?? 0)
-                      }}
+                      {{ (magia as ItemMagia).escola || 'Evocação' }} • 
+                      Nível {{ ((magia as ItemMagia).nivel ?? 0) === 0 ? 'Truque' : ((magia as ItemMagia).nivel ?? 0) }}
                       {{ (magia as ItemMagia).concentracao ? ' • Concentração' : '' }}
                       {{ (magia as ItemMagia).ritual ? ' • Ritual' : '' }}
                     </q-item-label>
                   </q-item-section>
                   <q-item-section side>
-                    <q-chip
-                      :color="getCorNivel((magia as ItemMagia).nivel ?? 0)"
-                      text-color="white"
-                      size="sm"
-                    >
-                      {{
-                        ((magia as ItemMagia).nivel ?? 0) === 0
-                          ? 'T'
-                          : ((magia as ItemMagia).nivel ?? 0)
-                      }}
+                    <q-chip :color="getCorNivel((magia as ItemMagia).nivel ?? 0)" text-color="white" size="sm">
+                      {{ ((magia as ItemMagia).nivel ?? 0) === 0 ? 'T' : ((magia as ItemMagia).nivel ?? 0) }}
                     </q-chip>
                   </q-item-section>
                 </q-item>
@@ -141,9 +129,7 @@
                     <q-item-section avatar><q-icon name="schedule" /></q-item-section>
                     <q-item-section>
                       <q-item-label caption>Tempo de Conjuração</q-item-label>
-                      <q-item-label>{{
-                        (magiaSelecionada as ItemMagia).tempoConjuracao || 'Não informado'
-                      }}</q-item-label>
+                      <q-item-label>{{ (magiaSelecionada as ItemMagia).tempoConjuracao || 'Não informado' }}</q-item-label>
                     </q-item-section>
                   </q-item>
 
@@ -151,9 +137,7 @@
                     <q-item-section avatar><q-icon name="straighten" /></q-item-section>
                     <q-item-section>
                       <q-item-label caption>Alcance</q-item-label>
-                      <q-item-label>{{
-                        (magiaSelecionada as ItemMagia).alcance || 'Não informado'
-                      }}</q-item-label>
+                      <q-item-label>{{ (magiaSelecionada as ItemMagia).alcance || 'Não informado' }}</q-item-label>
                     </q-item-section>
                   </q-item>
 
@@ -161,9 +145,7 @@
                     <q-item-section avatar><q-icon name="gesture" /></q-item-section>
                     <q-item-section>
                       <q-item-label caption>Componentes</q-item-label>
-                      <q-item-label>{{
-                        magiaSelecionada ? getComponentesTexto(magiaSelecionada as ItemMagia) : ''
-                      }}</q-item-label>
+                      <q-item-label>{{ magiaSelecionada ? getComponentesTexto(magiaSelecionada as ItemMagia) : '' }}</q-item-label>
                     </q-item-section>
                   </q-item>
 
@@ -171,9 +153,7 @@
                     <q-item-section avatar><q-icon name="timelapse" /></q-item-section>
                     <q-item-section>
                       <q-item-label caption>Duração</q-item-label>
-                      <q-item-label>{{
-                        (magiaSelecionada as ItemMagia).duracao || 'Não informado'
-                      }}</q-item-label>
+                      <q-item-label>{{ (magiaSelecionada as ItemMagia).duracao || 'Não informado' }}</q-item-label>
                     </q-item-section>
                   </q-item>
 
@@ -186,10 +166,7 @@
                   </q-item>
 
                   <q-item
-                    v-if="
-                      (magiaSelecionada as ItemMagia).salvaguarda &&
-                      (magiaSelecionada as ItemMagia).salvaguarda !== 'nenhum'
-                    "
+                    v-if="(magiaSelecionada as ItemMagia).salvaguarda && (magiaSelecionada as ItemMagia).salvaguarda !== 'nenhum'"
                     dense
                   >
                     <q-item-section avatar><q-icon name="security" /></q-item-section>
@@ -210,20 +187,10 @@
                 </div>
 
                 <!-- Efeitos -->
-                <div
-                  v-if="
-                    (magiaSelecionada as ItemMagia).efeitos &&
-                    (magiaSelecionada as ItemMagia).efeitos!.length > 0
-                  "
-                  class="q-mb-md"
-                >
+                <div v-if="(magiaSelecionada as ItemMagia).efeitos && (magiaSelecionada as ItemMagia).efeitos!.length > 0" class="q-mb-md">
                   <div class="text-h6 q-mb-sm">Efeitos</div>
                   <q-list>
-                    <q-item
-                      v-for="(efeito, index) in (magiaSelecionada as ItemMagia).efeitos"
-                      :key="index"
-                      dense
-                    >
+                    <q-item v-for="(efeito, index) in (magiaSelecionada as ItemMagia).efeitos" :key="index" dense>
                       <q-item-section avatar>
                         <q-chip :color="getCorEfeito(efeito.tipo)" text-color="white" size="sm">
                           {{ efeito.tipo }}
@@ -240,13 +207,7 @@
                 </div>
 
                 <!-- Classes que podem aprender -->
-                <div
-                  v-if="
-                    (magiaSelecionada as ItemMagia).classes &&
-                    (magiaSelecionada as ItemMagia).classes!.length > 0
-                  "
-                  class="q-mb-md"
-                >
+                <div v-if="(magiaSelecionada as ItemMagia).classes && (magiaSelecionada as ItemMagia).classes!.length > 0" class="q-mb-md">
                   <div class="text-h6 q-mb-sm">Classes</div>
                   <div class="row q-gutter-sm">
                     <q-chip

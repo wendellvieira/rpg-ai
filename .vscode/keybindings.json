@@ -1,0 +1,26 @@
+[
+  {
+    "key": "ctrl+shift+d",
+    "command": "workbench.action.tasks.runTask",
+    "args": "dev",
+    "when": "workspaceFolderCount > 0"
+  },
+  {
+    "key": "ctrl+shift+l",
+    "command": "workbench.action.tasks.runTask",
+    "args": "lint",
+    "when": "workspaceFolderCount > 0"
+  },
+  {
+    "key": "ctrl+shift+k",
+    "command": "workbench.action.tasks.runTask",
+    "args": "kill dev server",
+    "when": "workspaceFolderCount > 0"
+  },
+  {
+    "key": "ctrl+shift+r",
+    "command": "workbench.action.tasks.runTask",
+    "args": "restart dev server",
+    "when": "workspaceFolderCount > 0"
+  }
+]

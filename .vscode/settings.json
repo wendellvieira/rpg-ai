@@ -3,14 +3,32 @@
   "editor.guides.bracketPairs": true,
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.codeActionsOnSave": [
-    "source.fixAll.eslint"
-  ],
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "vue"
-  ],
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "editor.codeActionsOnSave": ["source.fixAll.eslint"],
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "vue"],
+  "typescript.tsdk": "node_modules/typescript/lib",
+
+  // Configurações específicas do projeto RPG AI
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  "terminal.integrated.cwd": "${workspaceFolder}",
+
+  // Atalhos de comando rápido
+  "tasks.autoDetect": "on",
+
+  // Configurações para desenvolvimento Vue/Quasar
+  "vetur.validation.template": false,
+  "vetur.validation.style": false,
+  "vetur.validation.script": false,
+
+  // Configurações de arquivo
+  "files.associations": {
+    "*.vue": "vue"
+  },
+
+  // Configurações para melhor experiência com TypeScript
+  "typescript.suggest.autoImports": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+
+  // Facilitar navegação no projeto
+  "explorer.compactFolders": false,
+  "breadcrumbs.enabled": true
 }
