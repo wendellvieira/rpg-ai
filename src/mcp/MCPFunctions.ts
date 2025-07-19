@@ -294,7 +294,7 @@ class AtacarHandler implements MCPFunctionHandler {
       }
     }
 
-    return {
+    return Promise.resolve({
       success: hit,
       hit,
       critico,
@@ -319,7 +319,7 @@ class AtacarHandler implements MCPFunctionHandler {
         modificadores: rolagemAtaque.modificador,
         total: rolagemAtaque.total,
       },
-    };
+    });
   }
 
   validate(params: Record<string, unknown>): { valid: boolean; errors: string[] } {
