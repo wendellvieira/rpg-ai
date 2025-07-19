@@ -274,10 +274,7 @@
   </q-dialog>
 
   <!-- Dialog de Edição/Criação de Magia -->
-  <!-- TODO: Corrigir tipos para re-habilitar -->
-  <!--
-  <EditarMagiaDialog v-model="mostrarEdicaoMagia" :magia="magiaParaEditar" @salvar="salvarMagia" />
-  -->
+  <EditarMagiaDialog v-model="mostrarEdicaoMagia" :magia="magiaParaEditar" @ok="salvarMagia" />
 </template>
 
 <script setup lang="ts">
@@ -285,6 +282,7 @@ import { ref, computed, onMounted } from 'vue';
 import { usePersonagemStore } from '../stores/personagemStore';
 import { useMagiaStore } from '../stores/magiaStore';
 import { EscolaMagia, ComponenteMagia } from '../classes/Magia';
+import EditarMagiaDialog from './EditarMagiaDialog.vue';
 
 // Type for magic data from the store
 interface DadosMagia {
@@ -485,6 +483,17 @@ function editarMagia() {
 function novaMagia() {
   magiaParaEditar.value = null;
   mostrarEdicaoMagia.value = true;
+}
+
+function abrirDialogNovaMagia() {
+  magiaParaEditar.value = null;
+  mostrarEdicaoMagia.value = true;
+}
+
+function salvarMagia(novaMagia: DadosMagia) {
+  console.log('Magia salva:', novaMagia);
+  mostrarEdicaoMagia.value = false;
+  magiaParaEditar.value = null;
 }
 
 // Lifecycle

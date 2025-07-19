@@ -135,7 +135,7 @@
             <div class="row q-gutter-md">
               <div class="col-12 col-md-3">
                 <q-select
-                  v-model="form.efeitos[0]?.tipo"
+                  v-model="form.efeitos[0]!.tipo"
                   :options="opcoesEfeito"
                   label="Tipo de Efeito"
                   outlined
@@ -144,10 +144,18 @@
                 />
               </div>
               <div class="col-12 col-md-3">
-                <q-input v-model="form.efeitos[0]?.dados" label="Dados (ex: 3d6, 1d8+mod)" outlined />
+                <q-input
+                  v-model="form.efeitos[0]!.dados"
+                  label="Dados (ex: 3d6, 1d8+mod)"
+                  outlined
+                />
               </div>
               <div class="col-12 col-md-6">
-                <q-input v-model="form.efeitos[0]?.descricao" label="Descrição do Efeito" outlined />
+                <q-input
+                  v-model="form.efeitos[0]!.descricao"
+                  label="Descrição do Efeito"
+                  outlined
+                />
               </div>
             </div>
           </div>
@@ -184,12 +192,10 @@ import {
 
 // Props
 interface Props {
-  magia?: any; // Dados da magia para edição (opcional)
+  magia?: DadosMagia; // Dados da magia para edição (opcional)
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  magia: undefined,
-});
+const props = defineProps<Props>();
 
 // Emits
 defineEmits([...useDialogPluginComponent.emits]);
@@ -197,6 +203,31 @@ defineEmits([...useDialogPluginComponent.emits]);
 // Composables
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 const magiaStore = useMagiaStore();
+
+// Interface para dados de magia serializados (para consistência)
+interface DadosMagia {
+  id: string;
+  nome: string;
+  descricao: string;
+  escola: EscolaMagia;
+  nivel: number;
+  tempoConjuracao: TempoConjuracao;
+  alcance: AlcanceMagia;
+  componentes: ComponenteMagia[];
+  componenteMaterial?: string;
+  duracao: DuracaoMagia;
+  concentracao: boolean;
+  ritual: boolean;
+  efeitos: Array<{
+    tipo: 'dano' | 'cura' | 'buff' | 'debuff' | 'utilidade' | 'controle';
+    dados?: string;
+    condicao?: string;
+    duracao?: string;
+    descricao: string;
+  }>;
+  classes: string[];
+  valor?: number;
+}
 
 // Estado
 const salvando = ref(false);
@@ -223,7 +254,13 @@ const form = reactive({
       condicao: '',
       duracao: '',
     },
-  ],
+  ] as Array<{
+    tipo: 'dano' | 'cura' | 'buff' | 'debuff' | 'utilidade' | 'controle';
+    dados?: string;
+    condicao?: string;
+    duracao?: string;
+    descricao: string;
+  }>,
 });
 
 // Opções para selects
@@ -280,10 +317,7 @@ const opcoesClasses = [
 // Computed
 const formValido = computed(() => {
   return (
-    form.nome.trim() !== '' &&
-    form.descricao.trim() !== '' &&
-    form.nivel >= 0 &&
-    form.nivel <= 9
+    form.nome.trim() !== '' && form.descricao.trim() !== '' && form.nivel >= 0 && form.nivel <= 9
   );
 });
 
@@ -292,7 +326,7 @@ function salvarMagia() {
   if (!formValido.value) return;
 
   salvando.value = true;
-  
+
   try {
     const novaMagia = new Magia({
       id: props.magia?.id || `magia-${Date.now()}`,
@@ -323,32 +357,6 @@ function salvarMagia() {
   }
 }
 
-function resetForm() {
-  Object.assign(form, {
-    nome: '',
-    escola: EscolaMagia.EVOCACAO,
-    nivel: 1,
-    descricao: '',
-    tempoConjuracao: TempoConjuracao.ACAO,
-    alcance: AlcanceMagia.PES_30,
-    duracao: DuracaoMagia.INSTANTANEA,
-    componentes: [],
-    componenteMaterial: '',
-    concentracao: false,
-    ritual: false,
-    classes: [],
-    efeitos: [
-      {
-        tipo: 'dano' as const,
-        dados: '',
-        descricao: '',
-        condicao: '',
-        duracao: '',
-      },
-    ],
-  });
-}
-
 // Preencher formulário se estiver editando
 if (props.magia) {
   Object.assign(form, {
@@ -364,15 +372,17 @@ if (props.magia) {
     concentracao: props.magia.concentracao || false,
     ritual: props.magia.ritual || false,
     classes: props.magia.classes || [],
-    efeitos: props.magia.efeitos?.length ? [...props.magia.efeitos] : [
-      {
-        tipo: 'dano' as const,
-        dados: '',
-        descricao: '',
-        condicao: '',
-        duracao: '',
-      },
-    ],
+    efeitos: props.magia.efeitos?.length
+      ? [...props.magia.efeitos]
+      : [
+          {
+            tipo: 'dano' as const,
+            dados: '',
+            descricao: '',
+            condicao: '',
+            duracao: '',
+          },
+        ],
   });
 }
 </script>
