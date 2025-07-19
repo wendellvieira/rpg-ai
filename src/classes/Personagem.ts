@@ -138,7 +138,32 @@ export class Personagem {
     return this.status !== StatusPersonagem.MORTO;
   }
   get estaConsciente(): boolean {
-    return this.status === StatusPersonagem.ATIVO && this.hp > 0;
+    return this.status !== StatusPersonagem.INCONSCIENTE && this.status !== StatusPersonagem.MORTO;
+  }
+
+  // Getters para acessar campos privados
+  get getAtributos(): Atributos {
+    return this.atributos;
+  }
+
+  get getInventario(): Map<string, number> {
+    return new Map(this.inventario);
+  }
+
+  get getEquipamentos(): Map<string, string> {
+    return new Map(this.equipamentos);
+  }
+
+  get getEventos(): EventoPersonagem[] {
+    return [...this.eventos];
+  }
+
+  get getConhecimentos(): ConhecimentoPersonagem[] {
+    return [...this.conhecimentos];
+  }
+
+  get getExperiencia(): number {
+    return this.experiencia;
   }
 
   /**
@@ -436,5 +461,25 @@ export class Personagem {
     personagem.experiencia = dados.experiencia || 0;
 
     return personagem;
+  }
+
+  /**
+   * Obtém lista de todos os itens no inventário
+   */
+  obterItensInventario(): Array<{ itemId: string; quantidade: number }> {
+    return Array.from(this.inventario.entries()).map(([itemId, quantidade]) => ({
+      itemId,
+      quantidade,
+    }));
+  }
+
+  /**
+   * Obtém lista de todos os equipamentos
+   */
+  obterEquipamentos(): Array<{ slot: string; itemId: string }> {
+    return Array.from(this.equipamentos.entries()).map(([slot, itemId]) => ({
+      slot,
+      itemId,
+    }));
   }
 }

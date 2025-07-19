@@ -77,7 +77,7 @@ export class PersistenceManager {
     const dados = await this.dbService.getItem(`personagem_${id}`);
 
     if (dados) {
-      return Personagem.deserializar(dados);
+      return Personagem.deserializar(dados as any);
     }
 
     return null;
@@ -91,7 +91,7 @@ export class PersistenceManager {
   > {
     await this.verificarInicializacao();
     const indice = (await this.dbService.getItem('indice_personagens')) || [];
-    return indice;
+    return indice as Array<{ id: string; nome: string; classe: string; raca: string }>;
   }
 
   /**

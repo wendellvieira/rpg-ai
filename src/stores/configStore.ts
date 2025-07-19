@@ -1,0 +1,260 @@
+import { defineStore } from 'pinia';
+import { ref, computed } from 'vue';
+
+export interface ConfiguracaoGlobal {
+  openaiApiKey: string;
+  openaiModel: string;
+  openaiTemperature: number;
+  autoSave: boolean;
+  autoSaveInterval: number; // em segundos
+  tema: 'auto' | 'light' | 'dark';
+  idioma: string;
+  debug: boolean;
+  maxHistoricoMensagens: number;
+  timeoutIA: number; // em segundos
+}
+
+export interface ConfiguracaoSessao {
+  permitirIAs: boolean;
+  frequenciaAcaoIA: number; // em segundos
+  dificuldadeGlobal: number; // 1-20
+  usarRegrasD20: boolean;
+  mostrarRolagens: boolean;
+  logAcoes: boolean;
+}
+
+const DEFAULT_CONFIG: ConfiguracaoGlobal = {
+  openaiApiKey: '',
+  openaiModel: 'gpt-4',
+  openaiTemperature: 0.7,
+  autoSave: true,
+  autoSaveInterval: 30,
+  tema: 'auto',
+  idioma: 'pt-BR',
+  debug: false,
+  maxHistoricoMensagens: 100,
+  timeoutIA: 30,
+};
+
+const DEFAULT_SESSION_CONFIG: ConfiguracaoSessao = {
+  permitirIAs: true,
+  frequenciaAcaoIA: 5,
+  dificuldadeGlobal: 10,
+  usarRegrasD20: true,
+  mostrarRolagens: true,
+  logAcoes: true,
+};
+
+export const useConfigStore = defineStore('config', () => {
+  // Estado
+  const configuracao = ref<ConfiguracaoGlobal>({ ...DEFAULT_CONFIG });
+  const configuracaoSessao = ref<ConfiguracaoSessao>({ ...DEFAULT_SESSION_CONFIG });
+  const carregado = ref(false);
+
+  // Computed
+  const isApiConfigured = computed(() => {
+    return configuracao.value.openaiApiKey.length > 0;
+  });
+
+  const isDarkMode = computed(() => {
+    if (configuracao.value.tema === 'dark') return true;
+    if (configuracao.value.tema === 'light') return false;
+    // Auto: detectar preferência do sistema
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+
+  const configSerializada = computed(() => {
+    return JSON.stringify(configuracao.value, null, 2);
+  });
+
+  // Actions
+  function carregarConfiguracoes(): void {
+    try {
+      // Carregar do localStorage
+      const configSalva = localStorage.getItem('rpg-ai-config');
+      if (configSalva) {
+        const config = JSON.parse(configSalva);
+        configuracao.value = { ...DEFAULT_CONFIG, ...config };
+      }
+
+      const sessionConfigSalva = localStorage.getItem('rpg-ai-session-config');
+      if (sessionConfigSalva) {
+        const config = JSON.parse(sessionConfigSalva);
+        configuracaoSessao.value = { ...DEFAULT_SESSION_CONFIG, ...config };
+      }
+
+      carregado.value = true;
+    } catch (error) {
+      console.error('Erro ao carregar configurações:', error);
+      // Usar configurações padrão
+      configuracao.value = { ...DEFAULT_CONFIG };
+      configuracaoSessao.value = { ...DEFAULT_SESSION_CONFIG };
+      carregado.value = true;
+    }
+  }
+
+  function salvarConfiguracoes(): void {
+    try {
+      localStorage.setItem('rpg-ai-config', JSON.stringify(configuracao.value));
+      localStorage.setItem('rpg-ai-session-config', JSON.stringify(configuracaoSessao.value));
+    } catch (error) {
+      console.error('Erro ao salvar configurações:', error);
+      throw error;
+    }
+  }
+
+  function atualizarConfiguracao(novaConfig: Partial<ConfiguracaoGlobal>): void {
+    configuracao.value = { ...configuracao.value, ...novaConfig };
+    salvarConfiguracoes();
+  }
+
+  function atualizarConfiguracaoSessao(novaConfig: Partial<ConfiguracaoSessao>): void {
+    configuracaoSessao.value = { ...configuracaoSessao.value, ...novaConfig };
+    salvarConfiguracoes();
+  }
+
+  function resetarConfiguracoes(): void {
+    configuracao.value = { ...DEFAULT_CONFIG };
+    configuracaoSessao.value = { ...DEFAULT_SESSION_CONFIG };
+    salvarConfiguracoes();
+  }
+
+  function definirApiKey(apiKey: string): void {
+    atualizarConfiguracao({ openaiApiKey: apiKey });
+  }
+
+  function definirModelo(modelo: string): void {
+    atualizarConfiguracao({ openaiModel: modelo });
+  }
+
+  function definirTemperatura(temperatura: number): void {
+    atualizarConfiguracao({ openaiTemperature: temperatura });
+  }
+
+  function definirTema(tema: 'auto' | 'light' | 'dark'): void {
+    atualizarConfiguracao({ tema });
+  }
+
+  function alternarDebug(): void {
+    atualizarConfiguracao({ debug: !configuracao.value.debug });
+  }
+
+  function alternarAutoSave(): void {
+    atualizarConfiguracao({ autoSave: !configuracao.value.autoSave });
+  }
+
+  function exportarConfiguracoes(): string {
+    return JSON.stringify(
+      {
+        configuracao: configuracao.value,
+        configuracaoSessao: configuracaoSessao.value,
+      },
+      null,
+      2,
+    );
+  }
+
+  function importarConfiguracoes(dadosJson: string): void {
+    try {
+      const dados = JSON.parse(dadosJson);
+
+      if (dados.configuracao) {
+        configuracao.value = { ...DEFAULT_CONFIG, ...dados.configuracao };
+      }
+
+      if (dados.configuracaoSessao) {
+        configuracaoSessao.value = { ...DEFAULT_SESSION_CONFIG, ...dados.configuracaoSessao };
+      }
+
+      salvarConfiguracoes();
+    } catch (error) {
+      console.error('Erro ao importar configurações:', error);
+      throw new Error('Formato de configuração inválido');
+    }
+  }
+
+  function obterConfiguracao<K extends keyof ConfiguracaoGlobal>(chave: K): ConfiguracaoGlobal[K] {
+    return configuracao.value[chave];
+  }
+
+  function obterConfiguracaoSessao<K extends keyof ConfiguracaoSessao>(
+    chave: K,
+  ): ConfiguracaoSessao[K] {
+    return configuracaoSessao.value[chave];
+  }
+
+  // Validações
+  function validarConfiguracao(): string[] {
+    const erros: string[] = [];
+
+    if (!configuracao.value.openaiApiKey) {
+      erros.push('Chave da API OpenAI é obrigatória');
+    }
+
+    if (configuracao.value.openaiTemperature < 0 || configuracao.value.openaiTemperature > 2) {
+      erros.push('Temperatura deve estar entre 0 e 2');
+    }
+
+    if (configuracao.value.autoSaveInterval < 10) {
+      erros.push('Intervalo de auto-save deve ser pelo menos 10 segundos');
+    }
+
+    if (configuracao.value.maxHistoricoMensagens < 10) {
+      erros.push('Máximo de mensagens deve ser pelo menos 10');
+    }
+
+    if (configuracao.value.timeoutIA < 5) {
+      erros.push('Timeout da IA deve ser pelo menos 5 segundos');
+    }
+
+    return erros;
+  }
+
+  function validarConfiguracaoSessao(): string[] {
+    const erros: string[] = [];
+
+    if (configuracaoSessao.value.frequenciaAcaoIA < 1) {
+      erros.push('Frequência de ação da IA deve ser pelo menos 1 segundo');
+    }
+
+    if (
+      configuracaoSessao.value.dificuldadeGlobal < 1 ||
+      configuracaoSessao.value.dificuldadeGlobal > 20
+    ) {
+      erros.push('Dificuldade global deve estar entre 1 e 20');
+    }
+
+    return erros;
+  }
+
+  return {
+    // Estado
+    configuracao,
+    configuracaoSessao,
+    carregado,
+
+    // Computed
+    isApiConfigured,
+    isDarkMode,
+    configSerializada,
+
+    // Actions
+    carregarConfiguracoes,
+    salvarConfiguracoes,
+    atualizarConfiguracao,
+    atualizarConfiguracaoSessao,
+    resetarConfiguracoes,
+    definirApiKey,
+    definirModelo,
+    definirTemperatura,
+    definirTema,
+    alternarDebug,
+    alternarAutoSave,
+    exportarConfiguracoes,
+    importarConfiguracoes,
+    obterConfiguracao,
+    obterConfiguracaoSessao,
+    validarConfiguracao,
+    validarConfiguracaoSessao,
+  };
+});

@@ -77,6 +77,20 @@ export class SessaoJogo {
   }
 
   /**
+   * Obtém lista de participantes da sessão
+   */
+  getParticipantes(): string[] {
+    return [...this.participantes];
+  }
+
+  /**
+   * Obtém contexto atual da sessão
+   */
+  get contextoAtual(): string {
+    return `Sessão: ${this.nome} - ${this.descricao}`;
+  }
+
+  /**
    * Adiciona um personagem à sessão
    */
   adicionarParticipante(personagemId: string): void {
@@ -222,20 +236,6 @@ export class SessaoJogo {
    */
   foiFinalizada(): boolean {
     return this.status === StatusSessao.FINALIZADA;
-  }
-
-  /**
-   * Obtém lista de participantes
-   */
-  getParticipantes(): string[] {
-    return [...this.participantes];
-  }
-
-  /**
-   * Verifica se um personagem está participando
-   */
-  contemParticipante(personagemId: string): boolean {
-    return this.participantes.includes(personagemId);
   }
 
   /**

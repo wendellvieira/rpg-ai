@@ -40,28 +40,28 @@
 
 ### 4. Sistema MCP
 
-- [ ] Criar `src/mcp/`
-  - [ ] `MCPHandler.ts` - Manipulador principal
-  - [ ] `MCPFunctions.ts` - Funções expostas para IAs
-  - [ ] `MCPTypes.ts` - Tipos específicos do MCP
-- [ ] Implementar funções principais:
-  - [ ] `atacar(alvo, arma?)`
-  - [ ] `defender()`
-  - [ ] `mover(destino)`
-  - [ ] `lancarMagia(magia, alvo?)`
-  - [ ] `usarItem(item, alvo?)`
-  - [ ] `testeAtributo(atributo, dificuldade?)`
-  - [ ] `lerConhecimento(termo)`
-  - [ ] `escreverConhecimento(conteudo)`
-- [ ] Sistema de validação de ações
-- [ ] Integração com classes TypeScript
+- [x] Criar `src/mcp/`
+  - [x] `MCPHandler.ts` - Manipulador principal
+  - [x] `MCPFunctions.ts` - Funções expostas para IAs
+  - [x] `MCPTypes.ts` - Tipos específicos do MCP
+- [x] Implementar funções principais:
+  - [x] `atacar(alvo, arma?)`
+  - [x] `defender()`
+  - [x] `mover(destino)`
+  - [x] `lancarMagia(magia, alvo?)`
+  - [x] `usarItem(item, alvo?)`
+  - [x] `testeAtributo(atributo, dificuldade?)`
+  - [x] `lerConhecimento(termo)`
+  - [x] `escreverConhecimento(conteudo)`
+- [x] Sistema de validação de ações
+- [x] Integração com classes TypeScript
 
 ### 5. Integração OpenAI
 
-- [ ] Criar `src/services/`
-  - [ ] `OpenAIService.ts` - Cliente OpenAI
-  - [ ] `IAPersonagem.ts` - Wrapper para personagem IA
-  - [ ] `ContextBuilder.ts` - Monta contexto para IA
+- [x] Criar `src/services/`
+  - [x] `OpenAIService.ts` - Cliente OpenAI
+  - [x] `IAPersonagem.ts` - Wrapper para personagem IA
+  - [x] `ContextBuilder.ts` - Monta contexto para IA
 - [ ] Sistema de prompts personalizados
 - [ ] Gerenciamento de múltiplas conversas
 
@@ -69,7 +69,7 @@
 
 ### 6. Layouts e Páginas Base
 
-- [ ] Criar `src/layouts/MainLayout.vue`
+- [x] Criar `src/layouts/MainLayout.vue`
 - [ ] Atualizar páginas:
   - [ ] `IndexPage.vue` - Lista de sessões
   - [ ] `SetupPage.vue` - Gerenciamento de recursos
@@ -78,7 +78,8 @@
 
 ### 7. Componentes Principais
 
-- [ ] Criar `src/components/`
+- [x] Criar `src/components/`
+  - [x] `EssentialLink.vue` - Link de navegação
   - [ ] `PersonagemCard.vue` - Card de personagem
   - [ ] `MensagemChat.vue` - Mensagem no chat
   - [ ] `AtributoEditor.vue` - Editor de atributos
@@ -121,11 +122,11 @@
 
 ### 12. Pinia Stores
 
-- [ ] Criar `src/stores/`
-  - [ ] `sessaoStore.ts` - Estado da sessão atual
+- [x] Criar `src/stores/`
+  - [x] `configStore.ts` - Configurações globais
+  - [x] `sessaoStore.ts` - Estado da sessão atual
   - [ ] `personagemStore.ts` - Personagens ativos
   - [ ] `itemStore.ts` - Catálogo de itens
-  - [ ] `configStore.ts` - Configurações globais
 - [ ] Integração com persistência
 - [ ] Computed properties e getters
 

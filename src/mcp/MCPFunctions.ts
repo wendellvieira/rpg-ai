@@ -348,7 +348,7 @@ class AtacarHandler implements MCPFunctionHandler {
  * Handler para movimento
  */
 class MoverHandler implements MCPFunctionHandler {
-  async execute(params: Record<string, unknown>, context: MCPContext): Promise<MovimentoResult> {
+  execute(params: Record<string, unknown>, context: MCPContext): Promise<MovimentoResult> {
     const destino = params.destino as string;
     const tipoMovimento = (params.tipoMovimento as string) || 'normal';
     const distancia = params.distancia as number;
@@ -365,7 +365,7 @@ class MoverHandler implements MCPFunctionHandler {
     const sucesso = distancia <= velocidade;
     const movimentoRestante = Math.max(0, velocidade - distancia);
 
-    return {
+    return Promise.resolve({
       success: sucesso,
       description: sucesso
         ? `Moveu-se ${distancia}m para ${destino} (${tipoMovimento})`
@@ -384,7 +384,7 @@ class MoverHandler implements MCPFunctionHandler {
       novaPosicao: sucesso ? destino : 'posição_atual',
       distanciaPercorrida: sucesso ? distancia : 0,
       movimentoRestante,
-    };
+    });
   }
 
   validate(params: Record<string, unknown>): { valid: boolean; errors: string[] } {
@@ -408,8 +408,8 @@ class MoverHandler implements MCPFunctionHandler {
 
 // Implementações básicas para outros handlers
 class DefenderHandler implements MCPFunctionHandler {
-  async execute(params: Record<string, unknown>): Promise<MCPActionResult> {
-    return {
+  execute(): Promise<MCPActionResult> {
+    return Promise.resolve({
       success: true,
       description: 'Assumiu postura defensiva (+2 CA até próximo turno)',
       effects: [
@@ -421,7 +421,7 @@ class DefenderHandler implements MCPFunctionHandler {
           description: '+2 CA',
         },
       ],
-    };
+    });
   }
 
   validate(): { valid: boolean; errors: string[] } {
@@ -438,7 +438,7 @@ class CorrerHandler extends MoverHandler {}
 class FurtivoHandler extends MoverHandler {}
 
 class LancarMagiaHandler implements MCPFunctionHandler {
-  async execute(params: Record<string, unknown>): Promise<MagiaResult> {
+  execute(params: Record<string, unknown>): Promise<MagiaResult> {
     const magia = params.magia as string;
     const nivel = params.nivel as number;
     const alvo = params.alvo as string | undefined;
@@ -446,7 +446,7 @@ class LancarMagiaHandler implements MCPFunctionHandler {
     // Simula lançamento de magia
     const sucesso = Math.random() > 0.1; // 90% de sucesso base
 
-    return {
+    return Promise.resolve({
       success: sucesso,
       description: sucesso
         ? `Lançou ${magia} (nível ${nivel})${alvo ? ` em ${alvo}` : ''}`
@@ -465,7 +465,7 @@ class LancarMagiaHandler implements MCPFunctionHandler {
       slotsUsados: 1,
       componentsConsumidos: [],
       alcance: 9,
-    };
+    });
   }
 
   validate(params: Record<string, unknown>): { valid: boolean; errors: string[] } {
@@ -489,8 +489,8 @@ class LancarMagiaHandler implements MCPFunctionHandler {
 
 // Handlers simples para outras funções
 class CancelarConcentracaoHandler implements MCPFunctionHandler {
-  async execute(): Promise<MCPActionResult> {
-    return {
+  execute(): Promise<MCPActionResult> {
+    return Promise.resolve({
       success: true,
       description: 'Concentração cancelada',
       effects: [
@@ -501,7 +501,7 @@ class CancelarConcentracaoHandler implements MCPFunctionHandler {
           description: 'Cancelou concentração',
         },
       ],
-    };
+    });
   }
   validate(): { valid: boolean; errors: string[] } {
     return { valid: true, errors: [] };
@@ -512,9 +512,9 @@ class CancelarConcentracaoHandler implements MCPFunctionHandler {
 }
 
 class UsarItemHandler implements MCPFunctionHandler {
-  async execute(params: Record<string, unknown>): Promise<MCPActionResult> {
+  execute(params: Record<string, unknown>): Promise<MCPActionResult> {
     const item = params.item as string;
-    return {
+    return Promise.resolve({
       success: true,
       description: `Usou ${item}`,
       effects: [
@@ -525,7 +525,7 @@ class UsarItemHandler implements MCPFunctionHandler {
           description: `Efeito de ${item}`,
         },
       ],
-    };
+    });
   }
   validate(params: Record<string, unknown>): { valid: boolean; errors: string[] } {
     return { valid: !!params.item, errors: params.item ? [] : ['Item é obrigatório'] };
