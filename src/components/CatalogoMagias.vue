@@ -281,7 +281,13 @@
 import { ref, computed, onMounted } from 'vue';
 import { usePersonagemStore } from '../stores/personagemStore';
 import { useMagiaStore } from '../stores/magiaStore';
-import { EscolaMagia, ComponenteMagia } from '../classes/Magia';
+import {
+  EscolaMagia,
+  ComponenteMagia,
+  type TempoConjuracao,
+  type AlcanceMagia,
+  type DuracaoMagia,
+} from '../classes/Magia';
 import EditarMagiaDialog from './EditarMagiaDialog.vue';
 
 // Type for magic data from the store
@@ -291,11 +297,11 @@ interface DadosMagia {
   descricao: string;
   escola: EscolaMagia;
   nivel: number;
-  tempoConjuracao: string;
-  alcance: string;
+  tempoConjuracao: TempoConjuracao;
+  alcance: AlcanceMagia;
   componentes: ComponenteMagia[];
   componenteMaterial?: string;
-  duracao: string;
+  duracao: DuracaoMagia;
   concentracao: boolean;
   ritual: boolean;
   efeitos: Array<{

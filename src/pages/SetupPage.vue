@@ -181,26 +181,7 @@
 
             <!-- Aba Mapas -->
             <q-tab-panel name="mapas">
-              <div class="row items-center q-mb-md">
-                <div class="col">
-                  <div class="text-h6">Mapas</div>
-                  <div class="text-caption text-grey-6">Cenários e localizações</div>
-                </div>
-                <div class="col-auto">
-                  <q-btn
-                    color="primary"
-                    icon="add"
-                    label="Novo Mapa"
-                    @click="dialogNovoMapa = true"
-                  />
-                </div>
-              </div>
-
-              <div class="text-center q-py-xl text-grey-6">
-                <q-icon name="map" size="4rem" class="q-mb-md" />
-                <div class="text-h6">Sistema de mapas em desenvolvimento</div>
-                <div class="q-mt-sm">Esta funcionalidade será implementada em breve</div>
-              </div>
+              <MapaViewer />
             </q-tab-panel>
 
             <!-- Aba Configurações -->
@@ -388,6 +369,7 @@ import { useConfigStore } from '../stores/configStore';
 import { useItemStore } from '../stores/itemStore';
 import EditarItemDialog from '../components/EditarItemDialog.vue';
 import ConhecimentoEditor from '../components/ConhecimentoEditor.vue';
+import MapaViewer from '../components/MapaViewer.vue';
 
 const $q = useQuasar();
 const route = useRoute();
@@ -423,7 +405,6 @@ const carregandoItens = ref(false);
 const personagens = ref<PersonagemData[]>([]);
 const itens = ref<ItemData[]>([]);
 const dialogNovoPersonagem = ref(false);
-const dialogNovoMapa = ref(false);
 const testandoAPI = ref(false);
 
 // Configurações

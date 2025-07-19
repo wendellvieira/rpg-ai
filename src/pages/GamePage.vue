@@ -155,10 +155,7 @@
 
                 <!-- Aba Mapas -->
                 <q-tab-panel name="mapas" class="q-pa-none">
-                  <div class="text-center text-grey-6 q-py-lg">
-                    <q-icon name="map" size="3rem" />
-                    <div class="text-caption">Em desenvolvimento</div>
-                  </div>
+                  <MapaCanvas />
                 </q-tab-panel>
               </q-tab-panels>
             </div>
@@ -384,6 +381,7 @@ import type { MensagemMestre } from '../types';
 import IniciativaCombate from '../components/IniciativaCombate.vue';
 import CatalogoMagias from '../components/CatalogoMagias.vue';
 import EditarPersonagemDialog from '../components/EditarPersonagemDialog.vue';
+import MapaCanvas from '../components/MapaCanvas.vue';
 
 interface PersonagemData {
   id: string;
