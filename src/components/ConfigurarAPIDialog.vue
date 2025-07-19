@@ -13,13 +13,20 @@
             <template v-slot:avatar>
               <q-icon name="info" />
             </template>
-            Configure sua chave de API da OpenAI para habilitar funcionalidades de IA. Sua chave
-            será armazenada apenas localmente no seu navegador.
+            <div v-if="!apiKeyNoEnv">
+              Configure sua chave de API da OpenAI para habilitar funcionalidades de IA. Sua chave
+              será armazenada apenas localmente no seu navegador.
+            </div>
+            <div v-else>
+              ✅ API Key encontrada no arquivo .env - OpenAI configurado automaticamente!
+              <br />Você pode ajustar apenas as configurações adicionais abaixo.
+            </div>
           </q-banner>
         </div>
 
         <q-form @submit="salvarConfiguracao" class="q-gutter-md">
           <q-input
+            v-if="!apiKeyNoEnv"
             v-model="form.apiKey"
             label="Chave da API OpenAI *"
             outlined
@@ -40,6 +47,17 @@
               />
             </template>
           </q-input>
+
+          <div v-if="apiKeyNoEnv" class="q-mb-md">
+            <q-banner rounded class="bg-positive text-white">
+              <template v-slot:avatar>
+                <q-icon name="check_circle" />
+              </template>
+              API Key: ••••••••••••••••••••••••••••••••••••••••••••••••••••
+              <br />
+              <small>Usando chave do arquivo .env</small>
+            </q-banner>
+          </div>
 
           <q-select
             v-model="form.modelo"
@@ -133,7 +151,7 @@
             label="Testar Conexão"
             @click="testarConexao"
             :loading="testando"
-            :disable="!form.apiKey"
+            :disable="!apiKeyNoEnv && !form.apiKey"
           />
 
           <div v-if="resultadoTeste" class="q-mt-sm">
@@ -192,6 +210,10 @@ const testando = ref(false);
 const mostrarChave = ref(false);
 const resultadoTeste = ref<{ sucesso: boolean; mensagem: string } | null>(null);
 
+// Verifica se há API key no .env
+const temApiKeyNoEnv = !!import.meta.env.VITE_OPENAI_API_KEY;
+const apiKeyNoEnv = ref(temApiKeyNoEnv);
+
 const form = ref<ConfigAPI>({
   apiKey: '',
   modelo: 'gpt-3.5-turbo',
@@ -211,6 +233,10 @@ const modelosDisponiveis = [
 ];
 
 const formularioValido = computed(() => {
+  // Se a API key está no .env, não precisa validar o campo
+  if (apiKeyNoEnv.value) {
+    return true;
+  }
   return form.value.apiKey.trim() !== '' && form.value.apiKey.startsWith('sk-');
 });
 
@@ -233,11 +259,16 @@ async function testarConexao() {
   resultadoTeste.value = null;
 
   try {
+    // Usar a API key do .env se disponível, senão usar a do formulário
+    const apiKeyParaTeste = apiKeyNoEnv.value
+      ? import.meta.env.VITE_OPENAI_API_KEY
+      : form.value.apiKey;
+
     // Simular teste de conexão com a API
     // Em uma implementação real, isso faria uma chamada de teste para a OpenAI
     const response = await fetch(`${form.value.baseUrl}/models`, {
       headers: {
-        Authorization: `Bearer ${form.value.apiKey}`,
+        Authorization: `Bearer ${apiKeyParaTeste}`,
         'Content-Type': 'application/json',
         ...(form.value.organizacao && { 'OpenAI-Organization': form.value.organizacao }),
       },
@@ -272,16 +303,29 @@ function salvarConfiguracao() {
 
   try {
     // Atualizar configurações no store
-    configStore.atualizarConfiguracao({
-      openaiApiKey: form.value.apiKey.trim(),
+    const configUpdate: Partial<{
+      openaiApiKey: string;
+      openaiModel: string;
+      openaiTemperature: number;
+      debug: boolean;
+    }> = {
       openaiModel: form.value.modelo,
       openaiTemperature: form.value.temperatura,
       debug: form.value.habilitarLog,
-    });
+    };
+
+    // Só salvar a API key se não estiver no .env
+    if (!apiKeyNoEnv.value) {
+      configUpdate.openaiApiKey = form.value.apiKey.trim();
+    }
+
+    configStore.atualizarConfiguracao(configUpdate);
 
     onDialogOK({
       success: true,
-      message: 'Configurações salvas com sucesso!',
+      message: apiKeyNoEnv.value
+        ? 'Configurações salvas! API Key sendo usada do arquivo .env'
+        : 'Configurações salvas com sucesso!',
     });
   } catch (error) {
     console.error('Erro ao salvar configurações:', error);
