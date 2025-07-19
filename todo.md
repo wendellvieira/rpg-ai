@@ -4,27 +4,27 @@
 
 ### 1. Dependências e Configuração
 
-- [ ] Instalar dependências necessárias
-  - [ ] `localforage` para persistência
-  - [ ] `openai` para integração com GPT
+- [x] Instalar dependências necessárias
+  - [x] `localforage` para persistência
+  - [x] `openai` para integração com GPT
   - [ ] Tipos TypeScript complementares
-- [ ] Configurar arquivo `.env`
-  - [ ] `VITE_OPENAI_API_KEY` (exemplo/template)
+- [x] Configurar arquivo `.env`
+  - [x] `VITE_OPENAI_API_KEY` (exemplo/template)
 - [ ] Configurar eslint para classes TypeScript
 
 ### 2. Classes Core (Entidades)
 
-- [ ] Criar `src/classes/`
-  - [ ] `Personagem.ts` - Classe principal de personagem
-  - [ ] `Atributos.ts` - Sistema de atributos D&D
-  - [ ] `Item.ts` - Classe base para itens
-  - [ ] `Arma.ts` - Herda de Item
-  - [ ] `Armadura.ts` - Herda de Item
-  - [ ] `Consumivel.ts` - Herda de Item
+- [x] Criar `src/classes/`
+  - [x] `Personagem.ts` - Classe principal de personagem
+  - [x] `Atributos.ts` - Sistema de atributos D&D
+  - [x] `Item.ts` - Classe base para itens
+  - [x] `Arma.ts` - Herda de Item
+  - [x] `Armadura.ts` - Herda de Item
+  - [x] `Consumivel.ts` - Herda de Item
   - [ ] `Inventario.ts` - Gerencia itens do personagem
   - [ ] `SessaoJogo.ts` - Gerencia estado da sessão
   - [ ] `SistemaTurnos.ts` - Controla ordem e turnos
-  - [ ] `Dados.ts` - Sistema de rolagem de dados D&D
+  - [x] `Dados.ts` - Sistema de rolagem de dados D&D
 
 ### 3. Persistência
 
