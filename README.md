@@ -1,6 +1,6 @@
 # RPG AI - Simulador de RPG com Múltiplas IAs
 
-🎲 **Sistema completo de RPG com suporte a múltiplos personagens controlados por IA usando OpenAI e Model Context Protocol (MCP)**
+🎲 **Sistema completo de RPG com suporte a múltiplos personagens controlados por IA usando OpenAI, Stability AI e Model Context Protocol (MCP)**
 
 ## 📋 Para Agentes de IA - Como Continuar Este Projeto
 
@@ -44,8 +44,20 @@
 ```
 
 - Configure `VITE_OPENAI_API_KEY` com sua chave da OpenAI
-- Modelo padrão: `gpt-4o-mini`
+- Configure `VITE_STABILITY_API_KEY` com sua chave da Stability AI
+- Modelo OpenAI padrão: `gpt-4o-mini`
+- Modelo Stability AI padrão: `stable-image-core`
 - **IMPORTANTE**: Arquivo já está no .gitignore
+
+### 🎨 **APIs Utilizadas**
+
+- **OpenAI GPT**: Inteligência artificial para personagens e narrativa
+- **Stability AI**: Geração de imagens para mapas e elementos visuais
+  - Stable Image Core: Text-to-image de alta qualidade
+  - Stable Image Ultra: Geração ultra realista 
+  - Inpainting: Edição precisa de áreas com máscaras
+  - Templates: Dungeons, florestas, cidades, batalhas
+- **Model Context Protocol (MCP)**: Comunicação entre IAs
 
 ### 🚀 Início Rápido
 
@@ -58,8 +70,9 @@ npm install
 #### 2. Configuração
 
 ```bash
-# Configure sua chave OpenAI no arquivo .env
-echo "VITE_OPENAI_API_KEY=sua_chave_aqui" > .env
+# Configure suas chaves API no arquivo .env
+echo "VITE_OPENAI_API_KEY=sua_chave_openai_aqui" >> .env
+echo "VITE_STABILITY_API_KEY=sua_chave_stability_aqui" >> .env
 ```
 
 #### 3. Desenvolvimento

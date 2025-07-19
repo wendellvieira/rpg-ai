@@ -54,7 +54,50 @@
 - ✅ **EditarMapaDialog.vue**: Dialog completo para criação e edição de mapas
 - ✅ **Integração**: Sistema totalmente integrado em SetupPage e GamePage com abas dedicadas
 
-**PRÓXIMAS PRIORIDADES**: Sistema de slots de magia, integração com inventários de personagens, e sistema de conjuração.
+**PRÓXIMAS PRIORIDADES**: 
+
+🎨 **SISTEMA DE GERAÇÃO DE IMAGENS COM IA** (EM IMPLEMENTAÇÃO):
+- ✅ **ImageGenerationService.ts**: Serviço para integração com Stability AI IMPLEMENTADO
+  - ✅ Text-to-image generation usando Stable Image Core/Ultra
+  - ✅ Inpainting com masks para edição seletiva
+  - ✅ Templates de mapas (dungeons, florestas, cidades, batalhas)
+  - ✅ Configurações avançadas (seed, steps, CFG scale, negative prompts)
+  - ✅ Sistema de estilos artísticos (realista, fantasia, pixel art)
+  - ✅ Tratamento de erros e retry automático
+- ✅ **Paint Mode - Canvas de Edição** IMPLEMENTADO
+  - ✅ Ferramenta brush com tamanho e opacidade configuráveis
+  - ✅ Sistema de máscaras para inpainting seletivo
+  - ✅ Undo/redo para correções de máscara
+  - ✅ Zoom e pan para precisão na edição
+  - ✅ Clear mask e invert mask
+- ✅ **Preview System para Mapas** IMPLEMENTADO
+  - ✅ Visualização antes/depois em split-screen
+  - ✅ Overlay da máscara em cor diferenciada
+  - ✅ Múltiplas variações para escolha
+  - ✅ Slider de intensidade para blend original/modificado
+- ✅ **Templates e Configurações** IMPLEMENTADO
+  - ✅ Templates pré-definidos por tipo de mapa
+  - ✅ Parâmetros específicos por template
+  - ✅ Auto-mask suggestions usando IA
+  - ✅ Mask feathering e edge preservation
+- ✅ **Integração com EditarMapaDialog** IMPLEMENTADO
+  - ✅ Interface para geração text-to-image
+  - ✅ Botões para ativar modo paint
+  - ✅ Prompt enhancement e sugestões contextuais
+  - ✅ Histórico de prompts e configurações salvas
+- ✅ **Configurações de Qualidade** IMPLEMENTADO
+  - ✅ Controles de resolução e aspect ratio
+  - ✅ Configurações de velocidade vs qualidade
+  - ✅ Sistema de credits/usage tracking
+  - ✅ Fallbacks para when API offline
+- [ ] **Finalização e Testes**
+  - [ ] Implementar inpainting real com Stability AI
+  - [ ] Testes de integração com API
+  - [ ] Otimização de performance do canvas
+  - [ ] Documentação de uso
+  - [ ] Tratamento de casos edge
+
+Sistema de slots de magia, integração com inventários de personagens, e sistema de conjuração.
 
 ---
 
@@ -231,6 +274,11 @@
 ### 18. Features Avançadas
 
 - [x] **Sistema de mapas interativos**: IMPLEMENTADO COMPLETAMENTE - Store, classes, UI e integração completos
+- [ ] **Geração de Imagens com IA**: Stability AI para mapas (EM DESENVOLVIMENTO)
+  - [ ] Text-to-image para mapas completos
+  - [ ] Inpainting com modo paint
+  - [ ] Templates e estilos pré-definidos
+  - [ ] Interface integrada no editor de mapas
 - [ ] Upload de imagens para personagens
 - [ ] Som ambiente e efeitos
 - [ ] Integração com dice rollers visuais
