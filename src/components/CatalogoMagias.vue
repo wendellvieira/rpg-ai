@@ -261,10 +261,41 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { usePersonagemStore } from '../stores/personagemStore';
-import { useMagiaStore, type DadosMagiaSerializados } from '../stores/magiaStore';
-import { EscolaMagia, ComponenteMagia } from '../classes/Magia';
+import { useMagiaStore } from '../stores/magiaStore';
+import {
+  EscolaMagia,
+  ComponenteMagia,
+  type TempoConjuracao,
+  type AlcanceMagia,
+  type DuracaoMagia,
+} from '../classes/Magia';
 import EditarMagiaDialog from './EditarMagiaDialog.vue';
 
+// Interface local para dados de magia
+interface DadosMagiaSerializados {
+  id: string;
+  nome: string;
+  descricao: string;
+  escola: EscolaMagia;
+  nivel: number;
+  tempoConjuracao: TempoConjuracao;
+  alcance: AlcanceMagia;
+  componentes: ComponenteMagia[];
+  componenteMaterial?: string;
+  duracao: DuracaoMagia;
+  concentracao: boolean;
+  ritual: boolean;
+  efeitos: Array<{
+    tipo: 'dano' | 'cura' | 'buff' | 'debuff' | 'utilidade' | 'controle';
+    dados?: string;
+    condicao?: string;
+    duracao?: string;
+    descricao: string;
+  }>;
+  classes: string[];
+  areaEfeito?: string;
+  salvaguarda?: string;
+}
 // Props
 const showDialog = defineModel<boolean>('modelValue', { required: true });
 

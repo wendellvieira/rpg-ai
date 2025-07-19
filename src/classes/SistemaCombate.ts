@@ -2,6 +2,8 @@ import type { Personagem } from './Personagem';
 import type { Arma } from './Arma';
 import { CategoriaArma } from './Arma';
 import { Dados } from './Dados';
+import type { Magia, EfeitoMagia } from './Magia';
+import { TipoSalvaguarda } from './Magia';
 import type { ResultadoDados } from '../types';
 
 /**
@@ -31,6 +33,37 @@ export interface ResultadoDefesa {
 }
 
 /**
+ * Interface para resultados de ataques de magia
+ */
+export interface ResultadoAtaqueMagia {
+  sucesso: boolean;
+  critico: boolean;
+  dano: number;
+  tipoDano: string;
+  rolagemAtaque?: ResultadoDados;
+  rolagemDano?: ResultadoDados;
+  salvaguarda?: {
+    tipo: TipoSalvaguarda;
+    cd: number;
+    sucessos: Array<{ personagemId: string; sucesso: boolean; rolagem: ResultadoDados }>;
+  };
+  efeitosAdicionais: string[];
+  descricao: string;
+}
+
+/**
+ * Interface para conjuração de magia
+ */
+export interface ConjuracaoMagia {
+  magia: Magia;
+  conjurador: string;
+  alvos: string[];
+  nivelConjurado: number;
+  usouSlot: boolean;
+  slotUsado?: number;
+}
+
+/**
  * Interface para ação de combate
  */
 export interface AcaoCombate {
@@ -38,7 +71,7 @@ export interface AcaoCombate {
   alvo: string;
   tipo: 'ataque' | 'defesa' | 'magia' | 'item';
   arma?: string | undefined;
-  resultado: ResultadoAtaque | ResultadoDefesa;
+  resultado: ResultadoAtaque | ResultadoDefesa | ResultadoAtaqueMagia;
   timestamp: Date;
 }
 
@@ -372,5 +405,203 @@ export class SistemaCombate {
       taxaAcerto: totalAtaques > 0 ? (ataquesComSucesso.length / totalAtaques) * 100 : 0,
       danoTotalCausado: danoTotal,
     };
+  }
+
+  /**
+   * Conjura uma magia em combate
+   */
+  conjurarMagia(
+    conjurador: Personagem,
+    magia: Magia,
+    alvos: Personagem[],
+    nivelConjurado?: number,
+  ): ResultadoAtaqueMagia {
+    const nivel = nivelConjurado || magia.nivel;
+
+    // Calcula CD da salvaguarda se a magia tiver
+    const cdSalvaguarda = magia.cdSalvaguarda || this.calcularCDSalvaguarda(conjurador, magia);
+
+    let resultado: ResultadoAtaqueMagia = {
+      sucesso: true,
+      critico: false,
+      dano: 0,
+      tipoDano: '',
+      efeitosAdicionais: [],
+      descricao: '',
+    };
+
+    // Processa cada efeito da magia
+    for (const efeito of magia.efeitos) {
+      if (efeito.tipo === 'dano') {
+        resultado = this.processarDanoMagia(magia, efeito, alvos, nivel, cdSalvaguarda, resultado);
+      } else if (efeito.tipo === 'cura') {
+        resultado = this.processarCuraMagia(magia, efeito, alvos, nivel, resultado);
+      } else {
+        resultado.efeitosAdicionais.push(efeito.descricao);
+      }
+    }
+
+    // Registra no histórico
+    this.registrarAcao({
+      atacante: conjurador.id,
+      alvo: alvos.map((a) => a.id).join(', '),
+      tipo: 'magia',
+      arma: magia.nome,
+      resultado,
+      timestamp: new Date(),
+    });
+
+    return resultado;
+  }
+
+  /**
+   * Calcula CD de salvaguarda para uma magia
+   */
+  private calcularCDSalvaguarda(conjurador: Personagem, magia: Magia): number {
+    // CD = 8 + bônus proficiência + modificador do atributo de conjuração
+    const bonusProficiencia = conjurador.bonusProficiencia;
+
+    // Determina atributo de conjuração baseado na classe (simplificado)
+    let modificadorConjuracao = 0;
+    if (magia.classes.includes('Mago') || magia.classes.includes('Artífice')) {
+      modificadorConjuracao = conjurador.getModificador('inteligencia');
+    } else if (magia.classes.includes('Clérigo') || magia.classes.includes('Druida')) {
+      modificadorConjuracao = conjurador.getModificador('sabedoria');
+    } else if (magia.classes.includes('Feiticeiro') || magia.classes.includes('Bardo')) {
+      modificadorConjuracao = conjurador.getModificador('carisma');
+    }
+
+    return 8 + bonusProficiencia + modificadorConjuracao;
+  }
+
+  /**
+   * Processa dano de magia
+   */
+  private processarDanoMagia(
+    magia: Magia,
+    efeito: EfeitoMagia,
+    alvos: Personagem[],
+    nivel: number,
+    cdSalvaguarda: number,
+    resultado: ResultadoAtaqueMagia,
+  ): ResultadoAtaqueMagia {
+    if (!efeito.dados) return resultado;
+
+    // Rola dano base
+    const rolagemDano = Dados.rolar(efeito.dados);
+    let danoBase = rolagemDano.total;
+
+    // Aplica escalamento por nível se necessário
+    if (nivel > magia.nivel) {
+      const niveisExtras = nivel - magia.nivel;
+      // Simplificado: +1d6 por nível extra para truques, ou dados extras conforme a magia
+      if (magia.nivel === 0) {
+        // Truques escalam com nível do personagem
+        danoBase += niveisExtras * 6; // Simplificado
+      }
+    }
+
+    resultado.dano = danoBase;
+    resultado.tipoDano = efeito.tipo;
+    resultado.rolagemDano = rolagemDano;
+
+    // Processa salvaguarda se houver
+    if (magia.salvaguarda && magia.salvaguarda !== TipoSalvaguarda.NENHUM) {
+      const salvaguardas = alvos.map((alvo) => {
+        const rolagem = this.rolarSalvaguarda(alvo, magia.salvaguarda!);
+        return {
+          personagemId: alvo.id,
+          sucesso: rolagem.total >= cdSalvaguarda,
+          rolagem,
+        };
+      });
+
+      resultado.salvaguarda = {
+        tipo: magia.salvaguarda,
+        cd: cdSalvaguarda,
+        sucessos: salvaguardas,
+      };
+
+      // Reduz dano pela metade em salvaguardas bem-sucedidas (padrão D&D)
+      resultado.dano = Math.floor(danoBase / 2); // Aplicado aos que passaram na salvaguarda
+    }
+
+    resultado.descricao = this.gerarDescricaoMagia(magia, efeito, resultado);
+    return resultado;
+  }
+
+  /**
+   * Processa cura de magia
+   */
+  private processarCuraMagia(
+    magia: Magia,
+    efeito: EfeitoMagia,
+    alvos: Personagem[],
+    nivel: number,
+    resultado: ResultadoAtaqueMagia,
+  ): ResultadoAtaqueMagia {
+    if (!efeito.dados) return resultado;
+
+    const rolagemCura = Dados.rolar(efeito.dados);
+    let curaBase = rolagemCura.total;
+
+    // Escalamento por nível
+    if (nivel > magia.nivel) {
+      const niveisExtras = nivel - magia.nivel;
+      curaBase += niveisExtras * 4; // Simplificado: +4 HP por nível extra
+    }
+
+    resultado.dano = -curaBase; // Valor negativo indica cura
+    resultado.tipoDano = 'cura';
+    resultado.rolagemDano = rolagemCura;
+    resultado.descricao = this.gerarDescricaoMagia(magia, efeito, resultado);
+
+    return resultado;
+  }
+
+  /**
+   * Rola salvaguarda para um personagem
+   */
+  private rolarSalvaguarda(personagem: Personagem, tipo: TipoSalvaguarda): ResultadoDados {
+    // Mapear tipo de salvaguarda para string compatível com getModificador
+    const atributoMap: Record<string, string> = {
+      [TipoSalvaguarda.FORCA]: 'forca',
+      [TipoSalvaguarda.DESTREZA]: 'destreza',
+      [TipoSalvaguarda.CONSTITUICAO]: 'constituicao',
+      [TipoSalvaguarda.INTELIGENCIA]: 'inteligencia',
+      [TipoSalvaguarda.SABEDORIA]: 'sabedoria',
+      [TipoSalvaguarda.CARISMA]: 'carisma',
+    };
+
+    const atributo = atributoMap[tipo] || 'forca';
+    const modificador = personagem.getModificador(
+      atributo as 'forca' | 'destreza' | 'constituicao' | 'inteligencia' | 'sabedoria' | 'carisma',
+    );
+    return Dados.rolar(`1d20+${modificador}`);
+  }
+
+  /**
+   * Gera descrição para conjuração de magia
+   */
+  private gerarDescricaoMagia(
+    magia: Magia,
+    efeito: EfeitoMagia,
+    resultado: ResultadoAtaqueMagia,
+  ): string {
+    let descricao = `${magia.nome}: ${efeito.descricao}`;
+
+    if (resultado.dano > 0) {
+      descricao += ` Causa ${resultado.dano} de dano (${resultado.tipoDano}).`;
+    } else if (resultado.dano < 0) {
+      descricao += ` Restaura ${Math.abs(resultado.dano)} pontos de vida.`;
+    }
+
+    if (resultado.salvaguarda) {
+      const sucessos = resultado.salvaguarda.sucessos.filter((s) => s.sucesso).length;
+      const total = resultado.salvaguarda.sucessos.length;
+      descricao += ` Salvaguarda ${resultado.salvaguarda.tipo} CD ${resultado.salvaguarda.cd}: ${sucessos}/${total} sucessos.`;
+    }
+
+    return descricao;
   }
 }

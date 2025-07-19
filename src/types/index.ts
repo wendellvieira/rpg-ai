@@ -147,3 +147,26 @@ export enum RaridadeItem {
   LENDARIO = 'lendario',
   ARTEFATO = 'artefato',
 }
+
+// Tipos para sistema de magias
+export interface SlotsMagia {
+  nivel1: { total: number; usados: number };
+  nivel2: { total: number; usados: number };
+  nivel3: { total: number; usados: number };
+  nivel4: { total: number; usados: number };
+  nivel5: { total: number; usados: number };
+  nivel6: { total: number; usados: number };
+  nivel7: { total: number; usados: number };
+  nivel8: { total: number; usados: number };
+  nivel9: { total: number; usados: number };
+}
+
+export type NivelMagia = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+
+export interface CapacidadeMagica {
+  classeConjuradora: string;
+  atributoConjuracao: AtributoTipo;
+  slotsMagia: SlotsMagia;
+  magiasConhecidas: string[]; // IDs das magias
+  magiasPreparadas: string[]; // IDs das magias preparadas
+}

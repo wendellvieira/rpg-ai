@@ -43,6 +43,16 @@
 - ✅ **EditarMagiaDialog.vue**: Dialog completo para criação/edição de magias
 - ✅ **EditarPersonagemDialog.vue**: Modal completo para edição de personagens
 - ✅ **Automação VS Code**: Tasks, keybindings e configurações para desenvolvimento eficiente
+- ✅ **Sistema de Mapas**: IMPLEMENTADO COMPLETAMENTE - Classes, store, UI e integração totalmente funcionais
+
+**SISTEMA DE MAPAS IMPLEMENTADO**:
+
+- ✅ **Mapa.ts**: Classe completa para mapas com objetos, grades e tipos
+- ✅ **mapaStore.ts**: Store dedicado para gerenciar mapas com persistência automática
+- ✅ **MapaViewer.vue**: Interface completa para listagem, busca, criação, duplicação e remoção de mapas
+- ✅ **MapaCanvas.vue**: Canvas interativo para exibição e edição de mapas com zoom, pan e controles
+- ✅ **EditarMapaDialog.vue**: Dialog completo para criação e edição de mapas
+- ✅ **Integração**: Sistema totalmente integrado em SetupPage e GamePage com abas dedicadas
 
 **PRÓXIMAS PRIORIDADES**: Sistema de slots de magia, integração com inventários de personagens, e sistema de conjuração.
 
@@ -220,7 +230,7 @@
 
 ### 18. Features Avançadas
 
-- [ ] Sistema de mapas interativos
+- [x] **Sistema de mapas interativos**: IMPLEMENTADO COMPLETAMENTE - Store, classes, UI e integração completos
 - [ ] Upload de imagens para personagens
 - [ ] Som ambiente e efeitos
 - [ ] Integração com dice rollers visuais

@@ -489,7 +489,7 @@ const aplicarOrdenacao = () => {
 };
 
 const contarPorTipo = (tipo: string) => {
-  return itensFiltrados.value.filter((item) => item.tipo === (tipo as TipoItem)).length;
+  return itensFiltrados.value.filter((item) => String(item.tipo) === tipo).length;
 };
 
 const contarMagicos = () => {

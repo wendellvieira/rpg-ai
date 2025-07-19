@@ -74,6 +74,24 @@
             <q-item-section side>
               <q-btn-group flat>
                 <q-btn
+                  icon="auto_fix_high"
+                  color="purple"
+                  size="sm"
+                  @click="abrirConjuracao(entrada.personagem)"
+                  :disable="entrada.personagem.hp <= 0 || !entrada.personagem.podeConjurar"
+                >
+                  <q-tooltip>Conjurar Magia</q-tooltip>
+                </q-btn>
+                <q-btn
+                  icon="flash_on"
+                  color="indigo"
+                  size="sm"
+                  @click="abrirSlots(entrada.personagem)"
+                  :disable="entrada.personagem.hp <= 0 || !entrada.personagem.podeConjurar"
+                >
+                  <q-tooltip>Ver Slots de Magia</q-tooltip>
+                </q-btn>
+                <q-btn
                   icon="healing"
                   color="positive"
                   size="sm"
@@ -108,6 +126,21 @@
 
   <!-- Dialog de Combate -->
   <CombateDialog v-model="mostrarCombate" @ataque-executado="onAtaqueExecutado" />
+
+  <!-- Dialog de Conjuração de Magias -->
+  <ConjurarMagiaDialog
+    v-if="conjuradorSelecionado"
+    v-model="mostrarConjuracao"
+    :conjurador="conjuradorSelecionado as Personagem"
+    :alvos-disponiveis="personagensDisponiveis as Personagem[]"
+  />
+
+  <!-- Dialog de Slots de Magia -->
+  <SlotsDialog
+    v-if="personagemSlots"
+    v-model="mostrarSlots"
+    :personagem="personagemSlots as Personagem"
+  />
 
   <!-- Dialog de Aplicar Dano/Cura -->
   <q-dialog v-model="mostrarDanoCura" persistent>
@@ -146,6 +179,8 @@ import { useSessaoStore } from '../stores/sessaoStore';
 import { SistemaCombate, type ResultadoAtaque } from '../classes/SistemaCombate';
 import type { Personagem } from '../classes/Personagem';
 import CombateDialog from './CombateDialog.vue';
+import ConjurarMagiaDialog from './ConjurarMagiaDialog.vue';
+import SlotsDialog from './SlotsDialog.vue';
 
 // Stores
 const personagemStore = usePersonagemStore();
@@ -155,7 +190,11 @@ const sessaoStore = useSessaoStore();
 const ordemIniciativa = ref<Array<{ personagem: Personagem; iniciativa: number }>>([]);
 const mostrarCombate = ref(false);
 const mostrarDanoCura = ref(false);
+const mostrarConjuracao = ref(false);
+const mostrarSlots = ref(false);
 const personagemSelecionado = ref<Personagem | null>(null);
+const conjuradorSelecionado = ref<Personagem | null>(null);
+const personagemSlots = ref<Personagem | null>(null);
 const tipoDanoCura = ref<'Dano' | 'Cura'>('Dano');
 const quantidadeDanoCura = ref(1);
 
@@ -169,6 +208,14 @@ const temPersonagens = computed(() => {
 
 const personagemTurnoAtual = computed(() => {
   return sessaoStore.sessaoAtual?.getPersonagemTurnoAtual() || null;
+});
+
+const personagensDisponiveis = computed(() => {
+  if (!sessaoStore.sessaoAtual) return [];
+  return sessaoStore.sessaoAtual
+    .getParticipantes()
+    .map((id: string) => personagemStore.obterPersonagemPorId(id))
+    .filter((p: Personagem | undefined): p is Personagem => p !== undefined);
 });
 
 // Methods
@@ -185,6 +232,22 @@ function calcularIniciativaTodos() {
 
 function abrirCombate() {
   mostrarCombate.value = true;
+}
+
+function abrirConjuracao(personagemRef: { id: string }) {
+  const personagem = personagemStore.obterPersonagemPorId(personagemRef.id);
+  if (!personagem) return;
+
+  conjuradorSelecionado.value = personagem;
+  mostrarConjuracao.value = true;
+}
+
+function abrirSlots(personagemRef: { id: string }) {
+  const personagem = personagemStore.obterPersonagemPorId(personagemRef.id);
+  if (!personagem) return;
+
+  personagemSlots.value = personagem;
+  mostrarSlots.value = true;
 }
 
 function aplicarDano(personagemRef: { id: string }) {
