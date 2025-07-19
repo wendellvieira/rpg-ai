@@ -331,8 +331,20 @@ interface ItemForm {
   recarga: string;
 }
 
+interface ItemData {
+  id?: string;
+  nome: string;
+  tipo: string;
+  descricao: string;
+  valor: number;
+  peso: number;
+  raridade: string;
+  magico: boolean;
+  propriedades?: Record<string, unknown>;
+}
+
 interface Props {
-  item?: any; // Item existente para edição
+  item?: ItemData; // Item existente para edição
 }
 
 const props = defineProps<Props>();
@@ -467,14 +479,14 @@ watch(
   },
 );
 
-async function salvarItem() {
+function salvarItem() {
   if (!formularioValido.value) return;
 
   salvando.value = true;
 
   try {
     // Criar objeto com apenas os campos relevantes
-    const itemData: any = {
+    const itemData: ItemData = {
       nome: form.value.nome.trim(),
       tipo: form.value.tipo,
       descricao: form.value.descricao.trim(),
@@ -482,34 +494,37 @@ async function salvarItem() {
       valor: form.value.valor,
       raridade: form.value.raridade,
       magico: form.value.magico,
+      propriedades: {},
     };
 
     // Adicionar propriedades específicas baseadas no tipo
     if (form.value.tipo === 'arma') {
-      itemData.dano = form.value.dano;
-      itemData.tipoDano = form.value.tipoDano;
-      itemData.alcance = form.value.alcance;
-      itemData.categoriaArma = form.value.categoriaArma;
-      itemData.critico = form.value.critico;
+      itemData.propriedades!.dano = form.value.dano;
+      itemData.propriedades!.tipoDano = form.value.tipoDano;
+      itemData.propriedades!.alcance = form.value.alcance;
+      itemData.propriedades!.categoriaArma = form.value.categoriaArma;
+      itemData.propriedades!.critico = form.value.critico;
     }
 
     if (form.value.tipo === 'armadura' || form.value.tipo === 'escudo') {
-      itemData.bonusCA = form.value.bonusCA;
-      if (form.value.maxDestreza !== null) itemData.maxDestreza = form.value.maxDestreza;
-      if (form.value.forcaMinima !== null) itemData.forcaMinima = form.value.forcaMinima;
+      itemData.propriedades!.bonusCA = form.value.bonusCA;
+      if (form.value.maxDestreza !== null)
+        itemData.propriedades!.maxDestreza = form.value.maxDestreza;
+      if (form.value.forcaMinima !== null)
+        itemData.propriedades!.forcaMinima = form.value.forcaMinima;
     }
 
     if (form.value.tipo === 'consumivel') {
-      itemData.efeito = form.value.efeito;
-      itemData.usos = form.value.usos;
-      itemData.tempoUso = form.value.tempoUso;
+      itemData.propriedades!.efeito = form.value.efeito;
+      itemData.propriedades!.usos = form.value.usos;
+      itemData.propriedades!.tempoUso = form.value.tempoUso;
     }
 
     // Propriedades mágicas
     if (form.value.magico) {
-      itemData.sintonizacao = form.value.sintonizacao;
-      if (form.value.cargas !== null) itemData.cargas = form.value.cargas;
-      if (form.value.recarga) itemData.recarga = form.value.recarga;
+      itemData.propriedades!.sintonizacao = form.value.sintonizacao;
+      if (form.value.cargas !== null) itemData.propriedades!.cargas = form.value.cargas;
+      if (form.value.recarga) itemData.propriedades!.recarga = form.value.recarga;
     }
 
     // Retornar o item criado/editado

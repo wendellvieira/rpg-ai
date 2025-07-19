@@ -271,7 +271,7 @@ const sessaoStore = useSessaoStore();
 
 // Estado reativo
 const carregandoSessoes = ref(false);
-const sessoes = ref<any[]>([]);
+const sessoes = ref<SessaoJogo[]>([]);
 const dialogNovaSessao = ref(false);
 const dialogEditarSessao = ref(false);
 const inputArquivo = ref<HTMLInputElement>();
@@ -290,7 +290,7 @@ const sessaoEdicao = ref({
 
 // Lifecycle
 onMounted(() => {
-  carregarSessoes();
+  void carregarSessoes();
 });
 
 // Métodos
@@ -311,7 +311,8 @@ async function carregarSessoes() {
     }
 
     sessoes.value = sessoesCompletas.sort(
-      (a: any, b: any) => new Date(b.atualizadaEm).getTime() - new Date(a.atualizadaEm).getTime(),
+      (a: SessaoJogo, b: SessaoJogo) =>
+        new Date(b.atualizadaEm).getTime() - new Date(a.atualizadaEm).getTime(),
     );
   } catch (error) {
     console.error('Erro ao carregar sessões:', error);
@@ -344,7 +345,7 @@ async function confirmarNovaSessao() {
     });
 
     // Ir para a página do jogo
-    router.push('/game');
+    void router.push('/game');
   } catch (error) {
     console.error('Erro ao criar sessão:', error);
     $q.notify({
@@ -358,7 +359,7 @@ async function confirmarNovaSessao() {
 async function abrirSessao(sessaoId: string) {
   try {
     await sessaoStore.carregarSessao(sessaoId);
-    router.push('/game');
+    void router.push('/game');
   } catch (error) {
     console.error('Erro ao abrir sessão:', error);
     $q.notify({
@@ -369,7 +370,7 @@ async function abrirSessao(sessaoId: string) {
   }
 }
 
-function editarSessao(sessao: any) {
+function editarSessao(sessao: { id: string; nome: string; descricao: string }) {
   sessaoEdicao.value = {
     id: sessao.id,
     nome: sessao.nome,
@@ -378,7 +379,7 @@ function editarSessao(sessao: any) {
   dialogEditarSessao.value = true;
 }
 
-async function confirmarEdicaoSessao() {
+function confirmarEdicaoSessao() {
   try {
     // Por enquanto, vamos apenas notificar que a funcionalidade está em desenvolvimento
     // Isso será implementado quando tivermos métodos específicos para edição
@@ -398,35 +399,37 @@ async function confirmarEdicaoSessao() {
   }
 }
 
-function confirmarExclusao(sessao: any) {
+function confirmarExclusao(sessao: { id: string; nome: string }) {
   $q.dialog({
     title: 'Excluir Sessão',
     message: `Tem certeza que deseja excluir a sessão "${sessao.nome}"? Esta ação não pode ser desfeita.`,
     cancel: true,
     persistent: true,
-  }).onOk(async () => {
-    try {
-      const persistence = PersistenceManager.getInstance();
-      await persistence.removerSessao(sessao.id);
-      await carregarSessoes();
+  }).onOk(() => {
+    void (async () => {
+      try {
+        const persistence = PersistenceManager.getInstance();
+        await persistence.removerSessao(sessao.id);
+        await carregarSessoes();
 
-      $q.notify({
-        type: 'positive',
-        message: 'Sessão excluída com sucesso!',
-      });
-    } catch (error) {
-      console.error('Erro ao excluir sessão:', error);
-      $q.notify({
-        type: 'negative',
-        message: 'Erro ao excluir sessão',
-        caption: String(error),
-      });
-    }
+        $q.notify({
+          type: 'positive',
+          message: 'Sessão excluída com sucesso!',
+        });
+      } catch (error) {
+        console.error('Erro ao excluir sessão:', error);
+        $q.notify({
+          type: 'negative',
+          message: 'Erro ao excluir sessão',
+          caption: String(error),
+        });
+      }
+    })();
   });
 }
 
 function abrirGerenciamento() {
-  router.push('/setup');
+  void router.push('/setup');
 }
 
 function abrirConfiguracoes() {

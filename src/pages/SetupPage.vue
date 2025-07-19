@@ -340,10 +340,19 @@ import { useConfigStore } from '../stores/configStore';
 const $q = useQuasar();
 const configStore = useConfigStore();
 
+interface PersonagemData {
+  id: string;
+  nome: string;
+  raca: string;
+  classe: string;
+  isIA: boolean;
+  descricao?: string;
+}
+
 // Estado reativo
 const abaAtiva = ref('personagens');
 const carregandoPersonagens = ref(false);
-const personagens = ref<any[]>([]);
+const personagens = ref<PersonagemData[]>([]);
 const dialogNovoPersonagem = ref(false);
 const dialogNovoItem = ref(false);
 const dialogNovoMapa = ref(false);
@@ -399,7 +408,7 @@ const modelosDisponiveis = ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo'];
 
 // Lifecycle
 onMounted(() => {
-  carregarPersonagens();
+  void carregarPersonagens();
   carregarConfiguracoes();
 });
 
@@ -474,37 +483,40 @@ async function criarPersonagem() {
   }
 }
 
-function editarPersonagem(personagem: any) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function editarPersonagem(personagem: PersonagemData) {
   $q.notify({
     type: 'info',
     message: 'Edição de personagens em desenvolvimento',
   });
 }
 
-function confirmarExclusaoPersonagem(personagem: any) {
+function confirmarExclusaoPersonagem(personagem: PersonagemData) {
   $q.dialog({
     title: 'Excluir Personagem',
     message: `Tem certeza que deseja excluir o personagem "${personagem.nome}"?`,
     cancel: true,
     persistent: true,
-  }).onOk(async () => {
-    try {
-      const persistence = PersistenceManager.getInstance();
-      await persistence.removerPersonagem(personagem.id);
-      await carregarPersonagens();
+  }).onOk(() => {
+    void (async () => {
+      try {
+        const persistence = PersistenceManager.getInstance();
+        await persistence.removerPersonagem(personagem.id);
+        await carregarPersonagens();
 
-      $q.notify({
-        type: 'positive',
-        message: 'Personagem excluído com sucesso!',
-      });
-    } catch (error) {
-      console.error('Erro ao excluir personagem:', error);
-      $q.notify({
-        type: 'negative',
-        message: 'Erro ao excluir personagem',
-        caption: String(error),
-      });
-    }
+        $q.notify({
+          type: 'positive',
+          message: 'Personagem excluído com sucesso!',
+        });
+      } catch (error) {
+        console.error('Erro ao excluir personagem:', error);
+        $q.notify({
+          type: 'negative',
+          message: 'Erro ao excluir personagem',
+          caption: String(error),
+        });
+      }
+    })();
   });
 }
 
@@ -520,9 +532,9 @@ function carregarConfiguracoes() {
   };
 }
 
-async function salvarConfiguracoes() {
+function salvarConfiguracoes() {
   try {
-    await configStore.atualizarConfiguracao({
+    configStore.atualizarConfiguracao({
       openaiApiKey: configuracoes.value.apiKey,
       openaiModel: configuracoes.value.modelo,
       openaiTemperature: configuracoes.value.temperature,

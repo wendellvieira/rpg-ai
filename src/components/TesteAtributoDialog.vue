@@ -114,7 +114,6 @@ import { useDialogPluginComponent } from 'quasar';
 import { useSessaoStore } from '../stores/sessaoStore';
 import { usePersonagemStore } from '../stores/personagemStore';
 import { Dados } from '../classes/Dados';
-import { Atributos } from '../classes/Atributos';
 import type { AtributoTipo, ResultadoDados, MensagemAcao } from '../types';
 
 // Tipos para o resultado do teste
@@ -148,6 +147,7 @@ const props = withDefaults(defineProps<Props>(), {
 defineEmits([...useDialogPluginComponent.emits]);
 
 // Plugin de diálogo
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent();
 
 // Store
@@ -223,7 +223,7 @@ const getBonusProficiencia = (): number => {
   return personagemAtual.value.bonusProficiencia;
 };
 
-const realizarTeste = async () => {
+const realizarTeste = () => {
   if (!podeTestar.value || !atributoSelecionado.value) return;
 
   const valorAtributo = getValorAtributo(atributoSelecionado.value.value);
@@ -303,6 +303,7 @@ const formatarDetalhes = (resultado: ResultadoTeste): string => {
 };
 
 // Handlers de diálogo
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const onOKClick = () => {
   onDialogOK(ultimoResultado.value);
 };
@@ -315,7 +316,7 @@ const onCancelClick = () => {
 onMounted(() => {
   // Carregar personagens se não estiverem carregados
   if (personagemStore.personagens.length === 0) {
-    personagemStore.carregarPersonagens();
+    void personagemStore.carregarPersonagens();
   }
 
   // Se um atributo foi passado como prop, selecionar automaticamente

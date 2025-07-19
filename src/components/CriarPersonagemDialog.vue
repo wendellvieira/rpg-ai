@@ -196,7 +196,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
-import { Personagem } from '../classes/Personagem';
+import { Personagem, type PersonagemConfig } from '../classes/Personagem';
 import { Dados } from '../classes/Dados';
 import type { AtributosPrimarios } from '../types';
 
@@ -307,7 +307,7 @@ function usarArrayPadrao() {
   });
 }
 
-async function criarPersonagem() {
+function criarPersonagem() {
   if (!formularioValido.value) return;
 
   criando.value = true;
@@ -324,7 +324,7 @@ async function criarPersonagem() {
     };
 
     // Configuração do personagem
-    const config: any = {
+    const config: PersonagemConfig = {
       nome: form.value.nome.trim(),
       classe: form.value.classe,
       raca: form.value.raca,

@@ -83,8 +83,16 @@ interface Participante {
   isIA: boolean;
 }
 
+interface SessaoData {
+  id: string;
+  nome: string;
+  descricao?: string;
+  criador: string;
+  status: string;
+}
+
 interface Props {
-  sessao?: any;
+  sessao?: SessaoData;
   participantes: Participante[];
   turnoAtual: number;
   rodadaAtual: number;

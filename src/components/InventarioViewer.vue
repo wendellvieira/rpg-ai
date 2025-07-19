@@ -99,7 +99,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Inventario } from '../classes/Inventario';
+import type { Inventario } from '../classes/Inventario';
 
 interface Props {
   inventario: Inventario;

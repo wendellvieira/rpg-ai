@@ -154,6 +154,7 @@
 import { ref, watch } from 'vue';
 import { useDialogPluginComponent, useQuasar } from 'quasar';
 import { PersistenceManager } from '../services/PersistenceManager';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { BackupService } from '../services/BackupService';
 
 defineEmits([...useDialogPluginComponent.emits]);
@@ -164,7 +165,7 @@ const $q = useQuasar();
 const tab = ref('export');
 const exportando = ref(false);
 const importando = ref(false);
-const previewImport = ref<any>(null);
+const previewImport = ref<Record<string, unknown> | null>(null);
 
 const exportOptions = ref({
   tipo: 'completo',
@@ -240,7 +241,7 @@ async function exportarDados() {
     const persistence = PersistenceManager.getInstance();
     await persistence.inicializar();
 
-    let dados: any = {};
+    const dados: Record<string, unknown> = {};
 
     if (exportOptions.value.tipo === 'completo' || exportOptions.value.dados.includes('sessoes')) {
       dados.sessoes = await persistence.listarSessoes();
@@ -336,10 +337,10 @@ async function importarDados() {
   }
 }
 
-function onRejected(rejectedEntries: any[]) {
+function onRejected(rejectedEntries: Array<{ failedPropValidation: string }>) {
   $q.notify({
     type: 'negative',
-    message: `Arquivo rejeitado: ${rejectedEntries[0].failedPropValidation}`,
+    message: `Arquivo rejeitado: ${rejectedEntries[0]?.failedPropValidation || 'Erro desconhecido'}`,
     position: 'top',
   });
 }

@@ -335,6 +335,16 @@ import { useSessaoStore } from '../stores/sessaoStore';
 import { PersistenceManager } from '../services/PersistenceManager';
 import { Dados } from '../classes/Dados';
 import { StatusSessao } from '../classes/SessaoJogo';
+import type { MensagemMestre } from '../types';
+
+interface PersonagemData {
+  id: string;
+  nome: string;
+  raca: string;
+  classe: string;
+  isIA: boolean;
+  descricao?: string;
+}
 
 const router = useRouter();
 const $q = useQuasar();
@@ -344,7 +354,7 @@ const sessaoStore = useSessaoStore();
 const splitterModel = ref(30);
 const abaRecursos = ref('personagens');
 const carregandoRecursos = ref(false);
-const personagensDisponiveis = ref<any[]>([]);
+const personagensDisponiveis = ref<PersonagemData[]>([]);
 const novaMensagem = ref('');
 const iaProcessando = ref(false);
 
@@ -375,10 +385,10 @@ const mensagensChat = computed(() => {
 
 // Lifecycle
 onMounted(() => {
-  carregarRecursos();
+  void carregarRecursos();
   // Se não há sessão ativa, tentar carregar a última
   if (!sessaoAtual.value) {
-    tentarCarregarUltimaSessao();
+    void tentarCarregarUltimaSessao();
   }
 });
 
@@ -441,10 +451,10 @@ async function tentarCarregarUltimaSessao() {
 }
 
 function atualizarRecursos() {
-  carregarRecursos();
+  void carregarRecursos();
 }
 
-function visualizarPersonagem(personagem: any) {
+function visualizarPersonagem(personagem: PersonagemData) {
   $q.notify({
     type: 'info',
     message: `Visualizando ${personagem.nome}`,
@@ -453,10 +463,10 @@ function visualizarPersonagem(personagem: any) {
 }
 
 function adicionarPersonagemASessao() {
-  router.push('/setup');
+  void router.push('/setup');
 }
 
-function adicionarPersonagemNaSessao(personagem: any) {
+function adicionarPersonagemNaSessao(personagem: PersonagemData) {
   if (!sessaoAtual.value) {
     $q.notify({
       type: 'warning',
@@ -489,7 +499,7 @@ function enviarMensagem() {
     sessaoAtual.value.adicionarMensagem({
       tipo: 'mestre',
       conteudo: novaMensagem.value.trim(),
-    });
+    } as Omit<MensagemMestre, 'id' | 'timestamp' | 'turno' | 'rodada'>);
 
     novaMensagem.value = '';
 
@@ -588,7 +598,7 @@ function finalizarSessao() {
         message: 'Sessão finalizada com sucesso!',
       });
 
-      router.push('/');
+      void router.push('/');
     } catch (error) {
       console.error('Erro ao finalizar sessão:', error);
       $q.notify({
@@ -702,14 +712,43 @@ function formatarHoraMensagem(timestamp: Date | string): string {
 }
 
 // Helpers para mensagens
-function getMensagemConteudo(mensagem: any): string {
-  if ('conteudo' in mensagem) return mensagem.conteudo;
-  if ('acao' in mensagem) return `${mensagem.acao}: ${mensagem.resultado}`;
+function getMensagemConteudo(mensagem: Record<string, unknown>): string {
+  if ('conteudo' in mensagem) {
+    const conteudo = mensagem.conteudo;
+    if (typeof conteudo === 'string') return conteudo;
+    if (typeof conteudo === 'number' || typeof conteudo === 'boolean') return String(conteudo);
+    if (conteudo != null) return JSON.stringify(conteudo);
+    return '';
+  }
+  if ('acao' in mensagem) {
+    const acao = mensagem.acao;
+    const resultado = mensagem.resultado;
+
+    let acaoStr = '';
+    if (typeof acao === 'string') acaoStr = acao;
+    else if (typeof acao === 'number' || typeof acao === 'boolean') acaoStr = String(acao);
+    else if (acao != null) acaoStr = JSON.stringify(acao);
+
+    let resultadoStr = '';
+    if (typeof resultado === 'string') resultadoStr = resultado;
+    else if (typeof resultado === 'number' || typeof resultado === 'boolean')
+      resultadoStr = String(resultado);
+    else if (resultado != null) resultadoStr = JSON.stringify(resultado);
+
+    return `${acaoStr}: ${resultadoStr}`;
+  }
   return 'Mensagem sem conteúdo';
 }
 
-function getMensagemPersonagem(mensagem: any): string {
-  if ('personagem' in mensagem) return mensagem.personagem;
+function getMensagemPersonagem(mensagem: Record<string, unknown>): string {
+  if ('personagem' in mensagem) {
+    const personagem = mensagem.personagem;
+    if (typeof personagem === 'string') return personagem;
+    if (typeof personagem === 'number' || typeof personagem === 'boolean')
+      return String(personagem);
+    if (personagem != null) return JSON.stringify(personagem);
+    return '';
+  }
   return 'Sistema';
 }
 </script>

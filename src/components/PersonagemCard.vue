@@ -95,17 +95,37 @@
 </template>
 
 <script setup lang="ts">
+interface PersonagemData {
+  id: string;
+  nome: string;
+  raca: string;
+  classe: string;
+  isIA: boolean;
+  descricao?: string;
+  atributos?: {
+    primarios: Record<string, number>;
+    derivados: {
+      hp?: number;
+      hpMaximo?: number;
+      mp?: number;
+      mpMaximo?: number;
+      ca?: number;
+    };
+    nivel: number;
+  };
+}
+
 interface Props {
-  personagem: any;
+  personagem: PersonagemData;
   mostrarDetalhes?: boolean;
   mostrarAcoes?: boolean;
 }
 
 interface Emits {
-  editar: [personagem: any];
-  visualizar: [personagem: any];
-  excluir: [personagem: any];
-  adicionar: [personagem: any];
+  editar: [personagem: PersonagemData];
+  visualizar: [personagem: PersonagemData];
+  excluir: [personagem: PersonagemData];
+  adicionar: [personagem: PersonagemData];
 }
 
 withDefaults(defineProps<Props>(), {

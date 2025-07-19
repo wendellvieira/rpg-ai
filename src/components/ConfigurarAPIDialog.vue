@@ -265,7 +265,7 @@ async function testarConexao() {
   }
 }
 
-async function salvarConfiguracao() {
+function salvarConfiguracao() {
   if (!formularioValido.value) return;
 
   salvando.value = true;

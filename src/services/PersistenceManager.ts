@@ -77,6 +77,7 @@ export class PersistenceManager {
     const dados = await this.dbService.getItem(`personagem_${id}`);
 
     if (dados) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return Personagem.deserializar(dados as any);
     }
 
