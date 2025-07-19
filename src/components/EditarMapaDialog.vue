@@ -104,7 +104,7 @@
                 :min="0"
                 :max="1"
                 :step="0.1"
-                :label="`Opacidade: ${Math.round(formulario.grade.opacidade * 100)}%`"
+                :label-value="`Opacidade: ${Math.round(formulario.grade.opacidade * 100)}%`"
                 label-always
                 :disable="!formulario.grade.ativa"
                 class="q-mt-md"

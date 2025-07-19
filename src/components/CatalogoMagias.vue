@@ -305,7 +305,7 @@ interface DadosMagia {
   concentracao: boolean;
   ritual: boolean;
   efeitos: Array<{
-    tipo: string;
+    tipo: 'dano' | 'cura' | 'buff' | 'debuff' | 'utilidade' | 'controle';
     dados?: string;
     condicao?: string;
     duracao?: string;
