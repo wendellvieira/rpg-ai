@@ -195,12 +195,38 @@
             <div v-if="sessaoAtual && participantesAtivos.length > 0" class="q-mt-sm">
               <div class="text-caption text-grey-6 q-mb-xs">Turno atual:</div>
               <div class="row items-center">
-                <q-avatar size="24px" color="primary" text-color="white" class="q-mr-sm">
+                <q-avatar
+                  size="24px"
+                  :color="participanteAtual?.isIA ? 'purple' : 'primary'"
+                  text-color="white"
+                  class="q-mr-sm"
+                >
                   {{ participanteAtual?.nome?.[0] || '?' }}
                 </q-avatar>
-                <span class="text-weight-medium">{{
-                  participanteAtual?.nome || 'Aguardando...'
-                }}</span>
+                <div class="column q-mr-sm">
+                  <span class="text-weight-medium">{{
+                    participanteAtual?.nome || 'Aguardando...'
+                  }}</span>
+                  <span v-if="participanteAtual?.isIA" class="text-caption text-purple">
+                    Personagem IA
+                  </span>
+                </div>
+
+                <!-- Botão para executar IA manualmente -->
+                <q-btn
+                  v-if="participanteAtual?.isIA"
+                  flat
+                  round
+                  icon="psychology"
+                  size="sm"
+                  color="purple"
+                  :loading="iaProcessando"
+                  @click="executarIAManual"
+                  class="q-mr-sm"
+                >
+                  <q-tooltip>Executar ação da IA</q-tooltip>
+                </q-btn>
+
                 <q-space />
                 <div class="text-caption">
                   Rodada {{ sessaoAtual.rodadaAtual }} • Turno
@@ -420,7 +446,9 @@ import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useSessaoStore } from '../stores/sessaoStore';
 import { usePersonagemStore } from '../stores/personagemStore';
+import { useConfigStore } from '../stores/configStore';
 import { PersistenceManager } from '../services/PersistenceManager';
+import { OpenAIService } from '../services/OpenAIService';
 import { Dados } from '../classes/Dados';
 import type { Personagem } from '../classes/Personagem';
 import { StatusSessao, type SessaoJogo } from '../classes/SessaoJogo';
@@ -450,6 +478,7 @@ const router = useRouter();
 const $q = useQuasar();
 const sessaoStore = useSessaoStore();
 const personagemStore = usePersonagemStore();
+const configStore = useConfigStore();
 
 // Estado reativo
 const splitterModel = ref(30);
@@ -498,7 +527,14 @@ const mensagensChat = computed(() => {
 
 // Lifecycle
 onMounted(() => {
+  // Garantir que configurações sejam carregadas primeiro
+  if (!configStore.carregado) {
+    console.log('🔧 Carregando configurações no GamePage...');
+    configStore.carregarConfiguracoes();
+  }
+
   void carregarRecursos();
+
   // Se não há sessão ativa, tentar carregar a última
   if (!sessaoAtual.value) {
     void tentarCarregarUltimaSessao();
@@ -882,6 +918,23 @@ function avancarTurno() {
   }
 }
 
+// Função para executar IA manualmente
+async function executarIAManual() {
+  if (!sessaoAtual.value || !participanteAtual.value?.isIA) return;
+
+  try {
+    const personagemAtual = participanteAtual.value;
+    await processarTurnoIA(personagemAtual);
+  } catch (error) {
+    console.error('Erro ao executar IA manual:', error);
+    $q.notify({
+      type: 'negative',
+      message: 'Erro ao executar IA',
+      caption: String(error),
+    });
+  }
+}
+
 // Função para processar turno específico de IA
 async function processarTurnoIA(personagemData: { id: string; nome: string; isIA: boolean }) {
   if (!sessaoAtual.value || !personagemData.isIA) return;
@@ -894,8 +947,13 @@ async function processarTurnoIA(personagemData: { id: string; nome: string; isIA
     ) as Personagem;
     if (!personagemCompleto) return;
 
-    // Simular ação da IA
-    const acaoIA = gerarAcaoIA(personagemCompleto);
+    // Primeiro, tentar usar a IA avançada (OpenAI)
+    let acaoIA = await tentarIAAvancada(personagemCompleto);
+
+    // Se falhar, usar IA básica (local)
+    if (!acaoIA) {
+      acaoIA = gerarAcaoIA(personagemCompleto);
+    }
 
     if (acaoIA) {
       sessaoAtual.value.adicionarMensagem({
@@ -907,43 +965,203 @@ async function processarTurnoIA(personagemData: { id: string; nome: string; isIA
       await sessaoStore.salvarSessao(sessaoAtual.value as SessaoJogo);
 
       $q.notify({
-        type: 'info',
+        type: 'positive',
         message: `${personagemData.nome} agiu`,
         caption: acaoIA,
+        icon: 'psychology',
       });
     }
   } catch (error) {
     console.error(`Erro ao processar turno IA de ${personagemData.nome}:`, error);
+    $q.notify({
+      type: 'negative',
+      message: `Erro na IA de ${personagemData.nome}`,
+      caption: String(error),
+    });
   } finally {
     iaProcessando.value = false;
   }
 }
 
-// Função para gerar ação específica de turno da IA
-function gerarAcaoIA(personagem: Personagem): string | null {
-  const acoesGenericas = [
-    'Observo os arredores cuidadosamente.',
-    'Mantenho-me alerta para possíveis ameaças.',
-    'Analiso a situação antes de agir.',
-    'Procuro por pistas ou sinais importantes.',
-    'Aguardo o momento certo para agir.',
-    'Verifico meu equipamento.',
-    'Comunico-me com o grupo através de gestos.',
-  ];
+// Função para tentar usar IA avançada (OpenAI)
+async function tentarIAAvancada(personagem: Personagem): Promise<string | null> {
+  try {
+    const openAIService = OpenAIService.getInstance();
+    const configStore = useConfigStore();
 
-  if (personagem.promptPersonalidade) {
-    const acoesPersonalizadas = [
-      `Como ${personagem.promptPersonalidade}, decido aguardar e observar.`,
-      `Baseado na minha natureza, tomo uma atitude cautelosa.`,
-      `Minha personalidade me leva a analisar antes de agir.`,
-    ];
+    console.log('🤖 [DEBUG] Tentando IA avançada para:', personagem.nome);
+    console.log('🤖 [DEBUG] Config Store carregado:', configStore.carregado);
+    console.log('🤖 [DEBUG] API configurada (store):', configStore.isApiConfigured);
+    console.log('🤖 [DEBUG] API Key presente (store):', !!configStore.configuracao.openaiApiKey);
+    console.log('🤖 [DEBUG] OpenAI Service configurado:', openAIService.estaConfigurado());
 
-    const resposta = acoesPersonalizadas[Math.floor(Math.random() * acoesPersonalizadas.length)];
-    return resposta || null;
+    // Verificar se não está carregado ainda
+    if (!configStore.carregado) {
+      console.log('🤖 [DEBUG] ConfigStore não carregado ainda, carregando...');
+      configStore.carregarConfiguracoes();
+    }
+
+    // Verificar se a API está configurada no store OU no serviço
+    const apiConfigurada = configStore.isApiConfigured || openAIService.estaConfigurado();
+
+    if (!apiConfigurada) {
+      console.log('🤖 [DEBUG] OpenAI não configurada em lugar nenhum, usando IA básica');
+      return null;
+    }
+
+    console.log('🤖 [DEBUG] Iniciando chamada para OpenAI...');
+
+    // Construir contexto para a IA
+    const contexto = construirContextoIA();
+    const prompt = `Você é ${personagem.nome}, um ${personagem.raca} ${personagem.classe}.
+
+${personagem.promptPersonalidade ? `Personalidade: ${personagem.promptPersonalidade}` : ''}
+
+Contexto atual:
+${contexto}
+
+Decida sua ação neste turno. Responda como o personagem falaria, em primeira pessoa, de forma concisa (máximo 2 frases).`;
+
+    console.log('🤖 [DEBUG] Prompt criado:', prompt.substring(0, 100) + '...');
+
+    const resposta = await openAIService.enviarMensagem([{ role: 'user', content: prompt }]);
+
+    console.log('🤖 [DEBUG] Resposta recebida da OpenAI:', resposta);
+
+    return resposta.conteudo || null;
+  } catch (error) {
+    console.error('🤖 [ERROR] Erro na IA avançada:', error);
+    console.error('🤖 [ERROR] Stack trace:', error instanceof Error ? error.stack : 'N/A');
+    return null;
+  }
+}
+
+// Função para construir contexto para IA
+function construirContextoIA(): string {
+  if (!sessaoAtual.value) return '';
+
+  const mensagensRecentes = sessaoAtual.value.getMensagensRecentes(3);
+  const participantesInfo = personagensDisponiveis.value
+    .filter((p) => participantesAtivos.value.includes(p.id))
+    .map((p) => `${p.nome} (${p.isIA ? 'IA' : 'Jogador'})`)
+    .join(', ');
+
+  let contexto = `Turno ${sessaoAtual.value.turnoAtualIndex + 1}, Rodada ${sessaoAtual.value.rodadaAtual}\n`;
+  contexto += `Participantes: ${participantesInfo}\n`;
+
+  if (mensagensRecentes.length > 0) {
+    contexto += `\nÚltimas ações:\n`;
+    mensagensRecentes.forEach((msg) => {
+      if (msg.tipo === 'fala') {
+        const nomePers =
+          personagensDisponiveis.value.find((p) => p.id === msg.personagem)?.nome || 'Alguém';
+        contexto += `- ${nomePers}: "${msg.conteudo}"\n`;
+      } else if (msg.tipo === 'mestre') {
+        contexto += `- Mestre: ${msg.conteudo}\n`;
+      }
+    });
   }
 
-  const resposta = acoesGenericas[Math.floor(Math.random() * acoesGenericas.length)];
-  return resposta || null;
+  return contexto;
+}
+
+// Função para gerar ação específica de turno da IA (versão melhorada)
+function gerarAcaoIA(personagem: Personagem): string | null {
+  const ultimasMensagens = sessaoAtual.value?.getMensagensRecentes(2) || [];
+  const temMensagensRecentes = ultimasMensagens.length > 0;
+
+  // Respostas baseadas na personalidade e contexto
+  let acoesContextuais: string[] = [];
+
+  if (personagem.promptPersonalidade) {
+    // Gerar respostas baseadas na personalidade
+    const personalidade = personagem.promptPersonalidade.toLowerCase();
+
+    if (personalidade.includes('corajoso') || personalidade.includes('guerreiro')) {
+      acoesContextuais = [
+        'Avanço com determinação, pronto para enfrentar qualquer perigo.',
+        'Mantenho minha arma preparada e olhos atentos.',
+        'Lidero o grupo com coragem, indicando o caminho.',
+      ];
+    } else if (personalidade.includes('sábio') || personalidade.includes('estudioso')) {
+      acoesContextuais = [
+        'Analiso cuidadosamente a situação antes de agir.',
+        'Procuro por pistas ou conhecimentos que possam nos ajudar.',
+        'Consulto meus conhecimentos sobre esta situação.',
+      ];
+    } else if (personalidade.includes('furtivo') || personalidade.includes('ladino')) {
+      acoesContextuais = [
+        'Movo-me silenciosamente, verificando por armadilhas.',
+        'Observo as sombras e procuro por rotas alternativas.',
+        'Mantenho-me nas sombras, atento a qualquer movimento.',
+      ];
+    } else if (personalidade.includes('social') || personalidade.includes('carismático')) {
+      acoesContextuais = [
+        'Tento estabelecer comunicação e entender as intenções.',
+        'Procuro mediar a situação com diplomacia.',
+        'Observo as expressões e linguagem corporal ao redor.',
+      ];
+    }
+  }
+
+  // Se não tem personalidade específica, usar ações baseadas na classe
+  if (acoesContextuais.length === 0) {
+    const classe = personagem.classe.toLowerCase();
+
+    if (classe.includes('guerreiro') || classe.includes('lutador')) {
+      acoesContextuais = [
+        'Preparo-me para o combate, checando meu equipamento.',
+        'Posiciono-me estrategicamente para proteger o grupo.',
+        'Avalio as ameaças potenciais ao nosso redor.',
+      ];
+    } else if (classe.includes('mago') || classe.includes('feiticeiro')) {
+      acoesContextuais = [
+        'Concentro-me, sentindo as energias mágicas ao redor.',
+        'Preparo um feitiço que pode ser útil nesta situação.',
+        'Analiso os padrões mágicos presentes no ambiente.',
+      ];
+    } else if (classe.includes('ladino') || classe.includes('batedor')) {
+      acoesContextuais = [
+        'Verifico discretamente por armadilhas e perigos ocultos.',
+        'Examino o ambiente em busca de informações úteis.',
+        'Mantenho-me alerta para sinais de perigo.',
+      ];
+    } else if (classe.includes('clérigo') || classe.includes('paladino')) {
+      acoesContextuais = [
+        'Ofereço uma oração silenciosa por proteção.',
+        'Verifico o bem-estar dos companheiros.',
+        'Mantenho-me vigilante contra forças malignas.',
+      ];
+    }
+  }
+
+  // Ações genéricas como fallback
+  const acoesGenericas = [
+    'Observo atentamente os arredores.',
+    'Aguardo o momento certo para agir.',
+    'Mantenho-me preparado para qualquer eventualidade.',
+    'Analiso a situação com cuidado.',
+    'Procuro por algo que possa nos ajudar.',
+  ];
+
+  // Escolher lista de ações
+  const acoesDisponiveis = acoesContextuais.length > 0 ? acoesContextuais : acoesGenericas;
+
+  // Se há mensagens recentes, pode reagir a elas
+  if (temMensagensRecentes && Math.random() < 0.4) {
+    const reacoes = [
+      'Concordo com essa abordagem.',
+      'Interessante... vamos ver no que dá.',
+      'Mantenho-me atento ao que foi dito.',
+      'Boa observação.',
+      'Vamos prosseguir com cautela.',
+    ];
+    const indice = Math.floor(Math.random() * reacoes.length);
+    return reacoes[indice] || null;
+  }
+
+  const indice = Math.floor(Math.random() * acoesDisponiveis.length);
+  return acoesDisponiveis[indice] || null;
 }
 
 function rolarDados() {

@@ -94,11 +94,41 @@ export const useConfigStore = defineStore('config', () => {
   // Actions
   function carregarConfiguracoes(): void {
     try {
-      // Carregar do localStorage
+      // Primeiro, carregar do .env se disponível
+      const envConfig: Partial<ConfiguracaoGlobal> = {};
+
+      if (import.meta.env.VITE_OPENAI_API_KEY) {
+        envConfig.openaiApiKey = import.meta.env.VITE_OPENAI_API_KEY;
+      }
+
+      if (import.meta.env.VITE_OPENAI_MODEL) {
+        envConfig.openaiModel = import.meta.env.VITE_OPENAI_MODEL;
+      }
+
+      if (import.meta.env.VITE_STABILITY_API_KEY) {
+        envConfig.stabilityApiKey = import.meta.env.VITE_STABILITY_API_KEY;
+      }
+
+      if (import.meta.env.VITE_STABILITY_MODEL) {
+        envConfig.stabilityModel = import.meta.env.VITE_STABILITY_MODEL;
+      }
+
+      if (import.meta.env.VITE_STABILITY_API_VERSION) {
+        envConfig.stabilityApiVersion = import.meta.env.VITE_STABILITY_API_VERSION;
+      }
+
+      if (import.meta.env.VITE_STABILITY_ENGINE) {
+        envConfig.stabilityEngine = import.meta.env.VITE_STABILITY_ENGINE;
+      }
+
+      // Inicializar com padrões + .env
+      configuracao.value = { ...DEFAULT_CONFIG, ...envConfig };
+
+      // Depois, sobrescrever com localStorage se existir
       const configSalva = localStorage.getItem('rpg-ai-config');
       if (configSalva) {
         const config = JSON.parse(configSalva);
-        configuracao.value = { ...DEFAULT_CONFIG, ...config };
+        configuracao.value = { ...configuracao.value, ...config };
       }
 
       const sessionConfigSalva = localStorage.getItem('rpg-ai-session-config');
@@ -108,6 +138,18 @@ export const useConfigStore = defineStore('config', () => {
       }
 
       carregado.value = true;
+
+      // Debug: log da configuração carregada
+      if (configuracao.value.debug || import.meta.env.DEV) {
+        console.log('🔧 Configurações carregadas:', {
+          openaiConfigured: !!configuracao.value.openaiApiKey,
+          stabilityConfigured: !!configuracao.value.stabilityApiKey,
+          hasEnvVars: {
+            openai: !!import.meta.env.VITE_OPENAI_API_KEY,
+            stability: !!import.meta.env.VITE_STABILITY_API_KEY,
+          },
+        });
+      }
     } catch (error) {
       console.error('Erro ao carregar configurações:', error);
       // Usar configurações padrão
