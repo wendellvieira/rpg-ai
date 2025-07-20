@@ -4,6 +4,14 @@
 
 ### **🐛 1. Corrigir IA OpenAI não funcionando**
 
+- [x] **PWA temporariamente desabilitado**
+  - Comentado PWAInstallButton no MainLayout.vue
+  - Comentado inicialização do PWAService no App.vue
+  - Possível fonte de conflitos removida
+- [x] **Logs de debug implementados**
+  - OpenAIService com logs detalhados
+  - Função tentarIAAvancada melhorada
+  - Forçar inicialização do configStore
 - [ ] **Investigar configStore.isApiConfigured**
   - Verificar se está lendo corretamente o .env
   - Adicionar logs de debug para rastreamento
@@ -12,10 +20,6 @@
   - Verificar se `getInstance()` está auto-configurando
   - Testar `estaConfigurado()` retorna true
   - Adicionar logs na tentativa de envio
-- [ ] **Adicionar logs detalhados na função tentarIAAvancada**
-  - Log quando tenta OpenAI
-  - Log quando falha e por quê
-  - Log quando usa fallback
 - [ ] **Testar integração real com API**
   - Verificar se a API key é válida
   - Testar chamada manual ao OpenAI

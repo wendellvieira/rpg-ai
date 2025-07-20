@@ -784,8 +784,8 @@ async function enviarMensagem() {
     // Salvar a sessão com a nova mensagem
     await sessaoStore.salvarSessao(sessaoAtual.value as SessaoJogo);
 
-    // Processar resposta automática de personagens IA
-    void processarRespostasIA();
+    // TEMPORARIAMENTE DESABILITADO - Processar resposta automática de personagens IA
+    // void processarRespostasIA();
 
     console.log('Mensagem adicionada e sessão salva');
   } catch (error) {
@@ -798,82 +798,82 @@ async function enviarMensagem() {
   }
 }
 
-// Função para processar respostas automáticas de personagens IA
-async function processarRespostasIA() {
-  if (!sessaoAtual.value || iaProcessando.value) return;
+// TEMPORARIAMENTE DESABILITADO - Função para processar respostas automáticas de personagens IA
+// async function processarRespostasIA() {
+//   if (!sessaoAtual.value || iaProcessando.value) return;
 
-  try {
-    iaProcessando.value = true;
+//   try {
+//     iaProcessando.value = true;
 
-    // Buscar personagens IA na sessão atual
-    const personagensIA = personagensDisponiveis.value.filter(
-      (p) => p.isIA && sessaoAtual.value?.getParticipantes().includes(p.id),
-    );
+//     // Buscar personagens IA na sessão atual
+//     const personagensIA = personagensDisponiveis.value.filter(
+//       (p) => p.isIA && sessaoAtual.value?.getParticipantes().includes(p.id),
+//     );
 
-    // Para cada personagem IA, verificar se deve responder
-    for (const personagemData of personagensIA) {
-      try {
-        const personagemCompleto = personagemStore.obterPersonagemPorId(
-          personagemData.id,
-        ) as Personagem;
-        if (!personagemCompleto) continue;
+//     // Para cada personagem IA, verificar se deve responder
+//     for (const personagemData of personagensIA) {
+//       try {
+//         const personagemCompleto = personagemStore.obterPersonagemPorId(
+//           personagemData.id,
+//         ) as Personagem;
+//         if (!personagemCompleto) continue;
 
-        // Verificar se deve gerar resposta (probabilidade de 30%)
-        if (Math.random() < 0.3) {
-          // Simular resposta da IA
-          const respostaIA = gerarRespostaIA(personagemCompleto);
+//         // Verificar se deve gerar resposta (probabilidade de 30%)
+//         if (Math.random() < 0.3) {
+//           // Simular resposta da IA
+//           const respostaIA = gerarRespostaIA(personagemCompleto);
 
-          if (respostaIA) {
-            sessaoAtual.value.adicionarMensagem({
-              tipo: 'fala',
-              personagem: personagemCompleto.id,
-              conteudo: respostaIA,
-            } as Omit<MensagemFala, 'id' | 'timestamp' | 'turno' | 'rodada'>);
-          }
-        }
-      } catch (error) {
-        console.error(`Erro ao processar IA do personagem ${personagemData.nome}:`, error);
-      }
-    }
+//           if (respostaIA) {
+//             sessaoAtual.value.adicionarMensagem({
+//               tipo: 'fala',
+//               personagem: personagemCompleto.id,
+//               conteudo: respostaIA,
+//             } as Omit<MensagemFala, 'id' | 'timestamp' | 'turno' | 'rodada'>);
+//           }
+//         }
+//       } catch (error) {
+//         console.error(`Erro ao processar IA do personagem ${personagemData.nome}:`, error);
+//       }
+//     }
 
-    // Salvar novamente se houve novas mensagens
-    await sessaoStore.salvarSessao(sessaoAtual.value as SessaoJogo);
-  } catch (error) {
-    console.error('Erro ao processar respostas IA:', error);
-  } finally {
-    iaProcessando.value = false;
-  }
-}
+//     // Salvar novamente se houve novas mensagens
+//     await sessaoStore.salvarSessao(sessaoAtual.value as SessaoJogo);
+//   } catch (error) {
+//     console.error('Erro ao processar respostas IA:', error);
+//   } finally {
+//     iaProcessando.value = false;
+//   }
+// }
 
-// Função auxiliar para gerar resposta de IA
-function gerarRespostaIA(personagem: Personagem): string | null {
-  // Respostas simples baseadas na personalidade
-  const respostasComuns = [
-    'Interessante...',
-    'Concordo com essa abordagem.',
-    'Talvez devêssemos considerar outras opções.',
-    'Estou observando a situação.',
-    'Que pensam sobre isso?',
-    'Mantenham-se alertas.',
-    'Preciso refletir sobre isso.',
-  ];
+// TEMPORARIAMENTE DESABILITADO - Função auxiliar para gerar resposta de IA
+// function gerarRespostaIA(personagem: Personagem): string | null {
+//   // Respostas simples baseadas na personalidade
+//   const respostasComuns = [
+//     'Interessante...',
+//     'Concordo com essa abordagem.',
+//     'Talvez devêssemos considerar outras opções.',
+//     'Estou observando a situação.',
+//     'Que pensam sobre isso?',
+//     'Mantenham-se alertas.',
+//     'Preciso refletir sobre isso.',
+//   ];
 
-  // Se tem prompt de personalidade, usar respostas mais específicas
-  if (personagem.promptPersonalidade) {
-    const respostasPersonalizadas = [
-      `${personagem.promptPersonalidade} Isso me faz pensar...`,
-      'Baseado na minha experiência, acredito que...',
-      'Minha intuição me diz que...',
-    ];
+//   // Se tem prompt de personalidade, usar respostas mais específicas
+//   if (personagem.promptPersonalidade) {
+//     const respostasPersonalizadas = [
+//       `${personagem.promptPersonalidade} Isso me faz pensar...`,
+//       'Baseado na minha experiência, acredito que...',
+//       'Minha intuição me diz que...',
+//     ];
 
-    const resposta =
-      respostasPersonalizadas[Math.floor(Math.random() * respostasPersonalizadas.length)];
-    return resposta || null;
-  }
+//     const resposta =
+//       respostasPersonalizadas[Math.floor(Math.random() * respostasPersonalizadas.length)];
+//     return resposta || null;
+//   }
 
-  const resposta = respostasComuns[Math.floor(Math.random() * respostasComuns.length)];
-  return resposta || null;
-}
+//   const resposta = respostasComuns[Math.floor(Math.random() * respostasComuns.length)];
+//   return resposta || null;
+// }
 
 function avancarTurno() {
   if (!sessaoAtual.value) return;
@@ -920,13 +920,38 @@ function avancarTurno() {
 
 // Função para executar IA manualmente
 async function executarIAManual() {
-  if (!sessaoAtual.value || !participanteAtual.value?.isIA) return;
+  console.log('🤖 [DEBUG] executarIAManual - Iniciando...');
+  console.log('🤖 [DEBUG] executarIAManual - sessaoAtual existe:', !!sessaoAtual.value);
+  console.log('🤖 [DEBUG] executarIAManual - participanteAtual:', participanteAtual.value);
+  console.log(
+    '🤖 [DEBUG] executarIAManual - participanteAtual.isIA:',
+    participanteAtual.value?.isIA,
+  );
+
+  if (!sessaoAtual.value) {
+    console.log('🤖 [ERROR] executarIAManual - Nenhuma sessão ativa');
+    return;
+  }
+
+  if (!participanteAtual.value) {
+    console.log('🤖 [ERROR] executarIAManual - Nenhum participante no turno atual');
+    return;
+  }
+
+  if (!participanteAtual.value.isIA) {
+    console.log(
+      '🤖 [ERROR] executarIAManual - Participante atual não é IA:',
+      participanteAtual.value.nome,
+    );
+    return;
+  }
 
   try {
+    console.log('🤖 [DEBUG] executarIAManual - Processando IA para:', participanteAtual.value.nome);
     const personagemAtual = participanteAtual.value;
     await processarTurnoIA(personagemAtual);
   } catch (error) {
-    console.error('Erro ao executar IA manual:', error);
+    console.error('🤖 [ERROR] executarIAManual - Erro:', error);
     $q.notify({
       type: 'negative',
       message: 'Erro ao executar IA',
@@ -937,48 +962,139 @@ async function executarIAManual() {
 
 // Função para processar turno específico de IA
 async function processarTurnoIA(personagemData: { id: string; nome: string; isIA: boolean }) {
-  if (!sessaoAtual.value || !personagemData.isIA) return;
+  console.log('🤖 [DEBUG] processarTurnoIA - Iniciando para:', personagemData.nome);
+  console.log('🤖 [DEBUG] processarTurnoIA - sessaoAtual existe:', !!sessaoAtual.value);
+  console.log('🤖 [DEBUG] processarTurnoIA - personagemData.isIA:', personagemData.isIA);
+
+  if (!sessaoAtual.value) {
+    console.log('🤖 [ERROR] processarTurnoIA - Nenhuma sessão ativa');
+    return;
+  }
+
+  if (!personagemData.isIA) {
+    console.log('🤖 [ERROR] processarTurnoIA - Personagem não é IA:', personagemData.nome);
+    return;
+  }
 
   try {
+    console.log('🤖 [DEBUG] processarTurnoIA - Definindo iaProcessando = true');
     iaProcessando.value = true;
 
-    const personagemCompleto = personagemStore.obterPersonagemPorId(
-      personagemData.id,
-    ) as Personagem;
-    if (!personagemCompleto) return;
+    console.log('🤖 [DEBUG] processarTurnoIA - Buscando personagem completo no store...');
+    let personagemCompleto = personagemStore.obterPersonagemPorId(personagemData.id) as Personagem;
 
+    console.log(
+      '🤖 [DEBUG] processarTurnoIA - Personagem encontrado no store:',
+      !!personagemCompleto,
+    );
+
+    // Se não encontrou no store, tentar carregar do persistence
+    if (!personagemCompleto) {
+      console.log('🤖 [DEBUG] processarTurnoIA - Carregando personagem do persistence...');
+      try {
+        const persistence = PersistenceManager.getInstance();
+        const personagemCarregado = await persistence.carregarPersonagem(personagemData.id);
+
+        if (personagemCarregado) {
+          console.log(
+            '🤖 [DEBUG] processarTurnoIA - Personagem carregado do persistence:',
+            personagemCarregado.nome,
+          );
+          personagemCompleto = personagemCarregado;
+        } else {
+          console.log(
+            '🤖 [ERROR] processarTurnoIA - Personagem não encontrado nem no store nem no persistence:',
+            personagemData.id,
+          );
+          return;
+        }
+      } catch (error) {
+        console.error('🤖 [ERROR] processarTurnoIA - Erro ao carregar do persistence:', error);
+        return;
+      }
+    }
+
+    console.log('🤖 [DEBUG] processarTurnoIA - Tentando IA avançada...');
     // Primeiro, tentar usar a IA avançada (OpenAI)
     let acaoIA = await tentarIAAvancada(personagemCompleto);
 
+    console.log(
+      '🤖 [DEBUG] processarTurnoIA - Resultado IA avançada:',
+      acaoIA ? 'Sucesso' : 'Falhou',
+    );
+
     // Se falhar, usar IA básica (local)
     if (!acaoIA) {
+      console.log('🤖 [DEBUG] processarTurnoIA - Usando IA básica...');
       acaoIA = gerarAcaoIA(personagemCompleto);
+      console.log(
+        '🤖 [DEBUG] processarTurnoIA - Resultado IA básica:',
+        acaoIA ? 'Sucesso' : 'Falhou',
+      );
     }
 
     if (acaoIA) {
+      console.log('🤖 [DEBUG] processarTurnoIA - Adicionando mensagem ao chat:', acaoIA);
       sessaoAtual.value.adicionarMensagem({
         tipo: 'fala',
         personagem: personagemCompleto.id,
         conteudo: acaoIA,
       } as Omit<MensagemFala, 'id' | 'timestamp' | 'turno' | 'rodada'>);
 
+      console.log('🤖 [DEBUG] processarTurnoIA - Salvando sessão...');
       await sessaoStore.salvarSessao(sessaoAtual.value as SessaoJogo);
 
+      console.log(
+        '🤖 [DEBUG] processarTurnoIA - IA executou ação, avançando turno automaticamente...',
+      );
+
+      // FEATURE SOLICITADA: Após IA agir, avançar turno automaticamente
+      sessaoAtual.value.avancarTurno();
+
+      console.log('🤖 [DEBUG] processarTurnoIA - Turno avançado automaticamente');
+
+      console.log('🤖 [DEBUG] processarTurnoIA - Exibindo notificação de sucesso');
       $q.notify({
         type: 'positive',
-        message: `${personagemData.nome} agiu`,
+        message: `${personagemData.nome} agiu e passou o turno`,
         caption: acaoIA,
+        icon: 'psychology',
+      });
+
+      // Verificar se o próximo participante também é IA
+      const proximoPersonagemId = sessaoAtual.value.getPersonagemTurnoAtual();
+      if (proximoPersonagemId) {
+        const proximoPersonagem = personagensDisponiveis.value.find(
+          (p) => p.id === proximoPersonagemId,
+        );
+        if (proximoPersonagem?.isIA) {
+          console.log(
+            '🤖 [DEBUG] processarTurnoIA - Próximo participante também é IA, processando em 1.5s...',
+          );
+          // Delay maior para dar tempo do usuário ver a ação anterior
+          setTimeout(() => {
+            void processarTurnoIA(proximoPersonagem);
+          }, 1500);
+        }
+      }
+    } else {
+      console.log('🤖 [ERROR] processarTurnoIA - Nenhuma ação gerada pela IA');
+      $q.notify({
+        type: 'warning',
+        message: `${personagemData.nome} não conseguiu agir`,
+        caption: 'IA não gerou nenhuma ação',
         icon: 'psychology',
       });
     }
   } catch (error) {
-    console.error(`Erro ao processar turno IA de ${personagemData.nome}:`, error);
+    console.error(`🤖 [ERROR] processarTurnoIA - Erro para ${personagemData.nome}:`, error);
     $q.notify({
       type: 'negative',
       message: `Erro na IA de ${personagemData.nome}`,
       caption: String(error),
     });
   } finally {
+    console.log('🤖 [DEBUG] processarTurnoIA - Definindo iaProcessando = false');
     iaProcessando.value = false;
   }
 }
