@@ -46,22 +46,27 @@ Este projeto possui **tasks configuradas no VS Code** que devem ser usadas **EXC
 #### **⚠️ IMPORTANTE - Diretrizes para Agentes:**
 
 - ✅ **USE SEMPRE** as tasks do VS Code ao invés de comandos no terminal
+- ✅ **CAPTURE OUTPUT** com `get_terminal_last_command` após executar tasks
 - ❌ **NÃO USE** comandos diretos no terminal (`run_in_terminal`) sem autorização
 - 🤔 **Se precisar de um comando não listado:**
   1. Pergunte ao desenvolvedor antes de usar
   2. Sugira a inclusão do comando como uma nova task do vscode.
 - 📊 **Para ler resultados do lint:** Use `read_file` no arquivo `lint-output.log`
+- 🔍 **Para debug de builds:** Use `get_terminal_last_command` para ver erros completos
 
 #### **Exemplo de Uso Correto:**
 
 ```typescript
-// ✅ CORRETO - Usar task do VS Code
+// ✅ CORRETO - Usar task do VS Code e capturar output
 await run_vs_code_task({
   id: 'shell: lint',
   workspaceFolder: '/path/to/workspace',
 });
 
-// Depois ler o resultado
+// IMPORTANTE: Aguardar e capturar output completo
+await get_terminal_last_command(); // Captura toda a saída do terminal
+
+// Para lint, também ler o arquivo de log
 await read_file({
   filePath: '/path/to/workspace/lint-output.log',
   startLineNumber: 1,
@@ -71,6 +76,21 @@ await read_file({
 // ❌ INCORRETO - Não usar terminal direto
 // await run_in_terminal({ command: "npm run lint" });
 ```
+
+#### **📋 Fluxo para Capturar Output de Tasks:**
+
+1. **Execute a task:** `run_vs_code_task`
+2. **Aguarde completar:** Task roda em background
+3. **Capture o output:** `get_terminal_last_command` (ESSENCIAL!)
+4. **Para lint:** Leia também `lint-output.log`
+
+**A função `get_terminal_last_command` é FUNDAMENTAL** - ela captura:
+
+- ✅ Comando executado completo
+- ✅ Diretório de execução
+- ✅ **Toda a saída** (stdout + stderr)
+- ✅ Status de conclusão
+- ✅ Códigos de erro detalhados
 
 ---
 

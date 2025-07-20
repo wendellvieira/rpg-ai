@@ -109,6 +109,8 @@ import { usePersonagemStore } from '../stores/personagemStore';
 import { useItemStore } from '../stores/itemStore';
 import { useSessaoStore } from '../stores/sessaoStore';
 import { SistemaCombate, type ResultadoAtaque } from '../classes/SistemaCombate';
+import type { SessaoJogo } from '../classes/SessaoJogo';
+import type { MensagemAcao } from '../types';
 import { Arma } from '../classes/Arma';
 import type { Personagem } from '../classes/Personagem';
 
@@ -214,19 +216,14 @@ async function executarAtaque() {
     sessaoStore.sessaoAtual.adicionarMensagem({
       tipo: 'acao',
       personagem: atacante.nome,
-      conteudo: `${atacante.nome} atacou ${alvo.nome}${arma ? ` com ${arma.nome}` : ''}.`,
-      dados: {
-        acao: 'atacar',
-        alvo: alvo.nome,
-        resultado: resultado.descricao,
-        dano: resultado.dano,
-        rolagemAtaque: resultado.rolagemAtaque,
-        ...(arma && { arma: arma.nome }),
-      },
-    });
+      acao: 'atacar',
+      resultado: `${atacante.nome} atacou ${alvo.nome}${arma ? ` com ${arma.nome}` : ''}. ${resultado.descricao}`,
+      dados: resultado.rolagemAtaque,
+      sucesso: resultado.sucesso,
+    } as Omit<MensagemAcao, 'id' | 'timestamp' | 'turno' | 'rodada'>);
 
     // Salvar a sessão com a nova mensagem
-    await sessaoStore.salvarSessao(sessaoStore.sessaoAtual);
+    await sessaoStore.salvarSessao(sessaoStore.sessaoAtual as SessaoJogo);
   }
 
   // Emite evento

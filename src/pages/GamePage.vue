@@ -376,7 +376,7 @@
     <!-- Dialog para editar personagem -->
     <EditarPersonagemDialog
       v-model="mostrarEditarPersonagem"
-      :personagem="personagemParaMagias"
+      :personagem="personagemParaMagiasTyped"
       @salvar="salvarPersonagemEditado"
       @abrirCatalogo="abrirCatalogoMagiasParaPersonagem"
       @abrirPreparacao="abrirPreparacaoMagiasParaPersonagem"
@@ -384,7 +384,7 @@
     />
 
     <!-- Dialog para preparar magias -->
-    <PrepararMagiasDialog v-model="mostrarPrepararMagias" :personagem="personagemParaMagias" />
+    <PrepararMagiasDialog v-model="mostrarPrepararMagias" :personagem="personagemParaMagiasTyped" />
   </q-page>
 </template>
 
@@ -397,7 +397,7 @@ import { usePersonagemStore } from '../stores/personagemStore';
 import { PersistenceManager } from '../services/PersistenceManager';
 import { Dados } from '../classes/Dados';
 import type { Personagem } from '../classes/Personagem';
-import { StatusSessao } from '../classes/SessaoJogo';
+import { StatusSessao, type SessaoJogo } from '../classes/SessaoJogo';
 import type { MensagemMestre } from '../types';
 import IniciativaCombate from '../components/IniciativaCombate.vue';
 import CatalogoMagias from '../components/CatalogoMagias.vue';
@@ -449,6 +449,10 @@ const tiposRolagem = ['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100'];
 
 // Computed
 const sessaoAtual = computed(() => sessaoStore.sessaoAtual);
+
+// Cast do personagem para o tipo correto
+const personagemParaMagiasTyped = computed(() => personagemParaMagias.value as Personagem | null);
+
 const participantesAtivos = computed(() => {
   return sessaoAtual.value?.getParticipantes() || [];
 });
@@ -576,7 +580,7 @@ function editarPersonagem(personagem: PersonagemData) {
   personagemParaEditar.value = personagem;
 
   // Buscar o objeto Personagem real no store
-  const personagemReal = personagemStore.personagens.find((p) => p.id === personagem.id);
+  const personagemReal = personagemStore.obterPersonagemPorId(personagem.id) as Personagem;
   personagemParaMagias.value = personagemReal || null;
 
   mostrarEditarPersonagem.value = true;
@@ -679,7 +683,7 @@ async function enviarMensagem() {
     novaMensagem.value = '';
 
     // Salvar a sessão com a nova mensagem
-    await sessaoStore.salvarSessao(sessaoAtual.value);
+    await sessaoStore.salvarSessao(sessaoAtual.value as SessaoJogo);
 
     console.log('Mensagem adicionada e sessão salva');
   } catch (error) {

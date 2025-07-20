@@ -126,7 +126,7 @@ const temSlotsGastos = computed(() => {
   if (!props.personagem?.podeConjurar) return false;
 
   return niveisComSlots.value.some((nivel) => {
-    const slots = props.personagem.obterSlotsDisponiveis(nivel);
+    const slots = props.personagem!.obterSlotsDisponiveis(nivel);
     return slots.usados > 0;
   });
 });

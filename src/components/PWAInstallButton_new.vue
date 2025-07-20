@@ -24,7 +24,7 @@ let installPromptListener: (() => void) | null = null;
 
 onMounted(() => {
   // Verificar se o prompt de instalação está disponível
-  void checkInstallAvailability();
+  checkInstallAvailability();
 
   // Listener para quando o prompt se torna disponível
   installPromptListener = () => {
@@ -39,7 +39,7 @@ onUnmounted(() => {
   }
 });
 
-function checkInstallAvailability() {
+async function checkInstallAvailability() {
   // Verifica se já está instalado como PWA
   if (pwaService.isPWA()) {
     showInstallButton.value = false;

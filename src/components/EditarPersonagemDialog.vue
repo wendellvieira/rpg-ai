@@ -461,7 +461,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useQuasar } from 'quasar';
-import { useMagiaStore } from '../stores/magiaStore';
+import { useMagiaStore, type DadosMagiaSerializados } from '../stores/magiaStore';
 import PrepararMagiasDialog from './PrepararMagiasDialog.vue';
 import type { Personagem } from '../classes/Personagem';
 import type {
@@ -475,7 +475,7 @@ import type {
 const showDialog = defineModel<boolean>('modelValue', { required: true });
 
 const props = defineProps<{
-  personagem?: Personagem | null;
+  personagem?: Personagem | null | undefined;
 }>();
 
 // Emits
@@ -568,14 +568,18 @@ const magiasConhecidas = computed(() => {
   if (!props.personagem || !props.personagem.podeConjurar) return [];
 
   const idsConhecidas = props.personagem.obterMagiasConhecidas();
-  return idsConhecidas.map((id) => magiaStore.obterMagia(id)).filter(Boolean);
+  return idsConhecidas
+    .map((id) => magiaStore.obterMagia(id))
+    .filter((magia): magia is DadosMagiaSerializados => Boolean(magia));
 });
 
 const magiasPreparadas = computed(() => {
   if (!props.personagem || !props.personagem.podeConjurar) return [];
 
   const idsPreparadas = props.personagem.obterMagiasPreparadas();
-  return idsPreparadas.map((id) => magiaStore.obterMagia(id)).filter(Boolean);
+  return idsPreparadas
+    .map((id) => magiaStore.obterMagia(id))
+    .filter((magia): magia is DadosMagiaSerializados => Boolean(magia));
 });
 
 // Methods

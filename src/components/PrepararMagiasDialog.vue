@@ -149,7 +149,7 @@ import type { Personagem } from '../classes/Personagem';
 const showDialog = defineModel<boolean>('modelValue', { required: true });
 
 const props = defineProps<{
-  personagem?: Personagem | null;
+  personagem?: Personagem | null | undefined;
 }>();
 
 // Stores e composables
@@ -164,17 +164,21 @@ const magiasConhecidas = computed(() => {
   if (!props.personagem || !props.personagem.podeConjurar) return [];
 
   const idsConhecidas = props.personagem.obterMagiasConhecidas();
-  return idsConhecidas.map((id) => magiaStore.obterMagia(id)).filter(Boolean);
+  return idsConhecidas
+    .map((id) => magiaStore.obterMagia(id))
+    .filter((magia): magia is DadosMagiaSerializados => Boolean(magia));
 });
 
 const magiasPreparadas = computed(() => {
   if (!props.personagem || !props.personagem.podeConjurar) return [];
 
   const idsPreparadas = props.personagem.obterMagiasPreparadas();
-  const preparadas = idsPreparadas.map((id) => magiaStore.obterMagia(id)).filter(Boolean);
+  const preparadas = idsPreparadas
+    .map((id) => magiaStore.obterMagia(id))
+    .filter((magia): magia is DadosMagiaSerializados => Boolean(magia));
 
   // Adicionar truques (sempre preparados)
-  const truques = magiasConhecidas.value.filter((m) => m.nivel === 0);
+  const truques = magiasConhecidas.value.filter((m) => m?.nivel === 0);
 
   return [...truques, ...preparadas];
 });
@@ -185,9 +189,9 @@ const magiasConhecidasFiltradas = computed(() => {
   const filtro = filtroConhecidas.value.toLowerCase();
   return magiasConhecidas.value.filter(
     (m) =>
-      m.nome.toLowerCase().includes(filtro) ||
-      m.escola.toLowerCase().includes(filtro) ||
-      m.descricao.toLowerCase().includes(filtro),
+      m?.nome.toLowerCase().includes(filtro) ||
+      m?.escola.toLowerCase().includes(filtro) ||
+      m?.descricao.toLowerCase().includes(filtro),
   );
 });
 

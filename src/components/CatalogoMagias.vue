@@ -464,9 +464,7 @@ async function adicionarMagia() {
   if (!magiaSelecionada.value || !personagemSelecionado.value) return;
 
   // Buscar o personagem completo no store
-  const personagemCompleto = personagemStore.personagens.find(
-    (p) => p.id === personagemSelecionado.value!.id,
-  );
+  const personagemCompleto = personagemStore.obterPersonagemPorId(personagemSelecionado.value.id);
   if (!personagemCompleto) {
     $q.notify({
       type: 'negative',
