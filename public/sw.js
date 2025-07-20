@@ -63,6 +63,16 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // Ignorar requests de extensões do browser e protocolos não HTTP
+  if (
+    (url.protocol !== 'http:' && url.protocol !== 'https:') ||
+    url.protocol === 'chrome-extension:' ||
+    url.protocol === 'moz-extension:' ||
+    url.protocol === 'safari-extension:'
+  ) {
+    return;
+  }
+
   // Estratégia: Cache First para recursos estáticos
   if (STATIC_RESOURCES.includes(url.pathname)) {
     event.respondWith(
@@ -82,7 +92,9 @@ self.addEventListener('fetch', (event) => {
           if (response.status === 200) {
             const responseClone = response.clone();
             caches.open(CACHE_NAME).then((cache) => {
-              cache.put(request, responseClone);
+              cache.put(request, responseClone).catch((error) => {
+                console.warn('[SW] Failed to cache request:', error);
+              });
             });
           }
           return response;
@@ -102,7 +114,9 @@ self.addEventListener('fetch', (event) => {
         if (networkResponse.status === 200) {
           const responseClone = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, responseClone);
+            cache.put(request, responseClone).catch((error) => {
+              console.warn('[SW] Failed to cache request:', error);
+            });
           });
         }
         return networkResponse;

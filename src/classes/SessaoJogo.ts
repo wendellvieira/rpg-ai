@@ -24,7 +24,7 @@ interface SessaoSerializada {
   criadaEm: Date;
   atualizadaEm: Date;
   participantes: string[];
-  mensagens: Mensagem[];
+  mensagens: Array<Record<string, unknown>>; // Mensagens serializadas como objeto simples
   turnoAtual: number;
   rodada: number;
   status: StatusSessao;
@@ -314,12 +314,33 @@ export class SessaoJogo {
       criadaEm: this.criadaEm,
       atualizadaEm: this.atualizadaEm,
       participantes: [...this.participantes],
-      mensagens: [...this.mensagens],
+      mensagens: this.mensagens.map((msg) => this.serializarMensagem(msg)),
       turnoAtual: this.turnoAtual,
       rodada: this.rodada,
       status: this.status,
       sistemaTurnos: this.sistemaTurnos.serializar(),
     };
+  }
+
+  /**
+   * Serializa uma mensagem de forma segura
+   */
+  private serializarMensagem(msg: Mensagem): Record<string, unknown> {
+    // Cria uma cópia limpa usando JSON para remover referências
+    const msgLimpa = JSON.parse(
+      JSON.stringify(msg, (key, value) => {
+        // Remove propriedades que podem causar referências circulares
+        if (typeof value === 'function') return undefined;
+        if (value instanceof Error) return value.message;
+
+        // Garante que timestamps sejam convertidos para strings ISO
+        if (value instanceof Date) return value.toISOString();
+
+        return value;
+      }),
+    );
+
+    return msgLimpa;
   }
 
   /**
@@ -344,10 +365,18 @@ export class SessaoJogo {
     sessao.atualizadaEm = new Date(dados.atualizadaEm);
 
     // Restaura mensagens
-    sessao.mensagens = dados.mensagens.map((msg) => ({
-      ...msg,
-      timestamp: new Date(msg.timestamp),
-    }));
+    sessao.mensagens = dados.mensagens.map((msg) => {
+      const mensagem = { ...msg } as unknown as Mensagem;
+      // Reconverter timestamp se for string
+      if (typeof msg.timestamp === 'string') {
+        mensagem.timestamp = new Date(msg.timestamp);
+      } else if (msg.timestamp instanceof Date) {
+        mensagem.timestamp = msg.timestamp;
+      } else {
+        mensagem.timestamp = new Date();
+      }
+      return mensagem;
+    });
 
     // Restaura sistema de turnos se disponível
     if (dados.sistemaTurnos) {
