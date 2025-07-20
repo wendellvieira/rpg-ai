@@ -227,40 +227,49 @@
             </div>
 
             <div v-else>
-              <!-- Mensagens do chat -->
-              <div v-for="(mensagem, index) in mensagensChat" :key="index" class="q-mb-md">
-                <q-chat-message
-                  :text="[getMensagemConteudo(mensagem)]"
-                  :sent="mensagem.tipo === 'mestre'"
-                  :bg-color="getCorMensagem(mensagem.tipo)"
-                  :text-color="getCorTextoMensagem(mensagem.tipo)"
-                  :name="getMensagemPersonagem(mensagem)"
-                  :stamp="formatarHoraMensagem(mensagem.timestamp)"
-                >
-                  <template v-slot:avatar>
-                    <q-avatar
-                      :color="getCorAvatar(mensagem.tipo, getMensagemPersonagem(mensagem))"
-                      text-color="white"
-                      size="32px"
-                    >
-                      {{ getInicialAvatar(getMensagemPersonagem(mensagem) || mensagem.tipo) }}
-                    </q-avatar>
-                  </template>
-                </q-chat-message>
-              </div>
+              <!-- Mensagens do chat com virtual scrolling -->
+              <q-virtual-scroll
+                :items="mensagensChat"
+                separator
+                v-slot="{ item: mensagem, index }"
+                style="max-height: calc(100vh - 300px)"
+                class="chat-container"
+              >
+                <div :key="index" class="q-mb-md">
+                  <q-chat-message
+                    :text="[getMensagemConteudo(mensagem)]"
+                    :sent="mensagem.tipo === 'mestre'"
+                    :bg-color="getCorMensagem(mensagem.tipo)"
+                    :text-color="getCorTextoMensagem(mensagem.tipo)"
+                    :name="getMensagemPersonagem(mensagem)"
+                    :stamp="formatarHoraMensagem(mensagem.timestamp)"
+                  >
+                    <template v-slot:avatar>
+                      <q-avatar
+                        :color="getCorAvatar(mensagem.tipo, getMensagemPersonagem(mensagem))"
+                        text-color="white"
+                        size="32px"
+                      >
+                        {{ getInicialAvatar(getMensagemPersonagem(mensagem) || mensagem.tipo) }}
+                      </q-avatar>
+                    </template>
+                  </q-chat-message>
+                </div>
+              </q-virtual-scroll>
 
               <!-- Mensagem de carregamento quando IA está pensando -->
               <div v-if="iaProcessando" class="q-mb-md">
                 <q-chat-message
-                  :text="['Pensando...']"
+                  :text="['🤔 Analisando situação...']"
                   :sent="false"
-                  bg-color="grey-3"
-                  text-color="grey-8"
-                  name="IA"
+                  bg-color="blue-grey-2"
+                  text-color="blue-grey-8"
+                  name="IA Mestre"
                 >
                   <template v-slot:avatar>
-                    <q-avatar color="purple" text-color="white" size="32px">
-                      <q-spinner />
+                    <q-avatar color="blue-grey-6" text-color="white" size="32px">
+                      <q-icon name="psychology" />
+                      <q-spinner-dots size="16px" class="absolute-center" color="white" />
                     </q-avatar>
                   </template>
                 </q-chat-message>
@@ -380,7 +389,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, defineAsyncComponent } from 'vue';
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useSessaoStore } from '../stores/sessaoStore';
@@ -392,9 +401,11 @@ import { StatusSessao } from '../classes/SessaoJogo';
 import type { MensagemMestre } from '../types';
 import IniciativaCombate from '../components/IniciativaCombate.vue';
 import CatalogoMagias from '../components/CatalogoMagias.vue';
-import EditarPersonagemDialog from '../components/EditarPersonagemDialog.vue';
-import PrepararMagiasDialog from '../components/PrepararMagiasDialog.vue';
 import MapaCanvas from '../components/MapaCanvas.vue';
+
+// Lazy loading para diálogos pesados
+const EditarPersonagemDialog = defineAsyncComponent(() => import('../components/EditarPersonagemDialog.vue'));
+const PrepararMagiasDialog = defineAsyncComponent(() => import('../components/PrepararMagiasDialog.vue'));
 
 interface PersonagemData {
   id: string;
@@ -601,14 +612,8 @@ async function salvarPersonagemEditado(dadosPersonagem: {
         nome: dadosPersonagem.nome,
         raca: dadosPersonagem.raca,
         classe: dadosPersonagem.classe,
-        descricao: dadosPersonagem.descricao,
-        isIA: dadosPersonagem.isIA,
-        promptPersonalidade: dadosPersonagem.promptPersonalidade,
       });
     }
-
-    // Salvar no banco de dados
-    await personagemStore.salvarPersonagens();
 
     $q.notify({
       type: 'positive',
@@ -638,10 +643,10 @@ function abrirPreparacaoMagiasParaPersonagem(personagem: Personagem) {
   mostrarPrepararMagias.value = true;
 }
 
-async function salvarAlteracaoPersonagem() {
+function salvarAlteracaoPersonagem() {
   try {
-    // Salvar alterações do personagem
-    await personagemStore.salvarPersonagens();
+    // Note: The personagem is already saved when methods like aprenderMagia are called
+    // This method is mainly for UI feedback
 
     $q.notify({
       type: 'positive',
@@ -963,5 +968,13 @@ function getMensagemPersonagem(mensagem: Record<string, unknown>): string {
 
 .scroll {
   overflow-y: auto;
+}
+
+.chat-container {
+  padding: 8px;
+}
+
+.chat-container .q-virtual-scroll__content {
+  padding-bottom: 16px;
 }
 </style>

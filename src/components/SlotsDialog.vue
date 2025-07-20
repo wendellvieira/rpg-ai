@@ -2,20 +2,25 @@
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <q-card style="min-width: 400px">
       <q-card-section class="row items-center q-pb-none">
-        <div class="text-h6">Slots de Magia - {{ (personagem as any)?.nome }}</div>
+        <div class="text-h6">Slots de Magia - {{ personagem?.nome }}</div>
         <q-space />
-        <q-btn icon="close" flat round dense v-close-popup />
+        <q-btn 
+          icon="close" 
+          flat 
+          round 
+          dense 
+          v-close-popup 
+          aria-label="Fechar dialog de slots de magia"
+        />
       </q-card-section>
 
-      <q-card-section v-if="!(personagem as any)?.podeConjurar" class="text-center">
+      <q-card-section v-if="!personagem?.podeConjurar" class="text-center">
         <q-icon name="block" size="48px" color="grey-5" class="q-mb-sm" />
         <div class="text-grey-6">Este personagem não possui capacidades mágicas.</div>
       </q-card-section>
 
       <q-card-section v-else>
-        <div class="text-subtitle2 q-mb-md">
-          Classe: {{ (personagem as any).capacidadesMagicas?.classeConjuradora }}
-        </div>
+        <div class="text-subtitle2 q-mb-md">Classe: {{ personagem?.classe }}</div>
 
         <!-- Slots por Nível -->
         <q-list bordered>
@@ -46,7 +51,11 @@
                     'slot-usado': i <= getSlotsInfo(nivel).usados,
                     'slot-disponivel': i > getSlotsInfo(nivel).usados,
                   }"
-                />
+                >
+                  <q-tooltip>
+                    Slot {{ i }} - {{ i <= getSlotsInfo(nivel).usados ? 'Usado' : 'Disponível' }}
+                  </q-tooltip>
+                </div>
               </div>
             </q-item-section>
           </q-item>
@@ -64,14 +73,21 @@
 
       <q-card-actions align="right">
         <q-btn
-          v-if="(personagem as any)?.podeConjurar"
+          v-if="personagem?.podeConjurar"
           flat
           label="Recuperar Slots"
           color="primary"
           @click="recuperarSlots"
           :disable="!temSlotsGastos"
+          aria-label="Recuperar todos os slots de magia gastos"
         />
-        <q-btn flat label="Fechar" color="primary" v-close-popup />
+        <q-btn 
+          flat 
+          label="Fechar" 
+          color="primary" 
+          v-close-popup 
+          aria-label="Fechar dialog"
+        />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -85,7 +101,7 @@ import type { NivelMagia } from '../types';
 
 // Props
 interface Props {
-  personagem: Personagem;
+  personagem?: Personagem | null;
 }
 
 const props = defineProps<Props>();

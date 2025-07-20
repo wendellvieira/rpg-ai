@@ -5,6 +5,12 @@ export interface ConfiguracaoGlobal {
   openaiApiKey: string;
   openaiModel: string;
   openaiTemperature: number;
+  stabilityApiKey: string;
+  stabilityModel: string;
+  stabilityDefaultWidth: number;
+  stabilityDefaultHeight: number;
+  stabilityDefaultSteps: number;
+  stabilityDefaultCfgScale: number;
   autoSave: boolean;
   autoSaveInterval: number; // em segundos
   tema: 'auto' | 'light' | 'dark';
@@ -27,6 +33,12 @@ const DEFAULT_CONFIG: ConfiguracaoGlobal = {
   openaiApiKey: '',
   openaiModel: 'gpt-4',
   openaiTemperature: 0.7,
+  stabilityApiKey: '',
+  stabilityModel: 'sd3-large-turbo',
+  stabilityDefaultWidth: 1024,
+  stabilityDefaultHeight: 1024,
+  stabilityDefaultSteps: 30,
+  stabilityDefaultCfgScale: 7.0,
   autoSave: true,
   autoSaveInterval: 30,
   tema: 'auto',
@@ -54,6 +66,14 @@ export const useConfigStore = defineStore('config', () => {
   // Computed
   const isApiConfigured = computed(() => {
     return configuracao.value.openaiApiKey.length > 0;
+  });
+
+  const isStabilityConfigured = computed(() => {
+    return configuracao.value.stabilityApiKey.length > 0;
+  });
+
+  const isAnyApiConfigured = computed(() => {
+    return isApiConfigured.value || isStabilityConfigured.value;
   });
 
   const isDarkMode = computed(() => {
@@ -129,6 +149,30 @@ export const useConfigStore = defineStore('config', () => {
 
   function definirTemperatura(temperatura: number): void {
     atualizarConfiguracao({ openaiTemperature: temperatura });
+  }
+
+  function definirStabilityApiKey(apiKey: string): void {
+    atualizarConfiguracao({ stabilityApiKey: apiKey });
+  }
+
+  function definirStabilityModelo(modelo: string): void {
+    atualizarConfiguracao({ stabilityModel: modelo });
+  }
+
+  function definirStabilityConfig(config: {
+    largura?: number;
+    altura?: number;
+    steps?: number;
+    cfgScale?: number;
+  }): void {
+    const novaConfig: Partial<ConfiguracaoGlobal> = {};
+    
+    if (config.largura !== undefined) novaConfig.stabilityDefaultWidth = config.largura;
+    if (config.altura !== undefined) novaConfig.stabilityDefaultHeight = config.altura;
+    if (config.steps !== undefined) novaConfig.stabilityDefaultSteps = config.steps;
+    if (config.cfgScale !== undefined) novaConfig.stabilityDefaultCfgScale = config.cfgScale;
+    
+    atualizarConfiguracao(novaConfig);
   }
 
   function definirTema(tema: 'auto' | 'light' | 'dark'): void {
@@ -235,6 +279,8 @@ export const useConfigStore = defineStore('config', () => {
 
     // Computed
     isApiConfigured,
+    isStabilityConfigured,
+    isAnyApiConfigured,
     isDarkMode,
     configSerializada,
 
@@ -247,6 +293,9 @@ export const useConfigStore = defineStore('config', () => {
     definirApiKey,
     definirModelo,
     definirTemperatura,
+    definirStabilityApiKey,
+    definirStabilityModelo,
+    definirStabilityConfig,
     definirTema,
     alternarDebug,
     alternarAutoSave,

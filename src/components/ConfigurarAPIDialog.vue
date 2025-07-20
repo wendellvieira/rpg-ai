@@ -539,6 +539,12 @@ function salvarConfiguracao() {
       openaiApiKey: string;
       openaiModel: string;
       openaiTemperature: number;
+      stabilityApiKey: string;
+      stabilityModel: string;
+      stabilityDefaultWidth: number;
+      stabilityDefaultHeight: number;
+      stabilityDefaultSteps: number;
+      stabilityDefaultCfgScale: number;
       debug: boolean;
     }> = {
       openaiModel: form.value.modelo,

@@ -378,7 +378,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, defineAsyncComponent } from 'vue';
 import { useQuasar } from 'quasar';
 import { useRoute, useRouter } from 'vue-router';
 import { PersistenceManager } from '../services/PersistenceManager';
@@ -386,10 +386,12 @@ import { OpenAIService } from '../services/OpenAIService';
 import { Personagem } from '../classes/Personagem';
 import { useConfigStore } from '../stores/configStore';
 import { useItemStore } from '../stores/itemStore';
-import EditarItemDialog from '../components/EditarItemDialog.vue';
 import ConhecimentoEditor from '../components/ConhecimentoEditor.vue';
 import MapaViewer from '../components/MapaViewer.vue';
-import GerenciamentoItensDialog from '../components/GerenciamentoItensDialog.vue';
+
+// Lazy loading para diálogos pesados
+const EditarItemDialog = defineAsyncComponent(() => import('../components/EditarItemDialog.vue'));
+const GerenciamentoItensDialog = defineAsyncComponent(() => import('../components/GerenciamentoItensDialog.vue'));
 
 const $q = useQuasar();
 const route = useRoute();

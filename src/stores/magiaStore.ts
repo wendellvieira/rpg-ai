@@ -39,6 +39,40 @@ export const useMagiaStore = defineStore('magia', () => {
   const magias = ref<DadosMagiaSerializados[]>([]);
   const carregando = ref(false);
   const erro = ref<string | null>(null);
+  
+  // Cache para buscas rápidas
+  const magiasPorId = ref(new Map<string, DadosMagiaSerializados>());
+  const magiasIndexadas = ref(new Map<string, DadosMagiaSerializados[]>());
+
+  // Função para atualizar caches
+  function atualizarCaches() {
+    // Cache por ID para buscas O(1)
+    magiasPorId.value.clear();
+    magias.value.forEach(magia => {
+      magiasPorId.value.set(magia.id, magia);
+    });
+
+    // Cache de índices de busca por texto
+    magiasIndexadas.value.clear();
+    const indiceTexto = new Map<string, DadosMagiaSerializados[]>();
+    
+    magias.value.forEach(magia => {
+      // Indexar por palavras-chave do nome e descrição
+      const palavras = [
+        ...magia.nome.toLowerCase().split(' '),
+        ...magia.descricao.toLowerCase().split(' ').filter(p => p.length > 3)
+      ];
+      
+      palavras.forEach(palavra => {
+        if (!indiceTexto.has(palavra)) {
+          indiceTexto.set(palavra, []);
+        }
+        indiceTexto.get(palavra)!.push(magia);
+      });
+    });
+
+    magiasIndexadas.value = indiceTexto;
+  }
 
   // Computed
   const totalMagias = computed(() => magias.value.length);
@@ -91,13 +125,36 @@ export const useMagiaStore = defineStore('magia', () => {
     } else {
       magias.value.push(dadosMagia);
     }
+    
+    // Atualizar caches após modificação
+    atualizarCaches();
   }
 
   function removerMagia(id: string) {
     const index = magias.value.findIndex((magia) => magia.id === id);
     if (index !== -1) {
       magias.value.splice(index, 1);
+      // Atualizar caches após modificação
+      atualizarCaches();
     }
+  }
+
+  function obterMagiaPorId(id: string): DadosMagiaSerializados | undefined {
+    return magiasPorId.value.get(id);
+  }
+
+  function buscarMagiasRapida(termo: string): DadosMagiaSerializados[] {
+    if (!termo || termo.length < 2) return magias.value;
+    
+    const palavrasChave = termo.toLowerCase().split(' ').filter(p => p.length > 1);
+    const resultados = new Set<DadosMagiaSerializados>();
+    
+    palavrasChave.forEach(palavra => {
+      const encontradas = magiasIndexadas.value.get(palavra) || [];
+      encontradas.forEach(magia => resultados.add(magia));
+    });
+    
+    return Array.from(resultados);
   }
 
   function obterMagia(id: string): DadosMagiaSerializados | undefined {
@@ -155,6 +212,9 @@ export const useMagiaStore = defineStore('magia', () => {
         // Carregar algumas magias de exemplo
         carregarMagiasExemplo();
       }
+      
+      // Atualizar caches após carregamento
+      atualizarCaches();
     } catch (error) {
       erro.value = error instanceof Error ? error.message : 'Erro ao carregar magias';
     } finally {
@@ -268,6 +328,8 @@ export const useMagiaStore = defineStore('magia', () => {
     adicionarMagia,
     removerMagia,
     obterMagia,
+    obterMagiaPorId,
+    buscarMagiasRapida,
     obterMagiaInstancia,
     buscarMagias,
     filtrarMagias,

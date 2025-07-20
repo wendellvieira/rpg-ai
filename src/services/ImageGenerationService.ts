@@ -3,6 +3,8 @@
  * Suporta text-to-image e inpainting
  */
 
+import { useConfigStore } from '../stores/configStore';
+
 export interface ImageGenerationRequest {
   prompt: string;
   negativePrompt?: string;
@@ -38,17 +40,38 @@ export interface MapTemplate {
 }
 
 export class ImageGenerationService {
-  private apiKey: string;
+  private configStore = useConfigStore();
   private baseUrl = 'https://api.stability.ai';
-  private model: string;
 
   constructor() {
-    this.apiKey = import.meta.env.VITE_STABILITY_API_KEY || '';
-    this.model = import.meta.env.VITE_STABILITY_MODEL || 'sd3-large-turbo';
-
-    if (!this.apiKey) {
+    // Verificar se há configuração disponível
+    if (!this.isConfigured()) {
       console.warn('Stability AI API key not found. Image generation will not work.');
     }
+  }
+
+  private get apiKey(): string {
+    return this.configStore.configuracao.stabilityApiKey || import.meta.env.VITE_STABILITY_API_KEY || '';
+  }
+
+  private get model(): string {
+    return this.configStore.configuracao.stabilityModel || import.meta.env.VITE_STABILITY_MODEL || 'sd3-large-turbo';
+  }
+
+  private get defaultWidth(): number {
+    return this.configStore.configuracao.stabilityDefaultWidth || 1024;
+  }
+
+  private get defaultHeight(): number {
+    return this.configStore.configuracao.stabilityDefaultHeight || 1024;
+  }
+
+  private get defaultSteps(): number {
+    return this.configStore.configuracao.stabilityDefaultSteps || 30;
+  }
+
+  private get defaultCfgScale(): number {
+    return this.configStore.configuracao.stabilityDefaultCfgScale || 7.0;
   }
 
   /**
@@ -165,10 +188,10 @@ export class ImageGenerationService {
         formData.append('negative_prompt', request.negativePrompt);
       }
 
-      formData.append('width', (request.width || 1024).toString());
-      formData.append('height', (request.height || 1024).toString());
-      formData.append('steps', (request.steps || 30).toString());
-      formData.append('cfg_scale', (request.cfgScale || 7).toString());
+      formData.append('width', (request.width || this.defaultWidth).toString());
+      formData.append('height', (request.height || this.defaultHeight).toString());
+      formData.append('steps', (request.steps || this.defaultSteps).toString());
+      formData.append('cfg_scale', (request.cfgScale || this.defaultCfgScale).toString());
 
       if (request.seed) {
         formData.append('seed', request.seed.toString());
@@ -243,8 +266,8 @@ export class ImageGenerationService {
       }
 
       formData.append('strength', '0.8'); // Default strength for inpainting
-      formData.append('steps', (request.steps || 30).toString());
-      formData.append('cfg_scale', (request.cfgScale || 7).toString());
+      formData.append('steps', (request.steps || this.defaultSteps).toString());
+      formData.append('cfg_scale', (request.cfgScale || this.defaultCfgScale).toString());
 
       if (request.seed) {
         formData.append('seed', request.seed.toString());
@@ -289,6 +312,35 @@ export class ImageGenerationService {
         error: error instanceof Error ? error.message : 'Erro desconhecido',
       };
     }
+  }
+
+  /**
+   * Método conveniente para gerar mapas usando configurações padrão
+   */
+  async generateMapWithDefaults(
+    templateId: string,
+    customPrompt?: string,
+    customNegativePrompt?: string,
+  ): Promise<GenerationResult> {
+    const template = this.getMapTemplates().find((t) => t.id === templateId);
+    if (!template) {
+      return {
+        success: false,
+        error: `Template de mapa '${templateId}' não encontrado`,
+      };
+    }
+
+    const request: ImageGenerationRequest = {
+      prompt: customPrompt || template.prompt,
+      negativePrompt: customNegativePrompt || template.negativePrompt,
+      width: this.defaultWidth,
+      height: this.defaultHeight,
+      steps: this.defaultSteps,
+      cfgScale: this.defaultCfgScale,
+      style: template.style,
+    };
+
+    return this.generateImage(request);
   }
 
   /**

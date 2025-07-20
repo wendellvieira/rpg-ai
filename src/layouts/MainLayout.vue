@@ -24,6 +24,12 @@
           <q-btn flat round dense icon="settings" @click="openConfigDialog">
             <q-tooltip>Configurações</q-tooltip>
           </q-btn>
+
+          <!-- Seletor de tema -->
+          <ThemeSelector />
+
+          <!-- Botão de instalação PWA -->
+          <PWAInstallButton />
         </div>
       </q-toolbar>
     </q-header>
@@ -112,6 +118,8 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { date } from 'quasar';
 import EssentialLink from 'components/EssentialLink.vue';
+import PWAInstallButton from 'components/PWAInstallButton.vue';
+import ThemeSelector from 'components/ThemeSelector.vue';
 import { useConfigStore } from '../stores/configStore';
 import { useSessaoStore } from '../stores/sessaoStore';
 

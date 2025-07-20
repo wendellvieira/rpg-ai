@@ -259,7 +259,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watchDebounced } from 'vue';
 import { useQuasar } from 'quasar';
 import { usePersonagemStore } from '../stores/personagemStore';
 import { useMagiaStore } from '../stores/magiaStore';
@@ -317,6 +317,16 @@ const filtroEscola = ref<EscolaMagia | null>(null);
 const filtroNivel = ref<number | null>(null);
 const filtroClasse = ref<string | null>(null);
 const textoBusca = ref('');
+const textoBuscaDebounced = ref('');
+
+// Debounce para a busca de texto (300ms)
+watchDebounced(
+  textoBusca,
+  (novoTexto) => {
+    textoBuscaDebounced.value = novoTexto;
+  },
+  { debounce: 300, maxWait: 1000 }
+);
 
 // Opções para filtros
 const opcoesEscola = Object.values(EscolaMagia).map((escola) => ({
@@ -370,9 +380,9 @@ const magiasFiltradas = computed(() => {
     );
   }
 
-  // Filtro por texto
-  if (textoBusca.value) {
-    const termo = textoBusca.value.toLowerCase();
+  // Filtro por texto (com debounce)
+  if (textoBuscaDebounced.value) {
+    const termo = textoBuscaDebounced.value.toLowerCase();
     resultado = resultado.filter(
       (m) => m.nome.toLowerCase().includes(termo) || m.descricao.toLowerCase().includes(termo),
     );
@@ -449,11 +459,24 @@ function getComponentesTexto(magia: {
   return resultado;
 }
 
-function adicionarMagia() {
+async function adicionarMagia() {
   if (!magiaSelecionada.value || !personagemSelecionado.value) return;
 
+  // Buscar o personagem completo no store
+  const personagemCompleto = personagemStore.personagens.find(
+    (p) => p.id === personagemSelecionado.value!.id,
+  );
+  if (!personagemCompleto) {
+    $q.notify({
+      type: 'negative',
+      message: 'Personagem não encontrado',
+      position: 'top',
+    });
+    return;
+  }
+
   // Tentar aprender a magia
-  const sucesso = personagemSelecionado.value.aprenderMagia(magiaSelecionada.value.id);
+  const sucesso = personagemCompleto.aprenderMagia(magiaSelecionada.value.id);
 
   if (sucesso) {
     $q.notify({
@@ -463,7 +486,7 @@ function adicionarMagia() {
     });
 
     // Salvar alterações no personagem
-    personagemStore.salvarPersonagens();
+    await personagemStore.salvarPersonagem(personagemCompleto);
   } else {
     $q.notify({
       type: 'warning',

@@ -1,0 +1,82 @@
+{
+  "name": "RPG AI - Sistema Completo de RPG",
+  "short_name": "RPG AI",
+  "description": "Sistema completo de RPG com inteligência artificial integrada",
+  "theme_color": "#1976d2",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/",
+  "categories": ["games", "entertainment", "productivity"],
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "icons/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/favicon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/favicon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/favicon-128x128.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/favicon-128x128.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "icons/favicon-128x128.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "RPG AI Interface Principal"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nova Sessão",
+      "short_name": "Nova Sessão",
+      "description": "Criar uma nova sessão de RPG",
+      "url": "/?action=new-session",
+      "icons": [{ "src": "icons/favicon-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Personagens",
+      "short_name": "Personagens",
+      "description": "Gerenciar personagens",
+      "url": "/setup?tab=personagens",
+      "icons": [{ "src": "icons/favicon-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Configurações",
+      "short_name": "Config",
+      "description": "Configurar APIs e sistema",
+      "url": "/setup?tab=config",
+      "icons": [{ "src": "icons/favicon-96x96.png", "sizes": "96x96" }]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

@@ -142,7 +142,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useQuasar } from 'quasar';
-import { useMagiaStore } from '../stores/magiaStore';
+import { useMagiaStore, type DadosMagiaSerializados } from '../stores/magiaStore';
 import type { Personagem } from '../classes/Personagem';
 
 // Props
@@ -164,14 +164,14 @@ const magiasConhecidas = computed(() => {
   if (!props.personagem || !props.personagem.podeConjurar) return [];
 
   const idsConhecidas = props.personagem.obterMagiasConhecidas();
-  return idsConhecidas.map((id) => magiaStore.obterMagiaPorId(id)).filter(Boolean);
+  return idsConhecidas.map((id) => magiaStore.obterMagia(id)).filter(Boolean);
 });
 
 const magiasPreparadas = computed(() => {
   if (!props.personagem || !props.personagem.podeConjurar) return [];
 
   const idsPreparadas = props.personagem.obterMagiasPreparadas();
-  const preparadas = idsPreparadas.map((id) => magiaStore.obterMagiaPorId(id)).filter(Boolean);
+  const preparadas = idsPreparadas.map((id) => magiaStore.obterMagia(id)).filter(Boolean);
 
   // Adicionar truques (sempre preparados)
   const truques = magiasConhecidas.value.filter((m) => m.nivel === 0);
@@ -197,7 +197,7 @@ function jaPrepaTrada(magiaId: string): boolean {
   return props.personagem.temMagiaPreparada(magiaId);
 }
 
-function prepararMagia(magia: any) {
+function prepararMagia(magia: DadosMagiaSerializados) {
   if (!props.personagem) return;
 
   if (magia.nivel === 0) {

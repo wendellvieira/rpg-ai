@@ -568,14 +568,14 @@ const magiasConhecidas = computed(() => {
   if (!props.personagem || !props.personagem.podeConjurar) return [];
 
   const idsConhecidas = props.personagem.obterMagiasConhecidas();
-  return idsConhecidas.map((id) => magiaStore.obterMagiaPorId(id)).filter(Boolean);
+  return idsConhecidas.map((id) => magiaStore.obterMagia(id)).filter(Boolean);
 });
 
 const magiasPreparadas = computed(() => {
   if (!props.personagem || !props.personagem.podeConjurar) return [];
 
   const idsPreparadas = props.personagem.obterMagiasPreparadas();
-  return idsPreparadas.map((id) => magiaStore.obterMagiaPorId(id)).filter(Boolean);
+  return idsPreparadas.map((id) => magiaStore.obterMagia(id)).filter(Boolean);
 });
 
 // Methods
