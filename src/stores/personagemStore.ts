@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { Personagem } from '../classes/Personagem';
 import { PersistenceManager } from '../services/PersistenceManager';
+import type { AtributosPrimarios, AtributosDerivados } from '../types';
 
 export const usePersonagemStore = defineStore('personagem', () => {
   // Estado
@@ -93,6 +94,10 @@ export const usePersonagemStore = defineStore('personagem', () => {
       descricao?: string;
       isIA?: boolean;
       promptPersonalidade?: string;
+      atributosPrimarios?: AtributosPrimarios;
+      atributosDerivados?: AtributosDerivados;
+      inventario?: Array<{ id: string; nome: string; quantidade: number }>;
+      conhecimento?: Array<{ area: string; descricao: string }>;
     },
   ): Promise<Personagem> {
     try {
@@ -103,15 +108,93 @@ export const usePersonagemStore = defineStore('personagem', () => {
 
       // Como as propriedades são readonly, vamos criar um novo personagem com os dados atualizados
       const dadosOriginais = personagemExistente.serializar();
+
+      // Preparar dados atualizados, mantendo o formato da serialização
       const dadosAtualizados = {
         ...dadosOriginais,
-        ...updates,
-        id: id, // Manter o mesmo ID
+        // Atualizar apenas os campos básicos que são compatíveis
+        ...(updates.nome && { nome: updates.nome }),
+        ...(updates.raca && { raca: updates.raca }),
+        ...(updates.classe && { classe: updates.classe }),
+        ...(updates.descricao !== undefined && { descricao: updates.descricao }),
+        ...(updates.isIA !== undefined && { isIA: updates.isIA }),
+        ...(updates.promptPersonalidade !== undefined && {
+          promptPersonalidade: updates.promptPersonalidade,
+        }),
       };
 
       const personagemAtualizado = Personagem.deserializar(dadosAtualizados);
-      await salvarPersonagem(personagemAtualizado);
 
+      // Atualizar atributos primários se fornecidos
+      if (updates.atributosPrimarios) {
+        const atributos = personagemAtualizado.getAtributos;
+        for (const [atributo, valor] of Object.entries(updates.atributosPrimarios)) {
+          if (
+            typeof valor === 'number' &&
+            ['forca', 'destreza', 'constituicao', 'inteligencia', 'sabedoria', 'carisma'].includes(
+              atributo,
+            )
+          ) {
+            atributos.setAtributo(atributo as keyof AtributosPrimarios, valor);
+          }
+        }
+      }
+
+      // Atualizar atributos derivados se fornecidos
+      if (updates.atributosDerivados) {
+        const atributos = personagemAtualizado.getAtributos;
+        for (const [atributo, valor] of Object.entries(updates.atributosDerivados)) {
+          if (typeof valor === 'number') {
+            switch (atributo) {
+              case 'hp':
+                atributos.setHP(valor);
+                break;
+              case 'hpMaximo':
+                atributos.setHPMaximo(valor);
+                break;
+              case 'mp':
+                atributos.setMP(valor);
+                break;
+              case 'mpMaximo':
+                atributos.setMPMaximo(valor);
+                break;
+              case 'ca':
+                atributos.setCA(valor);
+                break;
+              case 'iniciativa':
+                atributos.setIniciativa(valor);
+                break;
+              case 'velocidade':
+                atributos.setVelocidade(valor);
+                break;
+            }
+          }
+        }
+      }
+
+      // Atualizar conhecimentos se fornecidos
+      if (updates.conhecimento) {
+        // Adicionar novos conhecimentos (sobrescrevendo existentes)
+        for (const conhecimento of updates.conhecimento) {
+          personagemAtualizado.adicionarConhecimento(conhecimento.area, conhecimento.descricao);
+        }
+      }
+
+      // Para o inventário, como os métodos precisam de objetos Item, vamos implementar uma solução mais simples
+      // que atualiza via serialização/deserialização
+      if (updates.inventario) {
+        const dadosAtualizadosComInventario = personagemAtualizado.serializar();
+        dadosAtualizadosComInventario.inventario = updates.inventario.map(
+          (item) => [item.id, item.quantidade] as [string, number],
+        );
+        const personagemComInventarioAtualizado = Personagem.deserializar(
+          dadosAtualizadosComInventario,
+        );
+        await salvarPersonagem(personagemComInventarioAtualizado);
+        return personagemComInventarioAtualizado;
+      }
+
+      await salvarPersonagem(personagemAtualizado);
       return personagemAtualizado;
     } catch (error) {
       console.error('Erro ao atualizar personagem:', error);

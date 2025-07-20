@@ -453,7 +453,13 @@ import { OpenAIService } from '../services/OpenAIService';
 import { Dados } from '../classes/Dados';
 import type { Personagem } from '../classes/Personagem';
 import { StatusSessao, type SessaoJogo } from '../classes/SessaoJogo';
-import type { MensagemMestre, MensagemFala } from '../types';
+import type {
+  MensagemMestre,
+  MensagemFala,
+  AtributosPrimarios,
+  AtributosDerivados,
+  ConhecimentoPersonagem,
+} from '../types';
 import IniciativaCombate from '../components/IniciativaCombate.vue';
 import CatalogoMagias from '../components/CatalogoMagias.vue';
 import MapaCanvas from '../components/MapaCanvas.vue';
@@ -813,6 +819,10 @@ async function salvarPersonagemEditado(dadosPersonagem: {
   descricao: string;
   isIA: boolean;
   promptPersonalidade: string;
+  atributosPrimarios: AtributosPrimarios;
+  atributosDerivados: AtributosDerivados;
+  inventario: Array<{ id: string; nome: string; quantidade: number }>;
+  conhecimento: ConhecimentoPersonagem[];
 }) {
   try {
     if (dadosPersonagem.id) {
@@ -821,9 +831,7 @@ async function salvarPersonagemEditado(dadosPersonagem: {
         (p) => p.id === dadosPersonagem.id,
       );
       if (personagemExistente) {
-        // Atualizar propriedades do personagem existente
-        // Como as propriedades são readonly, precisamos criar um novo personagem
-        // Para isso, usamos o método de atualização do store
+        // Atualizar personagem com todos os dados do formulário
         await personagemStore.atualizarPersonagem(dadosPersonagem.id, {
           nome: dadosPersonagem.nome,
           raca: dadosPersonagem.raca,
@@ -831,6 +839,13 @@ async function salvarPersonagemEditado(dadosPersonagem: {
           descricao: dadosPersonagem.descricao,
           isIA: dadosPersonagem.isIA,
           promptPersonalidade: dadosPersonagem.promptPersonalidade,
+          atributosPrimarios: dadosPersonagem.atributosPrimarios,
+          atributosDerivados: dadosPersonagem.atributosDerivados,
+          inventario: dadosPersonagem.inventario,
+          conhecimento: dadosPersonagem.conhecimento.map((c) => ({
+            area: c.topico,
+            descricao: c.conteudo,
+          })),
         });
       }
     } else {

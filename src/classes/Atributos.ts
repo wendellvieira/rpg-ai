@@ -162,6 +162,57 @@ export class Atributos {
   }
 
   /**
+   * Define HP atual diretamente
+   */
+  setHP(valor: number): void {
+    this.derivados.hp = Math.max(0, Math.min(this.derivados.hpMaximo, valor));
+  }
+
+  /**
+   * Define HP máximo diretamente
+   */
+  setHPMaximo(valor: number): void {
+    this.derivados.hpMaximo = Math.max(1, valor);
+    this.derivados.hp = Math.min(this.derivados.hp, this.derivados.hpMaximo);
+  }
+
+  /**
+   * Define MP atual diretamente
+   */
+  setMP(valor: number): void {
+    this.derivados.mp = Math.max(0, Math.min(this.derivados.mpMaximo, valor));
+  }
+
+  /**
+   * Define MP máximo diretamente
+   */
+  setMPMaximo(valor: number): void {
+    this.derivados.mpMaximo = Math.max(0, valor);
+    this.derivados.mp = Math.min(this.derivados.mp, this.derivados.mpMaximo);
+  }
+
+  /**
+   * Define CA diretamente
+   */
+  setCA(valor: number): void {
+    this.derivados.ca = Math.max(1, valor);
+  }
+
+  /**
+   * Define iniciativa diretamente
+   */
+  setIniciativa(valor: number): void {
+    this.derivados.iniciativa = valor;
+  }
+
+  /**
+   * Define velocidade diretamente
+   */
+  setVelocidade(valor: number): void {
+    this.derivados.velocidade = Math.max(0, valor);
+  }
+
+  /**
    * Verifica se o personagem está morto
    */
   estaMorto(): boolean {
