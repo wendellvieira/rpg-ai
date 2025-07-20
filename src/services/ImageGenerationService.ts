@@ -39,6 +39,17 @@ export interface MapTemplate {
   category: 'dungeon' | 'nature' | 'urban' | 'fantasy' | 'tactical';
 }
 
+interface StabilityAPIRequest {
+  prompt: string;
+  negative_prompt?: string;
+  width: number;
+  height: number;
+  cfg_scale: number;
+  steps: number;
+  output_format: string;
+  seed?: number;
+}
+
 export class ImageGenerationService {
   private configStore = useConfigStore();
   private baseUrl = 'https://api.stability.ai';
@@ -187,20 +198,22 @@ export class ImageGenerationService {
     }
 
     try {
-      const formData = new FormData();
-      formData.append('prompt', this.enhancePrompt(request.prompt, request.style));
+      // Preparar dados para a API v2beta (usa JSON em vez de FormData)
+      const requestData: StabilityAPIRequest = {
+        prompt: this.enhancePrompt(request.prompt, request.style),
+        width: request.width || this.defaultWidth,
+        height: request.height || this.defaultHeight,
+        cfg_scale: request.cfgScale || this.defaultCfgScale,
+        steps: request.steps || this.defaultSteps,
+        output_format: 'png',
+      };
 
       if (request.negativePrompt) {
-        formData.append('negative_prompt', request.negativePrompt);
+        requestData.negative_prompt = request.negativePrompt;
       }
 
-      formData.append('width', (request.width || this.defaultWidth).toString());
-      formData.append('height', (request.height || this.defaultHeight).toString());
-      formData.append('steps', (request.steps || this.defaultSteps).toString());
-      formData.append('cfg_scale', (request.cfgScale || this.defaultCfgScale).toString());
-
       if (request.seed) {
-        formData.append('seed', request.seed.toString());
+        requestData.seed = request.seed;
       }
 
       // Usar API v2beta com stable-image-core
@@ -208,9 +221,10 @@ export class ImageGenerationService {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
           Accept: 'application/json',
         },
-        body: formData,
+        body: JSON.stringify(requestData),
       });
 
       if (!response.ok) {
