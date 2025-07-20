@@ -2,77 +2,6 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "dev",
-      "type": "shell",
-      "command": "/Users/wendellvieiracunha/.nvm/versions/node/v20.18.0/bin/npx",
-      "args": ["quasar", "dev"],
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
-      "isBackground": true,
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": true,
-        "clear": false
-      },
-      "problemMatcher": [],
-      "options": {
-        "cwd": "${workspaceFolder}",
-        "env": {
-          "PATH": "/Users/wendellvieiracunha/.nvm/versions/node/v20.18.0/bin:${env:PATH}"
-        }
-      }
-    },
-    {
-      "label": "lint",
-      "type": "shell",
-      "command": "/Users/wendellvieiracunha/.nvm/versions/node/v20.18.0/bin/npm",
-      "args": ["run", "lint"],
-      "group": {
-        "kind": "test",
-        "isDefault": true
-      },
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": true,
-        "clear": false
-      },
-      "problemMatcher": ["$eslint-stylish"],
-      "options": {
-        "cwd": "${workspaceFolder}",
-        "env": {
-          "PATH": "/Users/wendellvieiracunha/.nvm/versions/node/v20.18.0/bin:${env:PATH}"
-        }
-      }
-    },
-    {
-      "label": "lint:fix",
-      "type": "shell",
-      "command": "/Users/wendellvieiracunha/.nvm/versions/node/v20.18.0/bin/npm",
-      "args": ["run", "lint", "--", "--fix"],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": ["$eslint-stylish"],
-      "options": {
-        "cwd": "${workspaceFolder}",
-        "env": {
-          "PATH": "/Users/wendellvieiracunha/.nvm/versions/node/v20.18.0/bin:${env:PATH}"
-        }
-      }
-    },
-    {
       "label": "build",
       "type": "shell",
       "command": "/Users/wendellvieiracunha/.nvm/versions/node/v20.18.0/bin/npx",
@@ -107,15 +36,32 @@
       "problemMatcher": []
     },
     {
-      "label": "restart dev server",
-      "dependsOrder": "sequence",
-      "dependsOn": ["kill dev server", "dev"],
-      "group": "build",
+      "label": "lint",
+      "type": "shell",
+      "command": "/Users/wendellvieiracunha/.nvm/versions/node/v20.18.0/bin/npm",
+      "args": ["run", "lint"],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
       "presentation": {
         "echo": true,
         "reveal": "always",
         "focus": false,
-        "panel": "shared"
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "problemMatcher": ["$eslint-stylish"],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PATH": "/Users/wendellvieiracunha/.nvm/versions/node/v20.18.0/bin:${env:PATH}"
+        },
+        "shell": {
+          "executable": "/bin/zsh",
+          "args": ["-c", "npm run lint 2>&1 | tee lint-output.log; exit ${PIPESTATUS[0]}"]
+        }
       }
     }
   ]

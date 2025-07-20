@@ -11,12 +11,66 @@
 _Utilizando OpenAI, Stability AI e Model Context Protocol (MCP)_
 
 [📖 Documentação](#-documentação) •
-[� Instalação](#-instalação-rápida) •
+[🛠️ Tasks VS Code](#️-tasks-do-vs-code-para-agentes) •
+[🚀 Instalação](#-instalação-rápida) •
 [🎮 Funcionalidades](#-funcionalidades-principais) •
 [🤖 IA](#-integração-com-ia) •
 [🛠️ Desenvolvimento](#-desenvolvimento)
 
 </div>
+
+---
+
+## 🛠️ **Tasks do VS Code para Agentes**
+
+### 📋 **Comandos Disponíveis**
+
+Este projeto possui **tasks configuradas no VS Code** que devem ser usadas **EXCLUSIVAMENTE** pelos agentes.
+
+#### **Tasks Disponíveis:**
+
+1. **`lint`** - Verificação de código com ESLint
+   - **Uso:** Para verificar erros de lint no código
+   - **Output:** Salva resultado em `lint-output.log` que pode ser lido pelos agentes
+   - **Comando:** Use a função `run_vs_code_task` com id `"shell: lint"`
+
+2. **`build`** - Build de produção do projeto
+   - **Uso:** Para compilar, deve ser usado sempre que o agente quiser testar se alguma implementação está funcionando. Use-o ao invés do 'quasar dev'
+   - **Output:** Mostra erros de TypeScript e processo de build
+   - **Comando:** Use a função `run_vs_code_task` com id `"shell: build"`
+
+3. **`kill dev server`** - Finaliza servidor de desenvolvimento
+   - **Uso:** Para parar processos do Quasar dev que estejam rodando
+   - **Comando:** Use a função `run_vs_code_task` com id `"shell: kill dev server"`
+
+#### **⚠️ IMPORTANTE - Diretrizes para Agentes:**
+
+- ✅ **USE SEMPRE** as tasks do VS Code ao invés de comandos no terminal
+- ❌ **NÃO USE** comandos diretos no terminal (`run_in_terminal`) sem autorização
+- 🤔 **Se precisar de um comando não listado:**
+  1. Pergunte ao desenvolvedor antes de usar
+  2. Sugira a inclusão do comando como uma nova task do vscode.
+- 📊 **Para ler resultados do lint:** Use `read_file` no arquivo `lint-output.log`
+
+#### **Exemplo de Uso Correto:**
+
+```typescript
+// ✅ CORRETO - Usar task do VS Code
+await run_vs_code_task({
+  id: 'shell: lint',
+  workspaceFolder: '/path/to/workspace',
+});
+
+// Depois ler o resultado
+await read_file({
+  filePath: '/path/to/workspace/lint-output.log',
+  startLineNumber: 1,
+  endLineNumber: 50,
+});
+
+// ❌ INCORRETO - Não usar terminal direto
+// await run_in_terminal({ command: "npm run lint" });
+```
 
 ---
 
@@ -242,7 +296,17 @@ npm run dev          # Servidor de desenvolvimento
 npm run build        # Build para produção
 npm run lint         # Verificar código
 npm run lint:fix     # Corrigir problemas automáticos
-````
+```
+
+### **Tasks do VS Code**
+O projeto inclui tasks configuradas para VS Code (`Ctrl+Shift+P` → "Tasks: Run Task"):
+
+- **lint** - Verificação de código com ESLint
+- **dev** - Servidor de desenvolvimento (background)
+- **build** - Build para produção
+- **kill dev server** - Parar servidor de desenvolvimento
+
+Para executar: `Ctrl+Shift+P` → `Tasks: Run Task` → Selecionar task`
 
 ### **Convenções de Código**
 
@@ -518,3 +582,4 @@ O projeto usa **Model Context Protocol (MCP)** para integração com IAs:
 ---
 
 **🤖 Para continuar este projeto, comece lendo `todo.md` e a pasta `detalhes/`. Boa codificação!**
+````
