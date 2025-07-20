@@ -218,20 +218,189 @@
 
               <!-- Aba Magias -->
               <div v-if="abaAtiva === 'magias'" class="q-gutter-md">
-                <div class="text-h5 q-mb-md">Magias Conhecidas</div>
+                <div class="text-h5 q-mb-md">Sistema de Magias</div>
 
-                <div class="q-mb-md">
-                  <q-btn
-                    color="primary"
-                    icon="auto_fix_high"
-                    label="Adicionar Magia"
-                    @click="adicionarMagia"
-                  />
+                <!-- Verificar se personagem pode conjurar -->
+                <div v-if="!personagemPodeConjurar" class="q-mb-md">
+                  <q-banner rounded class="bg-warning text-white">
+                    <template v-slot:avatar>
+                      <q-icon name="info" />
+                    </template>
+                    Este personagem não possui capacidades mágicas. Apenas classes conjuradoras
+                    podem aprender magias.
+                  </q-banner>
                 </div>
 
-                <div class="text-center q-py-lg">
-                  <q-icon name="auto_fix_high" size="48px" color="grey-5" />
-                  <div class="text-caption text-grey-6">Sistema de magias em desenvolvimento</div>
+                <!-- Sistema de Slots de Magia -->
+                <div v-if="personagemPodeConjurar" class="q-mb-lg">
+                  <div class="text-h6 q-mb-md">
+                    <q-icon name="local_fire_department" class="q-mr-sm" />
+                    Slots de Magia por Nível
+                  </div>
+
+                  <div class="row q-gutter-md">
+                    <div v-for="nivel in 9" :key="nivel" class="col-12 col-sm-6 col-md-4">
+                      <q-card flat bordered>
+                        <q-card-section class="q-pa-sm">
+                          <div class="text-subtitle2 q-mb-xs">Nível {{ nivel }}</div>
+                          <div class="row items-center q-gutter-sm">
+                            <div class="col">
+                              <div class="text-caption text-grey-6">Total:</div>
+                              <div class="text-h6">{{ getSlotsDisponiveis(nivel).total }}</div>
+                            </div>
+                            <div class="col">
+                              <div class="text-caption text-grey-6">Usados:</div>
+                              <div class="text-h6 text-negative">
+                                {{ getSlotsDisponiveis(nivel).usados }}
+                              </div>
+                            </div>
+                            <div class="col">
+                              <div class="text-caption text-grey-6">Disponíveis:</div>
+                              <div class="text-h6 text-positive">
+                                {{ getSlotsDisponiveis(nivel).disponiveis }}
+                              </div>
+                            </div>
+                          </div>
+                          <q-linear-progress
+                            :value="
+                              getSlotsDisponiveis(nivel).total > 0
+                                ? getSlotsDisponiveis(nivel).usados /
+                                  getSlotsDisponiveis(nivel).total
+                                : 0
+                            "
+                            color="negative"
+                            class="q-mt-sm"
+                          />
+                        </q-card-section>
+                      </q-card>
+                    </div>
+
+                    <!-- Truques (Nível 0) -->
+                    <div class="col-12 col-sm-6 col-md-4">
+                      <q-card flat bordered class="bg-blue-1">
+                        <q-card-section class="q-pa-sm">
+                          <div class="text-subtitle2 q-mb-xs">Truques (Ilimitado)</div>
+                          <div class="text-caption text-grey-6">
+                            Truques podem ser conjurados ilimitadamente
+                          </div>
+                        </q-card-section>
+                      </q-card>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Magias Conhecidas -->
+                <div v-if="personagemPodeConjurar" class="q-mb-lg">
+                  <div class="text-h6 q-mb-md">
+                    <q-icon name="menu_book" class="q-mr-sm" />
+                    Magias Conhecidas
+                    <q-btn
+                      size="sm"
+                      color="primary"
+                      icon="add"
+                      label="Adicionar"
+                      @click="abrirCatalogoMagias"
+                      class="q-ml-md"
+                    />
+                  </div>
+
+                  <div v-if="magiasConhecidas.length > 0" class="q-gutter-sm">
+                    <q-card v-for="magia in magiasConhecidas" :key="magia.id" flat bordered>
+                      <q-card-section class="q-pa-sm">
+                        <div class="row items-center">
+                          <div class="col">
+                            <div class="text-subtitle2">{{ magia.nome }}</div>
+                            <div class="text-caption text-grey-6">
+                              {{ magia.escola }} • Nível
+                              {{ magia.nivel === 0 ? 'Truque' : magia.nivel }}
+                              {{ magia.concentracao ? ' • Concentração' : '' }}
+                            </div>
+                          </div>
+                          <div class="col-auto">
+                            <q-chip
+                              :color="magia.nivel === 0 ? 'blue' : 'purple'"
+                              text-color="white"
+                              size="sm"
+                            >
+                              {{ magia.nivel === 0 ? 'T' : magia.nivel }}
+                            </q-chip>
+                            <q-btn
+                              flat
+                              round
+                              dense
+                              icon="close"
+                              size="sm"
+                              @click="removerMagia(magia.id)"
+                              color="negative"
+                            />
+                          </div>
+                        </div>
+                      </q-card-section>
+                    </q-card>
+                  </div>
+
+                  <div v-else class="text-center q-py-lg">
+                    <q-icon name="auto_fix_high" size="48px" color="grey-5" />
+                    <div class="text-caption text-grey-6">Nenhuma magia conhecida</div>
+                    <q-btn
+                      color="primary"
+                      icon="add"
+                      label="Adicionar Primeira Magia"
+                      @click="abrirCatalogoMagias"
+                      class="q-mt-md"
+                    />
+                  </div>
+                </div>
+
+                <!-- Magias Preparadas -->
+                <div v-if="personagemPodeConjurar && magiasConhecidas.length > 0">
+                  <div class="text-h6 q-mb-md">
+                    <q-icon name="bookmark" class="q-mr-sm" />
+                    Magias Preparadas
+                    <q-btn
+                      size="sm"
+                      color="secondary"
+                      icon="edit"
+                      label="Gerenciar"
+                      @click="abrirPrepararMagias"
+                      class="q-ml-md"
+                    />
+                  </div>
+
+                  <div class="q-mb-md">
+                    <q-banner rounded class="bg-info text-white">
+                      <template v-slot:avatar>
+                        <q-icon name="info" />
+                      </template>
+                      Algumas classes precisam preparar magias antes de conjurá-las. Truques sempre
+                      estão preparados.
+                    </q-banner>
+                  </div>
+
+                  <div class="q-gutter-sm">
+                    <q-card
+                      v-for="magia in magiasPreparadas"
+                      :key="magia.id"
+                      flat
+                      bordered
+                      class="bg-green-1"
+                    >
+                      <q-card-section class="q-pa-sm">
+                        <div class="row items-center">
+                          <div class="col">
+                            <div class="text-subtitle2">{{ magia.nome }}</div>
+                            <div class="text-caption text-grey-6">
+                              {{ magia.escola }} • Nível
+                              {{ magia.nivel === 0 ? 'Truque' : magia.nivel }}
+                            </div>
+                          </div>
+                          <div class="col-auto">
+                            <q-chip color="green" text-color="white" size="sm"> Preparada </q-chip>
+                          </div>
+                        </div>
+                      </q-card-section>
+                    </q-card>
+                  </div>
                 </div>
               </div>
 
@@ -283,14 +452,24 @@
         <q-btn flat label="Salvar" color="primary" @click="salvar" :disable="!formValido" />
       </q-card-actions>
     </q-card>
+
+    <!-- Dialogs auxiliares -->
+    <PrepararMagiasDialog v-model="mostrarPrepararMagias" :personagem="personagem" />
   </q-dialog>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useQuasar } from 'quasar';
+import { useMagiaStore } from '../stores/magiaStore';
+import PrepararMagiasDialog from './PrepararMagiasDialog.vue';
 import type { Personagem } from '../classes/Personagem';
-import type { AtributosPrimarios, AtributosDerivados, ConhecimentoPersonagem } from '../types';
+import type {
+  AtributosPrimarios,
+  AtributosDerivados,
+  ConhecimentoPersonagem,
+  NivelMagia,
+} from '../types';
 
 // Props
 const showDialog = defineModel<boolean>('modelValue', { required: true });
@@ -316,14 +495,21 @@ const emit = defineEmits<{
       conhecimento: ConhecimentoPersonagem[];
     },
   ];
+  abrirCatalogo: [personagem: Personagem];
+  abrirPreparacao: [personagem: Personagem];
+  personagemAlterado: [personagem: Personagem];
 }>();
 
 // Quasar
 const $q = useQuasar();
 
+// Stores
+const magiaStore = useMagiaStore();
+
 // Estado local
 const splitterModel = ref(25);
 const abaAtiva = ref('basico');
+const mostrarPrepararMagias = ref(false);
 
 // Tabs de navegação
 const tabs = [
@@ -372,6 +558,26 @@ const formValido = computed(() => {
   );
 });
 
+// Computed properties para magias
+const personagemPodeConjurar = computed(() => {
+  if (!props.personagem) return false;
+  return props.personagem.podeConjurar;
+});
+
+const magiasConhecidas = computed(() => {
+  if (!props.personagem || !props.personagem.podeConjurar) return [];
+
+  const idsConhecidas = props.personagem.obterMagiasConhecidas();
+  return idsConhecidas.map((id) => magiaStore.obterMagiaPorId(id)).filter(Boolean);
+});
+
+const magiasPreparadas = computed(() => {
+  if (!props.personagem || !props.personagem.podeConjurar) return [];
+
+  const idsPreparadas = props.personagem.obterMagiasPreparadas();
+  return idsPreparadas.map((id) => magiaStore.obterMagiaPorId(id)).filter(Boolean);
+});
+
 // Methods
 function formatarNomeAtributo(atributo: string): string {
   const nomes: Record<string, string> = {
@@ -413,12 +619,57 @@ function removerItem(index: number) {
   form.value.inventario.splice(index, 1);
 }
 
-function adicionarMagia() {
-  $q.notify({
-    type: 'info',
-    message: 'Sistema de magias em desenvolvimento',
-    position: 'top',
+function getSlotsDisponiveis(nivel: number) {
+  if (!props.personagem || !props.personagem.podeConjurar) {
+    return { total: 0, usados: 0, disponiveis: 0 };
+  }
+
+  return props.personagem.obterSlotsDisponiveis(nivel as NivelMagia);
+}
+
+function abrirCatalogoMagias() {
+  if (!props.personagem) return;
+
+  // Implementar via evento para abrir o catálogo no componente pai
+  emit('abrirCatalogo', props.personagem);
+}
+
+function removerMagia(magiaId: string) {
+  if (!props.personagem) return;
+
+  $q.dialog({
+    title: 'Remover Magia',
+    message: 'Tem certeza que deseja remover esta magia do personagem?',
+    cancel: true,
+    persistent: true,
+  }).onOk(() => {
+    if (!props.personagem) return;
+
+    const sucesso = props.personagem.esquecerMagia(magiaId);
+
+    if (sucesso) {
+      $q.notify({
+        type: 'positive',
+        message: 'Magia removida com sucesso',
+        position: 'top',
+      });
+      // Emitir evento para que o componente pai atualize o personagem
+      emit('personagemAlterado', props.personagem);
+    } else {
+      $q.notify({
+        type: 'negative',
+        message: 'Não foi possível remover a magia',
+        position: 'top',
+      });
+    }
   });
+}
+
+function abrirPrepararMagias() {
+  if (!props.personagem) return;
+
+  // Implementar via evento para abrir o dialog de preparação no componente pai
+  emit('abrirPreparacao', props.personagem);
 }
 
 function adicionarConhecimento() {

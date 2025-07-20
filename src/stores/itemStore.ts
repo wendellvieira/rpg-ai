@@ -188,12 +188,11 @@ export const useItemStore = defineStore('item', () => {
     }
   }
 
-  function salvarItem(item: Item): Promise<void> {
+  async function salvarItem(item: Item): Promise<void> {
     try {
-      // TODO: Implementar salvamento quando PersistenceManager suportar itens
-      console.warn(
-        'salvarItem: Funcionalidade não implementada - PersistenceManager precisa suportar itens',
-      );
+      const persistence = PersistenceManager.getInstance();
+      await persistence.inicializar();
+      await persistence.salvarItem(item);
 
       // Atualizar no array local
       const index = itens.value.findIndex((i) => i.id === item.id);
@@ -202,31 +201,28 @@ export const useItemStore = defineStore('item', () => {
       } else {
         itens.value.push(item);
       }
-      return Promise.resolve();
     } catch (error) {
       console.error('Erro ao salvar item:', error);
       erro.value = 'Erro ao salvar item';
-      return Promise.reject(new Error('Erro ao salvar item'));
+      throw new Error('Erro ao salvar item');
     }
   }
 
-  function deletarItem(id: string): Promise<void> {
+  async function deletarItem(id: string): Promise<void> {
     try {
-      // TODO: Implementar remoção quando PersistenceManager suportar itens
-      console.warn(
-        'deletarItem: Funcionalidade não implementada - PersistenceManager precisa suportar itens',
-      );
+      const persistence = PersistenceManager.getInstance();
+      await persistence.inicializar();
+      await persistence.removerItem(id);
 
       // Remover do array local
       const index = itens.value.findIndex((i) => i.id === id);
       if (index >= 0) {
         itens.value.splice(index, 1);
       }
-      return Promise.resolve();
     } catch (error) {
       console.error('Erro ao deletar item:', error);
       erro.value = 'Erro ao deletar item';
-      return Promise.reject(new Error('Erro ao deletar item'));
+      throw new Error('Erro ao deletar item');
     }
   }
 

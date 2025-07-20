@@ -260,6 +260,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { useQuasar } from 'quasar';
 import { usePersonagemStore } from '../stores/personagemStore';
 import { useMagiaStore } from '../stores/magiaStore';
 import {
@@ -302,6 +303,7 @@ const showDialog = defineModel<boolean>('modelValue', { required: true });
 // Stores
 const personagemStore = usePersonagemStore();
 const magiaStore = useMagiaStore();
+const $q = useQuasar();
 
 // Estado local
 const splitterModel = ref(40);
@@ -450,13 +452,25 @@ function getComponentesTexto(magia: {
 function adicionarMagia() {
   if (!magiaSelecionada.value || !personagemSelecionado.value) return;
 
-  // TODO: Implementar adição de magia ao personagem
-  console.log(
-    'Adicionando magia:',
-    magiaSelecionada.value.nome,
-    'para:',
-    personagemSelecionado.value.nome,
-  );
+  // Tentar aprender a magia
+  const sucesso = personagemSelecionado.value.aprenderMagia(magiaSelecionada.value.id);
+
+  if (sucesso) {
+    $q.notify({
+      type: 'positive',
+      message: `${magiaSelecionada.value.nome} foi adicionada ao grimório de ${personagemSelecionado.value.nome}`,
+      position: 'top',
+    });
+
+    // Salvar alterações no personagem
+    personagemStore.salvarPersonagens();
+  } else {
+    $q.notify({
+      type: 'warning',
+      message: `${personagemSelecionado.value.nome} já conhece a magia ${magiaSelecionada.value.nome}`,
+      position: 'top',
+    });
+  }
 }
 
 function editarMagia() {

@@ -259,11 +259,18 @@ export class SistemaCombate {
         danoReduzido = 2; // Escudo reduz 2 pontos de dano
         break;
 
-      case 'aparar':
+      case 'aparar': {
         // Requer arma - teste de ataque contra ataque
-        // TODO: Implementar método para obter arma equipada
-        sucesso = false; // Por enquanto sempre falha sem arma
+        const armaEquipada = defensor.obterArmaEquipada();
+        if (armaEquipada) {
+          // Se tem arma, pode tentar aparar (teste de ataque)
+          rolagemDefesa = Dados.rolar(`d20+${defensor.getModificador('forca')}`);
+          sucesso = rolagemDefesa.total >= 15; // CD 15 para aparar
+        } else {
+          sucesso = false; // Não pode aparar sem arma
+        }
         break;
+      }
     }
 
     const resultado: ResultadoDefesa = {

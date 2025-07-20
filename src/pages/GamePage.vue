@@ -367,9 +367,15 @@
     <!-- Dialog para editar personagem -->
     <EditarPersonagemDialog
       v-model="mostrarEditarPersonagem"
-      :personagem="null"
+      :personagem="personagemParaMagias"
       @salvar="salvarPersonagemEditado"
+      @abrirCatalogo="abrirCatalogoMagiasParaPersonagem"
+      @abrirPreparacao="abrirPreparacaoMagiasParaPersonagem"
+      @personagemAlterado="salvarAlteracaoPersonagem"
     />
+
+    <!-- Dialog para preparar magias -->
+    <PrepararMagiasDialog v-model="mostrarPrepararMagias" :personagem="personagemParaMagias" />
   </q-page>
 </template>
 
@@ -378,13 +384,16 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useSessaoStore } from '../stores/sessaoStore';
+import { usePersonagemStore } from '../stores/personagemStore';
 import { PersistenceManager } from '../services/PersistenceManager';
 import { Dados } from '../classes/Dados';
+import type { Personagem } from '../classes/Personagem';
 import { StatusSessao } from '../classes/SessaoJogo';
 import type { MensagemMestre } from '../types';
 import IniciativaCombate from '../components/IniciativaCombate.vue';
 import CatalogoMagias from '../components/CatalogoMagias.vue';
 import EditarPersonagemDialog from '../components/EditarPersonagemDialog.vue';
+import PrepararMagiasDialog from '../components/PrepararMagiasDialog.vue';
 import MapaCanvas from '../components/MapaCanvas.vue';
 
 interface PersonagemData {
@@ -399,6 +408,7 @@ interface PersonagemData {
 const router = useRouter();
 const $q = useQuasar();
 const sessaoStore = useSessaoStore();
+const personagemStore = usePersonagemStore();
 
 // Estado reativo
 const splitterModel = ref(30);
@@ -409,7 +419,9 @@ const novaMensagem = ref('');
 const iaProcessando = ref(false);
 const mostrarCatalogoMagias = ref(false);
 const mostrarEditarPersonagem = ref(false);
+const mostrarPrepararMagias = ref(false);
 const personagemParaEditar = ref<PersonagemData | null>(null);
+const personagemParaMagias = ref<Personagem | null>(null);
 
 // Controles de dados
 const mostrarDialogDados = ref(false);
@@ -547,10 +559,15 @@ function adicionarPersonagemNaSessao(personagem: PersonagemData) {
 
 function editarPersonagem(personagem: PersonagemData) {
   personagemParaEditar.value = personagem;
+
+  // Buscar o objeto Personagem real no store
+  const personagemReal = personagemStore.personagens.find((p) => p.id === personagem.id);
+  personagemParaMagias.value = personagemReal || null;
+
   mostrarEditarPersonagem.value = true;
 }
 
-function salvarPersonagemEditado(dadosPersonagem: {
+async function salvarPersonagemEditado(dadosPersonagem: {
   id?: string | undefined;
   nome: string;
   raca: string;
@@ -559,20 +576,89 @@ function salvarPersonagemEditado(dadosPersonagem: {
   isIA: boolean;
   promptPersonalidade: string;
 }) {
-  // TODO: Implementar salvamento do personagem editado
-  console.log('Salvando personagem editado:', dadosPersonagem);
+  try {
+    if (dadosPersonagem.id) {
+      // Editando personagem existente
+      const personagemExistente = personagemStore.personagens.find(
+        (p) => p.id === dadosPersonagem.id,
+      );
+      if (personagemExistente) {
+        // Atualizar propriedades do personagem existente
+        // Como as propriedades são readonly, precisamos criar um novo personagem
+        // Para isso, usamos o método de atualização do store
+        await personagemStore.atualizarPersonagem(dadosPersonagem.id, {
+          nome: dadosPersonagem.nome,
+          raca: dadosPersonagem.raca,
+          classe: dadosPersonagem.classe,
+          descricao: dadosPersonagem.descricao,
+          isIA: dadosPersonagem.isIA,
+          promptPersonalidade: dadosPersonagem.promptPersonalidade,
+        });
+      }
+    } else {
+      // Criando novo personagem
+      await personagemStore.criarPersonagem({
+        nome: dadosPersonagem.nome,
+        raca: dadosPersonagem.raca,
+        classe: dadosPersonagem.classe,
+        descricao: dadosPersonagem.descricao,
+        isIA: dadosPersonagem.isIA,
+        promptPersonalidade: dadosPersonagem.promptPersonalidade,
+      });
+    }
 
-  $q.notify({
-    type: 'positive',
-    message: 'Personagem salvo com sucesso!',
-    position: 'top',
-  });
+    // Salvar no banco de dados
+    await personagemStore.salvarPersonagens();
 
-  mostrarEditarPersonagem.value = false;
-  void carregarRecursos(); // Recarregar lista de personagens
+    $q.notify({
+      type: 'positive',
+      message: 'Personagem salvo com sucesso!',
+      position: 'top',
+    });
+
+    mostrarEditarPersonagem.value = false;
+    void carregarRecursos(); // Recarregar lista de personagens
+  } catch (error) {
+    console.error('Erro ao salvar personagem:', error);
+    $q.notify({
+      type: 'negative',
+      message: 'Erro ao salvar personagem',
+      position: 'top',
+    });
+  }
 }
 
-function enviarMensagem() {
+function abrirCatalogoMagiasParaPersonagem(personagem: Personagem) {
+  personagemParaMagias.value = personagem;
+  mostrarCatalogoMagias.value = true;
+}
+
+function abrirPreparacaoMagiasParaPersonagem(personagem: Personagem) {
+  personagemParaMagias.value = personagem;
+  mostrarPrepararMagias.value = true;
+}
+
+async function salvarAlteracaoPersonagem() {
+  try {
+    // Salvar alterações do personagem
+    await personagemStore.salvarPersonagens();
+
+    $q.notify({
+      type: 'positive',
+      message: 'Personagem atualizado com sucesso!',
+      position: 'top',
+    });
+  } catch (error) {
+    console.error('Erro ao salvar alterações do personagem:', error);
+    $q.notify({
+      type: 'negative',
+      message: 'Erro ao salvar alterações do personagem',
+      position: 'top',
+    });
+  }
+}
+
+async function enviarMensagem() {
   if (!novaMensagem.value.trim() || !sessaoAtual.value) return;
 
   try {
@@ -583,8 +669,10 @@ function enviarMensagem() {
 
     novaMensagem.value = '';
 
-    // TODO: Implementar salvamento quando store estiver funcionando
-    console.log('Mensagem adicionada');
+    // Salvar a sessão com a nova mensagem
+    await sessaoStore.salvarSessao(sessaoAtual.value);
+
+    console.log('Mensagem adicionada e sessão salva');
   } catch (error) {
     console.error('Erro ao enviar mensagem:', error);
     $q.notify({

@@ -468,6 +468,121 @@ export class Personagem {
   }
 
   /**
+   * Desfaz a preparação de uma magia
+   */
+  despreparMagia(magiaId: string): boolean {
+    if (!this._capacidadesMagicas) return false;
+
+    const index = this._capacidadesMagicas.magiasPreparadas.indexOf(magiaId);
+    if (index >= 0) {
+      this._capacidadesMagicas.magiasPreparadas.splice(index, 1);
+      this.adicionarEvento(`Despreparou uma magia.`, 'baixa');
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Remove uma magia conhecida (esquece a magia)
+   */
+  esquecerMagia(magiaId: string): boolean {
+    if (!this._capacidadesMagicas) return false;
+
+    // Primeiro remove das preparadas se estiver lá
+    this.despreparMagia(magiaId);
+
+    // Depois remove das conhecidas
+    const index = this._capacidadesMagicas.magiasConhecidas.indexOf(magiaId);
+    if (index >= 0) {
+      this._capacidadesMagicas.magiasConhecidas.splice(index, 1);
+      this.adicionarEvento(`Esqueceu uma magia.`, 'media');
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Obtém a arma equipada na mão principal
+   */
+  obterArmaEquipada(): string | null {
+    const armaId = this.equipamentos.get('mao-principal');
+    return armaId || null;
+  }
+
+  /**
+   * Obtém o escudo equipado na mão secundária
+   */
+  obterEscudoEquipado(): string | null {
+    const escudoId = this.equipamentos.get('mao-secundaria');
+    // Verificar se é um escudo (isso pode ser feito verificando o tipo do item)
+    return escudoId || null;
+  }
+
+  /**
+   * Obtém lista de magias conhecidas
+   */
+  obterMagiasConhecidas(): string[] {
+    if (!this._capacidadesMagicas) return [];
+    return [...this._capacidadesMagicas.magiasConhecidas];
+  }
+
+  /**
+   * Obtém lista de magias preparadas
+   */
+  obterMagiasPreparadas(): string[] {
+    if (!this._capacidadesMagicas) return [];
+    return [...this._capacidadesMagicas.magiasPreparadas];
+  }
+
+  /**
+   * Verifica se conhece uma magia específica
+   */
+  conheceMagia(magiaId: string): boolean {
+    if (!this._capacidadesMagicas) return false;
+    return this._capacidadesMagicas.magiasConhecidas.includes(magiaId);
+  }
+
+  /**
+   * Verifica se tem uma magia preparada
+   */
+  temMagiaPreparada(magiaId: string): boolean {
+    if (!this._capacidadesMagicas) return false;
+    return this._capacidadesMagicas.magiasPreparadas.includes(magiaId);
+  }
+
+  /**
+   * Conjura uma magia consumindo um slot do nível apropriado
+   */
+  conjurarMagia(magiaId: string, nivelSlot?: NivelMagia | 0): boolean {
+    if (!this._capacidadesMagicas) return false;
+
+    // Verificar se conhece a magia
+    if (!this.conheceMagia(magiaId)) return false;
+
+    // Para truques (nível 0), não consome slots e não precisa estar preparado
+    if (nivelSlot === 0) {
+      this.adicionarEvento(`Conjurou um truque.`, 'baixa');
+      return true;
+    }
+
+    // Para magias de nível 1+, verificar se está preparada
+    if (!this.temMagiaPreparada(magiaId)) return false;
+
+    // Se não especificado, usar nível 1
+    if (!nivelSlot) nivelSlot = 1;
+
+    // Verificar se tem slots disponíveis e gastar
+    if (this.gastarSlotMagia(nivelSlot)) {
+      this.adicionarEvento(`Conjurou uma magia de nível ${nivelSlot}.`, 'media');
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
    * Calcula bônus de CA dos equipamentos
    */
   private calcularBonusCAEquipamentos(): number {

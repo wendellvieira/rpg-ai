@@ -209,16 +209,25 @@ async function executarAtaque() {
   // Atualiza o personagem no store
   await personagemStore.salvarPersonagem(alvo);
 
-  // TODO: Adicionar mensagem ao chat quando o método estiver disponível
-  // if (sessaoStore.sessaoAtual) {
-  //   sessaoStore.adicionarMensagem({
-  //     tipo: 'acao',
-  //     personagem: atacante.nome,
-  //     acao: 'atacar',
-  //     resultado: resultado.descricao,
-  //     dados: resultado.rolagemAtaque
-  //   });
-  // }
+  // Adicionar mensagem ao chat
+  if (sessaoStore.sessaoAtual) {
+    sessaoStore.sessaoAtual.adicionarMensagem({
+      tipo: 'acao',
+      personagem: atacante.nome,
+      conteudo: `${atacante.nome} atacou ${alvo.nome}${arma ? ` com ${arma.nome}` : ''}.`,
+      dados: {
+        acao: 'atacar',
+        alvo: alvo.nome,
+        resultado: resultado.descricao,
+        dano: resultado.dano,
+        rolagemAtaque: resultado.rolagemAtaque,
+        ...(arma && { arma: arma.nome }),
+      },
+    });
+
+    // Salvar a sessão com a nova mensagem
+    await sessaoStore.salvarSessao(sessaoStore.sessaoAtual);
+  }
 
   // Emite evento
   emit('ataque-executado', resultado);

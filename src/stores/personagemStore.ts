@@ -84,6 +84,42 @@ export const usePersonagemStore = defineStore('personagem', () => {
     }
   }
 
+  async function atualizarPersonagem(
+    id: string,
+    updates: {
+      nome?: string;
+      raca?: string;
+      classe?: string;
+      descricao?: string;
+      isIA?: boolean;
+      promptPersonalidade?: string;
+    },
+  ): Promise<Personagem> {
+    try {
+      const personagemExistente = personagens.value.find((p) => p.id === id);
+      if (!personagemExistente) {
+        throw new Error('Personagem não encontrado');
+      }
+
+      // Como as propriedades são readonly, vamos criar um novo personagem com os dados atualizados
+      const dadosOriginais = personagemExistente.serializar();
+      const dadosAtualizados = {
+        ...dadosOriginais,
+        ...updates,
+        id: id, // Manter o mesmo ID
+      };
+
+      const personagemAtualizado = Personagem.deserializar(dadosAtualizados);
+      await salvarPersonagem(personagemAtualizado);
+
+      return personagemAtualizado;
+    } catch (error) {
+      console.error('Erro ao atualizar personagem:', error);
+      erro.value = 'Erro ao atualizar personagem';
+      throw error;
+    }
+  }
+
   async function carregarPersonagem(id: string): Promise<Personagem | null> {
     carregando.value = true;
     erro.value = null;
@@ -341,6 +377,7 @@ export const usePersonagemStore = defineStore('personagem', () => {
     carregarPersonagens,
     salvarPersonagem,
     criarPersonagem,
+    atualizarPersonagem,
     carregarPersonagem,
     deletarPersonagem,
     definirPersonagemAtivo,

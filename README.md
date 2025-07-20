@@ -152,6 +152,13 @@ src/
 - Pinia para gerenciamento de estado
 - Quasar Framework para UI
 
+#### **Comentários TODO**
+
+- Quando encontrar algo a fazer ou melhorar no código, adicione um comentário TODO
+- Formato: `//TODO: descrever o que precisa ser feito`
+- Exemplo: `//TODO: implementar validação de email no formulário`
+- Use sempre a sintaxe de comentário da linguagem (// para TS/JS, <!-- --> para HTML)
+
 #### **Commits**
 
 - Use mensagens descritivas
@@ -166,6 +173,23 @@ src/
 - `src/stores/` - Estado da aplicação
 
 ### 🆘 Comandos Úteis
+
+**⚠️ IMPORTANTE: Para agentes de IA - NÃO execute comandos no terminal!**
+
+Use as **VS Code Tasks** disponíveis em vez de comandos diretos:
+
+```
+Ctrl+Shift+P > Tasks: Run Task
+```
+
+- **dev** - Servidor de desenvolvimento (quasar dev)
+- **lint** - Verificar código (npm run lint)
+- **lint:fix** - Corrigir código automaticamente
+- **build** - Build de produção (quasar build)
+- **kill dev server** - Parar servidor de desenvolvimento
+- **restart dev server** - Reiniciar servidor
+
+**Para referência manual (não executar):**
 
 ```bash
 # Desenvolvimento
@@ -184,11 +208,12 @@ npm run type-check       # Verificar tipos TypeScript
 ### 💡 Dicas para Agentes
 
 1. **Sempre consulte o todo.md** antes de implementar funcionalidades
-2. **Execute `npm run lint`** após cada mudança significativa
-3. **Teste a aplicação** em http://localhost:9001 regularmente
+2. **Use VS Code Tasks** em vez de comandos de terminal - existem tasks configuradas para lint, build, dev, etc.
+3. **NÃO EXECUTE comandos no terminal** - use apenas as ferramentas de edição de código
 4. **Mantenha a documentação atualizada** em ./detalhes/
 5. **Use o sistema MCP** para funcionalidades de IA
 6. **Siga a arquitetura existente** - classes TypeScript bem definidas
+7. **Adicione comentários TODO** quando encontrar algo a implementar ou melhorar
 
 ### 📞 Integração com IA
 
