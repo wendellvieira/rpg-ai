@@ -604,11 +604,8 @@ function atualizarRecursos() {
 }
 
 function visualizarPersonagem(personagem: PersonagemData) {
-  $q.notify({
-    type: 'info',
-    message: `Visualizando ${personagem.nome}`,
-    caption: 'Funcionalidade em desenvolvimento',
-  });
+  // Removido notificação desnecessária
+  console.log('Visualizando personagem:', personagem.nome);
 }
 
 function adicionarPersonagemASessao() {
@@ -627,10 +624,8 @@ function adicionarPersonagemNaSessao(personagem: PersonagemData) {
   try {
     sessaoAtual.value.adicionarParticipante(personagem.id);
 
-    $q.notify({
-      type: 'positive',
-      message: `${personagem.nome} adicionado à sessão!`,
-    });
+    // Removido notificação para reduzir spam
+    console.log(`${personagem.nome} adicionado à sessão`);
   } catch (error) {
     console.error('Erro ao adicionar personagem:', error);
     $q.notify({
@@ -688,11 +683,8 @@ async function salvarPersonagemEditado(dadosPersonagem: {
       });
     }
 
-    $q.notify({
-      type: 'positive',
-      message: 'Personagem salvo com sucesso!',
-      position: 'top',
-    });
+    // Removido notificação para reduzir spam - salvamento é automático
+    console.log('Personagem salvo:', dadosPersonagem.nome);
 
     mostrarEditarPersonagem.value = false;
     void carregarRecursos(); // Recarregar lista de personagens
@@ -719,13 +711,8 @@ function abrirPreparacaoMagiasParaPersonagem(personagem: Personagem) {
 function salvarAlteracaoPersonagem() {
   try {
     // Note: The personagem is already saved when methods like aprenderMagia are called
-    // This method is mainly for UI feedback
-
-    $q.notify({
-      type: 'positive',
-      message: 'Personagem atualizado com sucesso!',
-      position: 'top',
-    });
+    // Removido feedback de notificação para evitar spam de notificações
+    console.log('Personagem alterado automaticamente');
   } catch (error) {
     console.error('Erro ao salvar alterações do personagem:', error);
     $q.notify({
@@ -1331,10 +1318,8 @@ function alternarStatusSessao() {
       sessaoAtual.value.retomar();
     }
 
-    $q.notify({
-      type: 'info',
-      message: 'Status da sessão alterado',
-    });
+    // Removido notificação - mudança de status é visível na interface
+    console.log('Status da sessão alterado para:', sessaoAtual.value.statusAtual);
   } catch (error) {
     console.error('Erro ao alterar status:', error);
     $q.notify({

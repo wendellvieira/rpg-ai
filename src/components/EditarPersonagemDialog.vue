@@ -612,11 +612,8 @@ function getModificadorCor(modificador: number): string {
 }
 
 function adicionarItem() {
-  $q.notify({
-    type: 'info',
-    message: 'Sistema de inventário em desenvolvimento',
-    position: 'top',
-  });
+  // Removido notificação para reduzir spam
+  console.log('Sistema de inventário não implementado ainda');
 }
 
 function removerItem(index: number) {
@@ -652,11 +649,8 @@ function removerMagia(magiaId: string) {
     const sucesso = props.personagem.esquecerMagia(magiaId);
 
     if (sucesso) {
-      $q.notify({
-        type: 'positive',
-        message: 'Magia removida com sucesso',
-        position: 'top',
-      });
+      // Removido notificação para evitar spam - ação já é visível na UI
+      console.log('Magia removida:', magiaId);
       // Emitir evento para que o componente pai atualize o personagem
       emit('personagemAlterado', props.personagem);
     } else {
@@ -689,11 +683,8 @@ function adicionarConhecimento() {
 }
 
 function editarConhecimento() {
-  $q.notify({
-    type: 'info',
-    message: 'Editor de conhecimento em desenvolvimento',
-    position: 'top',
-  });
+  // Removido notificação para reduzir spam
+  console.log('Editor de conhecimento não implementado ainda');
 }
 
 function removerConhecimento(index: number) {

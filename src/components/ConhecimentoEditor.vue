@@ -358,10 +358,8 @@ function salvarConhecimento() {
         formulario.value.fonte,
       );
 
-      $q.notify({
-        type: 'positive',
-        message: 'Conhecimento adicionado com sucesso!',
-      });
+      // Removido notificação para reduzir spam - adição é visível na lista
+      console.log('Conhecimento adicionado:', formulario.value.topico);
     }
 
     recarregarConhecimentos();

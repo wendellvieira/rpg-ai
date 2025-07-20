@@ -62,18 +62,12 @@ const $q = useQuasar();
 
 // Methods
 function criarNovaMagia() {
-  $q.notify({
-    type: 'info',
-    message: 'Editor de magias em desenvolvimento',
-    position: 'top',
-  });
+  // Removido notificação para reduzir spam
+  console.log('Editor de magias não implementado ainda');
 }
 
 function importarMagiasDD() {
-  $q.notify({
-    type: 'info',
-    message: 'Importação de magias D&D 5e em desenvolvimento',
-    position: 'top',
-  });
+  // Removido notificação para reduzir spam
+  console.log('Importação de magias D&D 5e não implementada ainda');
 }
 </script>
