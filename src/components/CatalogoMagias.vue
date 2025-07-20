@@ -259,7 +259,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watchDebounced } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { watchDebounced } from '@vueuse/core';
 import { useQuasar } from 'quasar';
 import { usePersonagemStore } from '../stores/personagemStore';
 import { useMagiaStore } from '../stores/magiaStore';
@@ -322,10 +323,10 @@ const textoBuscaDebounced = ref('');
 // Debounce para a busca de texto (300ms)
 watchDebounced(
   textoBusca,
-  (novoTexto) => {
+  (novoTexto: string) => {
     textoBuscaDebounced.value = novoTexto;
   },
-  { debounce: 300, maxWait: 1000 }
+  { debounce: 300, maxWait: 1000 },
 );
 
 // Opções para filtros

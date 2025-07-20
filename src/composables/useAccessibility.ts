@@ -20,7 +20,7 @@ export function useDevice() {
     isTablet,
     isDesktop,
     isTouchScreen,
-    isSmallScreen: isMobile || (isTablet && $q.screen.width < 768)
+    isSmallScreen: isMobile || (isTablet && $q.screen.width < 768),
   };
 }
 
@@ -42,9 +42,9 @@ export function useAccessibility() {
     announcer.setAttribute('aria-atomic', 'true');
     announcer.className = 'sr-only';
     announcer.textContent = message;
-    
+
     document.body.appendChild(announcer);
-    
+
     // Remove após 1 segundo
     setTimeout(() => {
       document.body.removeChild(announcer);
@@ -55,10 +55,9 @@ export function useAccessibility() {
    * Foca elemento de forma segura
    */
   function focusElement(selector: string | HTMLElement) {
-    const element = typeof selector === 'string' 
-      ? document.querySelector(selector) as HTMLElement
-      : selector;
-    
+    const element =
+      typeof selector === 'string' ? (document.querySelector(selector) as HTMLElement) : selector;
+
     if (element && element.focus) {
       element.focus();
     }
@@ -69,7 +68,7 @@ export function useAccessibility() {
    */
   function trapFocus(container: HTMLElement) {
     const focusableElements = container.querySelectorAll(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
     );
 
     const firstElement = focusableElements[0] as HTMLElement | undefined;
@@ -105,7 +104,7 @@ export function useAccessibility() {
     prefersDarkMode,
     announce,
     focusElement,
-    trapFocus
+    trapFocus,
   };
 }
 
@@ -116,7 +115,7 @@ export function useKeyboardShortcuts() {
   function registerShortcut(
     keys: string,
     callback: () => void,
-    options: { preventDefault?: boolean; target?: Document | HTMLElement } = {}
+    options: { preventDefault?: boolean; target?: Document | HTMLElement } = {},
   ) {
     const { preventDefault = true, target = document } = options;
 
@@ -127,8 +126,10 @@ export function useKeyboardShortcuts() {
         keyEvent.altKey && 'alt',
         keyEvent.shiftKey && 'shift',
         keyEvent.metaKey && 'meta',
-        keyEvent.key.toLowerCase()
-      ].filter(Boolean).join('+');
+        keyEvent.key.toLowerCase(),
+      ]
+        .filter(Boolean)
+        .join('+');
 
       if (keyString === keys.toLowerCase()) {
         if (preventDefault) {
@@ -146,6 +147,6 @@ export function useKeyboardShortcuts() {
   }
 
   return {
-    registerShortcut
+    registerShortcut,
   };
 }

@@ -51,11 +51,17 @@ export class ImageGenerationService {
   }
 
   private get apiKey(): string {
-    return this.configStore.configuracao.stabilityApiKey || import.meta.env.VITE_STABILITY_API_KEY || '';
+    return (
+      this.configStore.configuracao.stabilityApiKey || import.meta.env.VITE_STABILITY_API_KEY || ''
+    );
   }
 
   private get model(): string {
-    return this.configStore.configuracao.stabilityModel || import.meta.env.VITE_STABILITY_MODEL || 'sd3-large-turbo';
+    return (
+      this.configStore.configuracao.stabilityModel ||
+      import.meta.env.VITE_STABILITY_MODEL ||
+      'sd3-large-turbo'
+    );
   }
 
   private get defaultWidth(): number {

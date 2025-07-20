@@ -10,7 +10,7 @@ import { themeService } from './services/ThemeService';
 onMounted(() => {
   // Inicializa o PWA service para registrar o service worker
   console.log('PWA Service initialized:', pwaService);
-  
+
   // Inicializa o tema
   console.log('Theme Service initialized:', themeService);
 });

@@ -391,7 +391,9 @@ import MapaViewer from '../components/MapaViewer.vue';
 
 // Lazy loading para diálogos pesados
 const EditarItemDialog = defineAsyncComponent(() => import('../components/EditarItemDialog.vue'));
-const GerenciamentoItensDialog = defineAsyncComponent(() => import('../components/GerenciamentoItensDialog.vue'));
+const GerenciamentoItensDialog = defineAsyncComponent(
+  () => import('../components/GerenciamentoItensDialog.vue'),
+);
 
 const $q = useQuasar();
 const route = useRoute();

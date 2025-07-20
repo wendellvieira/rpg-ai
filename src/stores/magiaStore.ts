@@ -39,7 +39,7 @@ export const useMagiaStore = defineStore('magia', () => {
   const magias = ref<DadosMagiaSerializados[]>([]);
   const carregando = ref(false);
   const erro = ref<string | null>(null);
-  
+
   // Cache para buscas rápidas
   const magiasPorId = ref(new Map<string, DadosMagiaSerializados>());
   const magiasIndexadas = ref(new Map<string, DadosMagiaSerializados[]>());
@@ -48,22 +48,25 @@ export const useMagiaStore = defineStore('magia', () => {
   function atualizarCaches() {
     // Cache por ID para buscas O(1)
     magiasPorId.value.clear();
-    magias.value.forEach(magia => {
+    magias.value.forEach((magia) => {
       magiasPorId.value.set(magia.id, magia);
     });
 
     // Cache de índices de busca por texto
     magiasIndexadas.value.clear();
     const indiceTexto = new Map<string, DadosMagiaSerializados[]>();
-    
-    magias.value.forEach(magia => {
+
+    magias.value.forEach((magia) => {
       // Indexar por palavras-chave do nome e descrição
       const palavras = [
         ...magia.nome.toLowerCase().split(' '),
-        ...magia.descricao.toLowerCase().split(' ').filter(p => p.length > 3)
+        ...magia.descricao
+          .toLowerCase()
+          .split(' ')
+          .filter((p) => p.length > 3),
       ];
-      
-      palavras.forEach(palavra => {
+
+      palavras.forEach((palavra) => {
         if (!indiceTexto.has(palavra)) {
           indiceTexto.set(palavra, []);
         }
@@ -125,7 +128,7 @@ export const useMagiaStore = defineStore('magia', () => {
     } else {
       magias.value.push(dadosMagia);
     }
-    
+
     // Atualizar caches após modificação
     atualizarCaches();
   }
@@ -145,15 +148,18 @@ export const useMagiaStore = defineStore('magia', () => {
 
   function buscarMagiasRapida(termo: string): DadosMagiaSerializados[] {
     if (!termo || termo.length < 2) return magias.value;
-    
-    const palavrasChave = termo.toLowerCase().split(' ').filter(p => p.length > 1);
+
+    const palavrasChave = termo
+      .toLowerCase()
+      .split(' ')
+      .filter((p) => p.length > 1);
     const resultados = new Set<DadosMagiaSerializados>();
-    
-    palavrasChave.forEach(palavra => {
+
+    palavrasChave.forEach((palavra) => {
       const encontradas = magiasIndexadas.value.get(palavra) || [];
-      encontradas.forEach(magia => resultados.add(magia));
+      encontradas.forEach((magia) => resultados.add(magia));
     });
-    
+
     return Array.from(resultados);
   }
 
@@ -212,7 +218,7 @@ export const useMagiaStore = defineStore('magia', () => {
         // Carregar algumas magias de exemplo
         carregarMagiasExemplo();
       }
-      
+
       // Atualizar caches após carregamento
       atualizarCaches();
     } catch (error) {

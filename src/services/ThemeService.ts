@@ -63,11 +63,12 @@ class ThemeService {
    * Aplica o tema atual
    */
   private applyTheme(): void {
-    const shouldBeDark = this._theme.value === 'dark' || 
+    const shouldBeDark =
+      this._theme.value === 'dark' ||
       (this._theme.value === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    
+
     Dark.set(shouldBeDark);
-    
+
     // Adicionar classe ao body para CSS customizado
     document.body.classList.toggle('theme-dark', shouldBeDark);
     document.body.classList.toggle('theme-light', !shouldBeDark);
@@ -96,7 +97,7 @@ class ThemeService {
    */
   private setupMediaQueryListener(): void {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    
+
     mediaQuery.addListener(() => {
       if (this._theme.value === 'auto') {
         this.applyTheme();
@@ -111,7 +112,7 @@ class ThemeService {
     return [
       { value: 'auto', label: 'Automático', icon: 'brightness_auto' },
       { value: 'light', label: 'Claro', icon: 'light_mode' },
-      { value: 'dark', label: 'Escuro', icon: 'dark_mode' }
+      { value: 'dark', label: 'Escuro', icon: 'dark_mode' },
     ];
   }
 
@@ -120,7 +121,7 @@ class ThemeService {
    */
   public getCurrentThemeColors() {
     const isDark = this.isDark.value;
-    
+
     return {
       primary: isDark ? '#bb86fc' : '#1976d2',
       secondary: isDark ? '#03dac6' : '#26a69a',
@@ -131,7 +132,7 @@ class ThemeService {
       info: isDark ? '#2196f3' : '#31ccec',
       warning: isDark ? '#ff9800' : '#f2c037',
       background: isDark ? '#121212' : '#ffffff',
-      surface: isDark ? '#1e1e1e' : '#f5f5f5'
+      surface: isDark ? '#1e1e1e' : '#f5f5f5',
     };
   }
 }
@@ -147,6 +148,6 @@ export function useTheme() {
     setTheme: themeService.setTheme.bind(themeService),
     toggleTheme: themeService.toggleTheme.bind(themeService),
     availableThemes: themeService.getAvailableThemes(),
-    currentColors: computed(() => themeService.getCurrentThemeColors())
+    currentColors: computed(() => themeService.getCurrentThemeColors()),
   };
 }

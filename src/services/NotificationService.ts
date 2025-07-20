@@ -14,7 +14,16 @@ export interface NotificationOptions {
     color?: string;
     handler: () => void;
   }>;
-  position?: 'top' | 'top-left' | 'top-right' | 'bottom' | 'bottom-left' | 'bottom-right' | 'left' | 'right' | 'center';
+  position?:
+    | 'top'
+    | 'top-left'
+    | 'top-right'
+    | 'bottom'
+    | 'bottom-left'
+    | 'bottom-right'
+    | 'left'
+    | 'right'
+    | 'center';
   multiLine?: boolean;
   html?: boolean;
   caption?: string;
@@ -76,7 +85,7 @@ class NotificationService {
       positive: { icon: 'check_circle', color: 'positive' },
       negative: { icon: 'error', color: 'negative' },
       warning: { icon: 'warning', color: 'warning' },
-      info: { icon: 'info', color: 'info' }
+      info: { icon: 'info', color: 'info' },
     };
 
     const defaults = typeDefaults[type];
@@ -89,7 +98,7 @@ class NotificationService {
       icon: rest.icon || defaults.icon,
       color: defaults.color,
       textColor: 'white',
-      ...rest
+      ...rest,
     });
 
     // Anunciar para leitores de tela se solicitado
@@ -133,7 +142,7 @@ class NotificationService {
   public showLoading(message = 'Carregando...'): void {
     Loading.show({
       message,
-      spinnerColor: 'primary'
+      spinnerColor: 'primary',
     });
   }
 
@@ -155,7 +164,7 @@ class NotificationService {
       cancel = 'Cancelar',
       persistent = false,
       html = false,
-      position = 'standard'
+      position = 'standard',
     } = options;
 
     return new Promise((resolve) => {
@@ -166,7 +175,7 @@ class NotificationService {
         cancel,
         persistent,
         html,
-        position
+        position,
       })
         .onOk(() => resolve(true))
         .onCancel(() => resolve(false))
@@ -184,11 +193,11 @@ class NotificationService {
         message,
         prompt: {
           model: '',
-          type: 'text'
+          type: 'text',
         },
         ok: 'Confirmar',
         cancel: 'Cancelar',
-        persistent: true
+        persistent: true,
       })
         .onOk((data) => resolve(data))
         .onCancel(() => resolve(null))
@@ -211,6 +220,6 @@ export function useNotifications() {
     showLoading: notificationService.showLoading.bind(notificationService),
     hideLoading: notificationService.hideLoading.bind(notificationService),
     confirm: notificationService.confirm.bind(notificationService),
-    prompt: notificationService.prompt.bind(notificationService)
+    prompt: notificationService.prompt.bind(notificationService),
   };
 }

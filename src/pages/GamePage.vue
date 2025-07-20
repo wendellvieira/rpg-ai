@@ -404,8 +404,12 @@ import CatalogoMagias from '../components/CatalogoMagias.vue';
 import MapaCanvas from '../components/MapaCanvas.vue';
 
 // Lazy loading para diálogos pesados
-const EditarPersonagemDialog = defineAsyncComponent(() => import('../components/EditarPersonagemDialog.vue'));
-const PrepararMagiasDialog = defineAsyncComponent(() => import('../components/PrepararMagiasDialog.vue'));
+const EditarPersonagemDialog = defineAsyncComponent(
+  () => import('../components/EditarPersonagemDialog.vue'),
+);
+const PrepararMagiasDialog = defineAsyncComponent(
+  () => import('../components/PrepararMagiasDialog.vue'),
+);
 
 interface PersonagemData {
   id: string;

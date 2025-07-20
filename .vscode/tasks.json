@@ -4,7 +4,7 @@
     {
       "label": "dev",
       "type": "shell",
-      "command": "npx",
+      "command": "/Users/wendellvieiracunha/.nvm/versions/node/v20.18.0/bin/npx",
       "args": ["quasar", "dev"],
       "group": {
         "kind": "build",
@@ -21,13 +21,16 @@
       },
       "problemMatcher": [],
       "options": {
-        "cwd": "${workspaceFolder}"
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PATH": "/Users/wendellvieiracunha/.nvm/versions/node/v20.18.0/bin:${env:PATH}"
+        }
       }
     },
     {
       "label": "lint",
       "type": "shell",
-      "command": "npm",
+      "command": "/Users/wendellvieiracunha/.nvm/versions/node/v20.18.0/bin/npm",
       "args": ["run", "lint"],
       "group": {
         "kind": "test",
@@ -41,12 +44,18 @@
         "showReuseMessage": true,
         "clear": false
       },
-      "problemMatcher": ["$eslint-stylish"]
+      "problemMatcher": ["$eslint-stylish"],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PATH": "/Users/wendellvieiracunha/.nvm/versions/node/v20.18.0/bin:${env:PATH}"
+        }
+      }
     },
     {
       "label": "lint:fix",
       "type": "shell",
-      "command": "npm",
+      "command": "/Users/wendellvieiracunha/.nvm/versions/node/v20.18.0/bin/npm",
       "args": ["run", "lint", "--", "--fix"],
       "group": "test",
       "presentation": {
@@ -55,12 +64,18 @@
         "focus": false,
         "panel": "shared"
       },
-      "problemMatcher": ["$eslint-stylish"]
+      "problemMatcher": ["$eslint-stylish"],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PATH": "/Users/wendellvieiracunha/.nvm/versions/node/v20.18.0/bin:${env:PATH}"
+        }
+      }
     },
     {
       "label": "build",
       "type": "shell",
-      "command": "npx",
+      "command": "/Users/wendellvieiracunha/.nvm/versions/node/v20.18.0/bin/npx",
       "args": ["quasar", "build"],
       "group": "build",
       "presentation": {
@@ -69,7 +84,13 @@
         "focus": false,
         "panel": "shared"
       },
-      "problemMatcher": []
+      "problemMatcher": [],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PATH": "/Users/wendellvieiracunha/.nvm/versions/node/v20.18.0/bin:${env:PATH}"
+        }
+      }
     },
     {
       "label": "kill dev server",

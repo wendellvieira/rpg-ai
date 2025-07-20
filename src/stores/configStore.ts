@@ -166,12 +166,12 @@ export const useConfigStore = defineStore('config', () => {
     cfgScale?: number;
   }): void {
     const novaConfig: Partial<ConfiguracaoGlobal> = {};
-    
+
     if (config.largura !== undefined) novaConfig.stabilityDefaultWidth = config.largura;
     if (config.altura !== undefined) novaConfig.stabilityDefaultHeight = config.altura;
     if (config.steps !== undefined) novaConfig.stabilityDefaultSteps = config.steps;
     if (config.cfgScale !== undefined) novaConfig.stabilityDefaultCfgScale = config.cfgScale;
-    
+
     atualizarConfiguracao(novaConfig);
   }
 

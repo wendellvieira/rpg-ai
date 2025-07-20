@@ -4,12 +4,12 @@
       <q-card-section class="row items-center q-pb-none">
         <div class="text-h6">Slots de Magia - {{ personagem?.nome }}</div>
         <q-space />
-        <q-btn 
-          icon="close" 
-          flat 
-          round 
-          dense 
-          v-close-popup 
+        <q-btn
+          icon="close"
+          flat
+          round
+          dense
+          v-close-popup
           aria-label="Fechar dialog de slots de magia"
         />
       </q-card-section>
@@ -81,13 +81,7 @@
           :disable="!temSlotsGastos"
           aria-label="Recuperar todos os slots de magia gastos"
         />
-        <q-btn 
-          flat 
-          label="Fechar" 
-          color="primary" 
-          v-close-popup 
-          aria-label="Fechar dialog"
-        />
+        <q-btn flat label="Fechar" color="primary" v-close-popup aria-label="Fechar dialog" />
       </q-card-actions>
     </q-card>
   </q-dialog>

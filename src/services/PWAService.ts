@@ -49,7 +49,7 @@ export class PWAService {
   private async registerServiceWorker(): Promise<void> {
     try {
       this.registration = await navigator.serviceWorker.register('/sw.js', {
-        scope: '/'
+        scope: '/',
       });
 
       console.log('Service Worker registrado:', this.registration.scope);
@@ -59,7 +59,6 @@ export class PWAService {
         console.log('Nova versão do Service Worker encontrada');
         this.handleServiceWorkerUpdate();
       });
-
     } catch (error) {
       console.error('Falha ao registrar Service Worker:', error);
     }
@@ -73,7 +72,7 @@ export class PWAService {
       console.log('Prompt de instalação PWA disponível');
       event.preventDefault();
       this.installPrompt = event as unknown as PWAInstallPrompt;
-      
+
       // Disparar evento customizado para componentes
       window.dispatchEvent(new CustomEvent('pwa-install-available'));
     });
@@ -81,7 +80,7 @@ export class PWAService {
     window.addEventListener('appinstalled', () => {
       console.log('PWA instalado com sucesso');
       this.installPrompt = null;
-      
+
       // Disparar evento customizado
       window.dispatchEvent(new CustomEvent('pwa-installed'));
     });
@@ -109,11 +108,13 @@ export class PWAService {
     newWorker.addEventListener('statechange', () => {
       if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
         console.log('Nova versão disponível');
-        
+
         // Disparar evento para mostrar notificação de atualização
-        window.dispatchEvent(new CustomEvent('pwa-update-available', {
-          detail: { registration: this.registration }
-        }));
+        window.dispatchEvent(
+          new CustomEvent('pwa-update-available', {
+            detail: { registration: this.registration },
+          }),
+        );
       }
     });
   }
@@ -137,14 +138,14 @@ export class PWAService {
     try {
       await this.installPrompt.prompt();
       const result = await this.installPrompt.userChoice;
-      
+
       console.log('Resultado da instalação:', result.outcome);
-      
+
       if (result.outcome === 'accepted') {
         this.installPrompt = null;
         return true;
       }
-      
+
       return false;
     } catch (error) {
       console.error('Erro ao mostrar prompt de instalação:', error);
@@ -163,7 +164,7 @@ export class PWAService {
 
     try {
       await this.registration.update();
-      
+
       // Pular waiting e ativar nova versão
       if (this.registration.waiting) {
         this.registration.waiting.postMessage({ type: 'SKIP_WAITING' });
@@ -177,8 +178,10 @@ export class PWAService {
    * Verifica se está rodando como PWA
    */
   public isPWA(): boolean {
-    return window.matchMedia('(display-mode: standalone)').matches ||
-           (window.navigator as NavigatorWithStandalone).standalone === true;
+    return (
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as NavigatorWithStandalone).standalone === true
+    );
   }
 
   /**
@@ -194,7 +197,7 @@ export class PWAService {
       isPWA: this.isPWA(),
       canInstall: this.canInstall(),
       isOnline: navigator.onLine,
-      hasServiceWorker: !!this.registration
+      hasServiceWorker: !!this.registration,
     };
   }
 
