@@ -92,14 +92,19 @@
   color: #90caf9;
 }
 
-/* Focus states melhorados */
+/* Focus states melhorados - removidos estilos excessivos */
 button:focus-visible,
-.q-btn:focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible {
-  outline: 2px solid currentColor !important;
-  outline-offset: 2px !important;
+.q-btn:focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: 1px;
+}
+
+/* Inputs com foco mais suave */
+input:focus,
+select:focus,
+textarea:focus,
+.q-field--focused .q-field__control {
+  outline: none;
 }
 
 /* Indicadores de loading customizados */
@@ -152,6 +157,29 @@ textarea:focus-visible {
   .q-btn {
     border: 2px solid currentColor;
   }
+}
+
+/* Remover foco excessivo dos componentes Quasar */
+.q-field--focused .q-field__control::before,
+.q-field--focused .q-field__control::after {
+  transform: none !important;
+}
+
+.q-input--focused .q-field__control,
+.q-select--focused .q-field__control,
+.q-textarea--focused .q-field__control {
+  box-shadow: none !important;
+}
+
+/* Suavizar animações de foco */
+.q-field__control {
+  transition: all 0.1s ease !important;
+}
+
+.q-input,
+.q-select,
+.q-textarea {
+  outline: none !important;
 }
 
 /* Print styles */

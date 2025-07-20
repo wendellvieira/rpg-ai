@@ -283,11 +283,20 @@
               <div class="col">
                 <q-input
                   v-model="novaMensagem"
-                  placeholder="Digite uma mensagem ou ação..."
+                  placeholder="Digite uma mensagem ou ação... (Use @nome para personificar)"
                   outlined
                   dense
                   @keyup.enter="enviarMensagem"
                 >
+                  <template v-slot:prepend v-if="personagemPersonificado">
+                    <q-avatar
+                      size="24px"
+                      :color="personagemPersonificado.isIA ? 'purple' : 'blue'"
+                      text-color="white"
+                    >
+                      {{ personagemPersonificado.nome[0] }}
+                    </q-avatar>
+                  </template>
                   <template v-slot:append>
                     <q-btn
                       flat
@@ -328,6 +337,23 @@
                 color="negative"
                 @click="finalizarSessao"
               />
+            </div>
+
+            <!-- Feedback de personificação -->
+            <div v-if="personagemPersonificado" class="q-mt-sm">
+              <q-chip
+                :color="personagemPersonificado.isIA ? 'purple' : 'blue'"
+                text-color="white"
+                size="sm"
+                removable
+                @remove="limparPersonificacao"
+              >
+                <q-avatar>
+                  {{ personagemPersonificado.nome[0] }}
+                </q-avatar>
+                Falando como {{ personagemPersonificado.nome }}
+                {{ personagemPersonificado.isIA ? '(IA)' : '(Jogador)' }}
+              </q-chip>
             </div>
           </div>
         </div>
@@ -398,7 +424,7 @@ import { PersistenceManager } from '../services/PersistenceManager';
 import { Dados } from '../classes/Dados';
 import type { Personagem } from '../classes/Personagem';
 import { StatusSessao, type SessaoJogo } from '../classes/SessaoJogo';
-import type { MensagemMestre } from '../types';
+import type { MensagemMestre, MensagemFala } from '../types';
 import IniciativaCombate from '../components/IniciativaCombate.vue';
 import CatalogoMagias from '../components/CatalogoMagias.vue';
 import MapaCanvas from '../components/MapaCanvas.vue';
@@ -437,6 +463,9 @@ const mostrarEditarPersonagem = ref(false);
 const mostrarPrepararMagias = ref(false);
 const personagemParaEditar = ref<PersonagemData | null>(null);
 const personagemParaMagias = ref<Personagem | null>(null);
+
+// Estado de personificação
+const personagemPersonificado = ref<PersonagemData | null>(null);
 
 // Controles de dados
 const mostrarDialogDados = ref(false);
@@ -675,15 +704,52 @@ async function enviarMensagem() {
   if (!novaMensagem.value.trim() || !sessaoAtual.value) return;
 
   try {
-    sessaoAtual.value.adicionarMensagem({
-      tipo: 'mestre',
-      conteudo: novaMensagem.value.trim(),
-    } as Omit<MensagemMestre, 'id' | 'timestamp' | 'turno' | 'rodada'>);
+    const mensagem = novaMensagem.value.trim();
+
+    // Verificar se a mensagem contém personificação usando @player
+    const matchPersonificacao = mensagem.match(/^@(\w+)\s+(.+)$/);
+    if (matchPersonificacao) {
+      const nomePersonagem = matchPersonificacao[1];
+      const conteudoMensagem = matchPersonificacao[2];
+
+      // Verificar se o personagem existe na sessão
+      const personagemEncontrado = personagensDisponiveis.value.find(
+        (p) =>
+          nomePersonagem &&
+          p.nome.toLowerCase() === nomePersonagem.toLowerCase() &&
+          sessaoAtual.value?.getParticipantes().includes(p.id),
+      );
+
+      if (personagemEncontrado) {
+        // Adicionar como fala do personagem
+        sessaoAtual.value.adicionarMensagem({
+          tipo: 'fala',
+          personagem: personagemEncontrado.id,
+          conteudo: conteudoMensagem,
+        } as Omit<MensagemFala, 'id' | 'timestamp' | 'turno' | 'rodada'>);
+      } else {
+        // Personagem não encontrado, adicionar como mensagem do mestre
+        sessaoAtual.value.adicionarMensagem({
+          tipo: 'mestre',
+          conteudo: mensagem,
+          personagem: nomePersonagem, // Indica tentativa de personificação
+        } as Omit<MensagemMestre, 'id' | 'timestamp' | 'turno' | 'rodada'>);
+      }
+    } else {
+      // Mensagem normal do mestre
+      sessaoAtual.value.adicionarMensagem({
+        tipo: 'mestre',
+        conteudo: mensagem,
+      } as Omit<MensagemMestre, 'id' | 'timestamp' | 'turno' | 'rodada'>);
+    }
 
     novaMensagem.value = '';
 
     // Salvar a sessão com a nova mensagem
     await sessaoStore.salvarSessao(sessaoAtual.value as SessaoJogo);
+
+    // Processar resposta automática de personagens IA
+    void processarRespostasIA();
 
     console.log('Mensagem adicionada e sessão salva');
   } catch (error) {
@@ -696,16 +762,116 @@ async function enviarMensagem() {
   }
 }
 
+// Função para processar respostas automáticas de personagens IA
+async function processarRespostasIA() {
+  if (!sessaoAtual.value || iaProcessando.value) return;
+
+  try {
+    iaProcessando.value = true;
+
+    // Buscar personagens IA na sessão atual
+    const personagensIA = personagensDisponiveis.value.filter(
+      (p) => p.isIA && sessaoAtual.value?.getParticipantes().includes(p.id),
+    );
+
+    // Para cada personagem IA, verificar se deve responder
+    for (const personagemData of personagensIA) {
+      try {
+        const personagemCompleto = personagemStore.obterPersonagemPorId(
+          personagemData.id,
+        ) as Personagem;
+        if (!personagemCompleto) continue;
+
+        // Verificar se deve gerar resposta (probabilidade de 30%)
+        if (Math.random() < 0.3) {
+          // Simular resposta da IA
+          const respostaIA = gerarRespostaIA(personagemCompleto);
+
+          if (respostaIA) {
+            sessaoAtual.value.adicionarMensagem({
+              tipo: 'fala',
+              personagem: personagemCompleto.id,
+              conteudo: respostaIA,
+            } as Omit<MensagemFala, 'id' | 'timestamp' | 'turno' | 'rodada'>);
+          }
+        }
+      } catch (error) {
+        console.error(`Erro ao processar IA do personagem ${personagemData.nome}:`, error);
+      }
+    }
+
+    // Salvar novamente se houve novas mensagens
+    await sessaoStore.salvarSessao(sessaoAtual.value as SessaoJogo);
+  } catch (error) {
+    console.error('Erro ao processar respostas IA:', error);
+  } finally {
+    iaProcessando.value = false;
+  }
+}
+
+// Função auxiliar para gerar resposta de IA
+function gerarRespostaIA(personagem: Personagem): string | null {
+  // Respostas simples baseadas na personalidade
+  const respostasComuns = [
+    'Interessante...',
+    'Concordo com essa abordagem.',
+    'Talvez devêssemos considerar outras opções.',
+    'Estou observando a situação.',
+    'Que pensam sobre isso?',
+    'Mantenham-se alertas.',
+    'Preciso refletir sobre isso.',
+  ];
+
+  // Se tem prompt de personalidade, usar respostas mais específicas
+  if (personagem.promptPersonalidade) {
+    const respostasPersonalizadas = [
+      `${personagem.promptPersonalidade} Isso me faz pensar...`,
+      'Baseado na minha experiência, acredito que...',
+      'Minha intuição me diz que...',
+    ];
+
+    const resposta =
+      respostasPersonalizadas[Math.floor(Math.random() * respostasPersonalizadas.length)];
+    return resposta || null;
+  }
+
+  const resposta = respostasComuns[Math.floor(Math.random() * respostasComuns.length)];
+  return resposta || null;
+}
+
 function avancarTurno() {
   if (!sessaoAtual.value) return;
 
   try {
     sessaoAtual.value.avancarTurno();
+    const novoPersonagem = sessaoAtual.value.getPersonagemTurnoAtual();
 
-    $q.notify({
+    // Verificar se o novo personagem é controlado por IA
+    if (novoPersonagem) {
+      const personagemData = personagensDisponiveis.value.find((p) => p.id === novoPersonagem);
+      if (personagemData?.isIA) {
+        // Processar turno da IA automaticamente
+        setTimeout(() => {
+          void processarTurnoIA(personagemData);
+        }, 1000); // Delay de 1 segundo para simular "pensamento"
+      }
+    }
+
+    const notificacao: { type: string; message: string; caption?: string } = {
       type: 'info',
-      message: `Turno avançado`,
-    });
+      message: 'Turno avançado',
+    };
+
+    if (novoPersonagem) {
+      const nomePersonagem = personagensDisponiveis.value.find(
+        (p) => p.id === novoPersonagem,
+      )?.nome;
+      if (nomePersonagem) {
+        notificacao.caption = `Agora é a vez de ${nomePersonagem}`;
+      }
+    }
+
+    $q.notify(notificacao);
   } catch (error) {
     console.error('Erro ao avançar turno:', error);
     $q.notify({
@@ -714,6 +880,70 @@ function avancarTurno() {
       caption: String(error),
     });
   }
+}
+
+// Função para processar turno específico de IA
+async function processarTurnoIA(personagemData: { id: string; nome: string; isIA: boolean }) {
+  if (!sessaoAtual.value || !personagemData.isIA) return;
+
+  try {
+    iaProcessando.value = true;
+
+    const personagemCompleto = personagemStore.obterPersonagemPorId(
+      personagemData.id,
+    ) as Personagem;
+    if (!personagemCompleto) return;
+
+    // Simular ação da IA
+    const acaoIA = gerarAcaoIA(personagemCompleto);
+
+    if (acaoIA) {
+      sessaoAtual.value.adicionarMensagem({
+        tipo: 'fala',
+        personagem: personagemCompleto.id,
+        conteudo: acaoIA,
+      } as Omit<MensagemFala, 'id' | 'timestamp' | 'turno' | 'rodada'>);
+
+      await sessaoStore.salvarSessao(sessaoAtual.value as SessaoJogo);
+
+      $q.notify({
+        type: 'info',
+        message: `${personagemData.nome} agiu`,
+        caption: acaoIA,
+      });
+    }
+  } catch (error) {
+    console.error(`Erro ao processar turno IA de ${personagemData.nome}:`, error);
+  } finally {
+    iaProcessando.value = false;
+  }
+}
+
+// Função para gerar ação específica de turno da IA
+function gerarAcaoIA(personagem: Personagem): string | null {
+  const acoesGenericas = [
+    'Observo os arredores cuidadosamente.',
+    'Mantenho-me alerta para possíveis ameaças.',
+    'Analiso a situação antes de agir.',
+    'Procuro por pistas ou sinais importantes.',
+    'Aguardo o momento certo para agir.',
+    'Verifico meu equipamento.',
+    'Comunico-me com o grupo através de gestos.',
+  ];
+
+  if (personagem.promptPersonalidade) {
+    const acoesPersonalizadas = [
+      `Como ${personagem.promptPersonalidade}, decido aguardar e observar.`,
+      `Baseado na minha natureza, tomo uma atitude cautelosa.`,
+      `Minha personalidade me leva a analisar antes de agir.`,
+    ];
+
+    const resposta = acoesPersonalizadas[Math.floor(Math.random() * acoesPersonalizadas.length)];
+    return resposta || null;
+  }
+
+  const resposta = acoesGenericas[Math.floor(Math.random() * acoesGenericas.length)];
+  return resposta || null;
 }
 
 function rolarDados() {
@@ -795,6 +1025,29 @@ function abrirCatalogoMagias() {
   mostrarCatalogoMagias.value = true;
 }
 
+// Função para limpar personificação
+function limparPersonificacao() {
+  personagemPersonificado.value = null;
+}
+
+// Watcher para detectar personificação no input
+watch(novaMensagem, (novaMensagemValue) => {
+  const matchPersonificacao = novaMensagemValue.match(/^@(\w+)\s/);
+  if (matchPersonificacao) {
+    const nomePersonagem = matchPersonificacao[1];
+    const personagemEncontrado = personagensDisponiveis.value.find(
+      (p) =>
+        nomePersonagem &&
+        p.nome.toLowerCase() === nomePersonagem.toLowerCase() &&
+        sessaoAtual.value?.getParticipantes().includes(p.id),
+    );
+
+    personagemPersonificado.value = personagemEncontrado || null;
+  } else {
+    personagemPersonificado.value = null;
+  }
+});
+
 // Utilidades
 function getCorStatus(status?: string): string {
   switch (status) {
@@ -866,15 +1119,22 @@ function getCorTextoMensagem(tipo: string): string {
 }
 
 function getCorAvatar(tipo: string, personagem?: string): string {
-  if (personagem && personagensDisponiveis.value.find((p) => p.nome === personagem)?.isIA) {
-    return 'purple';
+  // Verificar se é um personagem específico
+  if (tipo === 'fala' && personagem) {
+    const personagemData = personagensDisponiveis.value.find(
+      (p) => p.nome === personagem || `${p.nome} (IA)` === personagem || p.id === personagem,
+    );
+
+    if (personagemData) {
+      return personagemData.isIA ? 'purple' : 'blue';
+    }
   }
 
   switch (tipo) {
     case 'mestre':
-      return 'blue';
+      return 'indigo';
     case 'fala':
-      return 'orange';
+      return 'blue';
     case 'acao':
       return 'green';
     case 'sistema':
@@ -927,14 +1187,30 @@ function getMensagemConteudo(mensagem: Record<string, unknown>): string {
 
 function getMensagemPersonagem(mensagem: Record<string, unknown>): string {
   if ('personagem' in mensagem) {
-    const personagem = mensagem.personagem;
-    if (typeof personagem === 'string') return personagem;
-    if (typeof personagem === 'number' || typeof personagem === 'boolean')
-      return String(personagem);
-    if (personagem != null) return JSON.stringify(personagem);
+    const personagemId = mensagem.personagem;
+    if (typeof personagemId === 'string') {
+      // Buscar nome do personagem pelo ID
+      const personagemData = personagensDisponiveis.value.find((p) => p.id === personagemId);
+      if (personagemData) {
+        return personagemData.isIA ? `${personagemData.nome} (IA)` : personagemData.nome;
+      }
+      return personagemId;
+    }
+    if (typeof personagemId === 'number' || typeof personagemId === 'boolean')
+      return String(personagemId);
+    if (personagemId != null) return JSON.stringify(personagemId);
     return '';
   }
-  return 'Sistema';
+
+  // Para mensagens do mestre, verificar se há personificação
+  if (mensagem.tipo === 'mestre' && 'personagem' in mensagem) {
+    const personagemPersonificado = mensagem.personagem;
+    if (typeof personagemPersonificado === 'string') {
+      return `Mestre (como ${personagemPersonificado})`;
+    }
+  }
+
+  return mensagem.tipo === 'mestre' ? 'Mestre' : 'Sistema';
 }
 </script>
 

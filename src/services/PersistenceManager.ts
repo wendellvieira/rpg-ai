@@ -109,9 +109,27 @@ export class PersistenceManager {
    */
   async salvarSessao(sessao: SessaoJogo): Promise<void> {
     await this.verificarInicializacao();
-    const dados = sessao.serializar();
-    await this.dbService.setItem(`sessao_${sessao.id}`, dados);
-    await this.atualizarIndiceSessoes(sessao);
+
+    try {
+      const dados = sessao.serializar();
+
+      // Criar uma cópia limpa para evitar problemas de clonagem
+      const dadosLimpos = JSON.parse(
+        JSON.stringify(dados, (key, value) => {
+          // Remove funções e objetos complexos que podem causar problemas
+          if (typeof value === 'function') return undefined;
+          if (value instanceof Error) return value.message;
+          if (value instanceof Date) return value.toISOString();
+          return value;
+        }),
+      );
+
+      await this.dbService.setItem(`sessao_${sessao.id}`, dadosLimpos);
+      await this.atualizarIndiceSessoes(sessao);
+    } catch (error) {
+      console.error('Erro ao serializar sessão:', error);
+      throw new Error(`Erro ao salvar sessão: ${String(error)}`);
+    }
   }
 
   /**

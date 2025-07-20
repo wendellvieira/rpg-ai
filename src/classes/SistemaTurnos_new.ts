@@ -257,9 +257,7 @@ export class SistemaTurnos {
    * Verifica se todos os participantes já agiram na rodada
    */
   todosJaAgiram(): boolean {
-    return Array.from(this.participantes.values()).every(
-      (p) => !p.ativo || p.jaAgiu,
-    );
+    return Array.from(this.participantes.values()).every((p) => !p.ativo || p.jaAgiu);
   }
 
   /**
@@ -268,7 +266,7 @@ export class SistemaTurnos {
   obterEstatisticas(): Record<string, number> {
     const stats: Record<string, number> = {
       totalParticipantes: this.participantes.size,
-      participantesAtivos: Array.from(this.participantes.values()).filter(p => p.ativo).length,
+      participantesAtivos: Array.from(this.participantes.values()).filter((p) => p.ativo).length,
       rodadaAtual: this.rodadaAtual,
       turnoAtual: this.turnoAtual,
       totalAcoes: this.historicoAcoes.length,
