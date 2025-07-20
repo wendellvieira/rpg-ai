@@ -255,6 +255,7 @@
             <div v-else>
               <!-- Mensagens do chat com virtual scrolling -->
               <q-virtual-scroll
+                ref="chatVirtualScroll"
                 :items="mensagensChat"
                 separator
                 v-slot="{ item: mensagem, index }"
@@ -441,7 +442,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, defineAsyncComponent } from 'vue';
+import { ref, computed, onMounted, watch, defineAsyncComponent, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useSessaoStore } from '../stores/sessaoStore';
@@ -493,6 +494,10 @@ const mostrarPrepararMagias = ref(false);
 const personagemParaEditar = ref<PersonagemData | null>(null);
 const personagemParaMagias = ref<Personagem | null>(null);
 
+// Ref para controle do chat scroll
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const chatVirtualScroll = ref<any>(null);
+
 // Estado de personificação
 const personagemPersonificado = ref<PersonagemData | null>(null);
 
@@ -526,30 +531,165 @@ const mensagensChat = computed(() => {
 });
 
 // Lifecycle
-onMounted(() => {
-  // Garantir que configurações sejam carregadas primeiro
-  if (!configStore.carregado) {
-    console.log('🔧 Carregando configurações no GamePage...');
-    configStore.carregarConfiguracoes();
-  }
+onMounted(async (): Promise<void> => {
+  try {
+    console.log('🎯 GamePage montado - iniciando carregamento...');
 
-  void carregarRecursos();
+    // Garantir que configurações sejam carregadas primeiro
+    if (!configStore.carregado) {
+      console.log('🔧 Carregando configurações no GamePage...');
+      configStore.carregarConfiguracoes();
+    }
 
-  // Se não há sessão ativa, tentar carregar a última
-  if (!sessaoAtual.value) {
-    void tentarCarregarUltimaSessao();
+    // Carregar recursos primeiro
+    await carregarRecursos();
+    console.log('👥 Recursos carregados');
+
+    // Se não há sessão ativa, tentar carregar a última
+    if (!sessaoAtual.value) {
+      await tentarCarregarUltimaSessao();
+      console.log('📂 Tentativa de carregar última sessão concluída');
+    }
+
+    // Aguardar renderização completa
+    await nextTick();
+
+    // Auto-scroll inicial com delay progressivo
+    setTimeout((): void => {
+      console.log('🎯 Executando auto-scroll inicial...');
+      void scrollToBottom();
+
+      // Tentativa adicional após um delay maior
+      setTimeout((): void => {
+        if (mensagensChat.value.length > 0) {
+          console.log('🎯 Auto-scroll de confirmação...');
+          void scrollToBottom();
+        }
+      }, 500);
+    }, 1000); // Delay inicial maior para garantir renderização
+  } catch (error) {
+    console.error('❌ Erro no onMounted:', error);
   }
 });
+
+// Função para auto-scroll do chat
+async function scrollToBottom(): Promise<void> {
+  if (!chatVirtualScroll.value || mensagensChat.value.length === 0) {
+    console.log('📜 Auto-scroll cancelado: sem virtual scroll ou mensagens');
+    return;
+  }
+
+  try {
+    const virtualScrollElement = chatVirtualScroll.value;
+    const totalItems = mensagensChat.value.length;
+
+    if (!virtualScrollElement || totalItems === 0) {
+      return;
+    }
+
+    // Aguardar DOM updates
+    await nextTick();
+
+    // Aguardar um tempo maior para garantir que o virtual scroll renderizou
+    await new Promise((resolve) => setTimeout(resolve, 150));
+
+    const lastIndex = totalItems - 1;
+
+    // Método principal: usar scrollTo do QVirtualScroll
+    if (typeof virtualScrollElement.scrollTo === 'function') {
+      console.log(`📜 Scrolling para índice ${lastIndex} de ${totalItems}`);
+      virtualScrollElement.scrollTo(lastIndex, 'end');
+
+      // Aguardar o scroll processar
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Verificar se o scroll funcionou - tentar fallback se necessário
+      const container = virtualScrollElement.$el;
+      if (container && container.scrollTop !== undefined) {
+        const isAtBottom =
+          container.scrollHeight - container.scrollTop <= container.clientHeight + 50;
+
+        if (!isAtBottom) {
+          console.log('📜 Fallback: scroll direto no container');
+          container.scrollTo({
+            top: container.scrollHeight,
+            behavior: 'smooth',
+          });
+        }
+      }
+    } else {
+      // Fallback: scroll direto no elemento
+      console.log('📜 Fallback: scrollTo não disponível');
+      const container = virtualScrollElement.$el || virtualScrollElement;
+      if (container && container.scrollTo) {
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: 'smooth',
+        });
+      }
+    }
+
+    console.log(`📜 Auto-scroll executado para mensagem ${lastIndex + 1}/${totalItems}`);
+  } catch (error) {
+    console.error('📜 Erro ao fazer scroll do chat:', error);
+  }
+}
 
 // Watchers
 watch(
   () => sessaoAtual.value?.id,
-  (novoId) => {
-    if (novoId) {
-      // Sessão carregada, fazer setup necessário
-      console.log('Sessão carregada:', novoId);
+  (novoId, antigoId): void => {
+    if (novoId && novoId !== antigoId) {
+      // Sessão carregada ou trocada, fazer setup necessário
+      console.log('📋 Sessão carregada/trocada:', novoId);
+      // Auto-scroll após carregar sessão
+      setTimeout((): void => {
+        console.log('🎯 Auto-scroll após troca de sessão');
+        void scrollToBottom();
+      }, 500); // Delay maior para troca de sessão
     }
   },
+);
+
+// Watcher para auto-scroll quando novas mensagens chegam
+watch(
+  () => mensagensChat.value.length,
+  (novoTamanho, tamanhoAnterior): void => {
+    console.log(`📝 Mensagens: ${tamanhoAnterior || 0} → ${novoTamanho}`);
+    if (novoTamanho > (tamanhoAnterior || 0)) {
+      // Auto-scroll para a última mensagem quando nova mensagem é adicionada
+      setTimeout((): void => {
+        console.log('🎯 Auto-scroll por nova mensagem');
+        void scrollToBottom();
+      }, 250); // Delay moderado para novas mensagens
+    }
+  },
+);
+
+// Watcher para auto-scroll quando mensagens são carregadas pela primeira vez
+watch(
+  () => mensagensChat.value,
+  (novasMensagens, mensagensAnteriores): void => {
+    const isFirstLoad = !mensagensAnteriores || mensagensAnteriores.length === 0;
+    const hasMessages = novasMensagens && novasMensagens.length > 0;
+
+    if (hasMessages) {
+      console.log(
+        `📥 Mensagens ${isFirstLoad ? 'carregadas' : 'atualizadas'}: ${novasMensagens.length} itens`,
+      );
+
+      // Delay maior para carregamento inicial
+      const delay = isFirstLoad ? 600 : 300;
+
+      setTimeout((): void => {
+        console.log(
+          `🎯 Auto-scroll por ${isFirstLoad ? 'carregamento inicial' : 'atualização'} de mensagens`,
+        );
+        void scrollToBottom();
+      }, delay);
+    }
+  },
+  { immediate: true, deep: false },
 );
 
 // Métodos
@@ -570,6 +710,15 @@ async function carregarRecursos() {
     }
 
     personagensDisponiveis.value = personagensCompletos;
+    console.log(`👥 Carregados ${personagensCompletos.length} personagens`);
+
+    // Se há uma sessão ativa, forçar scroll após carregar personagens
+    if (sessaoAtual.value && mensagensChat.value.length > 0) {
+      setTimeout((): void => {
+        console.log('🎯 Auto-scroll após carregar personagens');
+        void scrollToBottom();
+      }, 400);
+    }
   } catch (error) {
     console.error('Erro ao carregar recursos:', error);
     $q.notify({
@@ -582,7 +731,7 @@ async function carregarRecursos() {
   }
 }
 
-async function tentarCarregarUltimaSessao() {
+async function tentarCarregarUltimaSessao(): Promise<void> {
   try {
     const persistence = PersistenceManager.getInstance();
     const sessoes = await persistence.listarSessoes();
@@ -591,11 +740,21 @@ async function tentarCarregarUltimaSessao() {
       // Carregar a sessão mais recente
       const ultimaSessao = sessoes[0];
       if (ultimaSessao) {
+        console.log('📂 Carregando última sessão:', ultimaSessao.id);
         await sessaoStore.carregarSessao(ultimaSessao.id);
+
+        // Aguardar um pouco para que a sessão seja processada
+        await nextTick();
+
+        // Forçar scroll após carregar sessão com delay maior
+        setTimeout((): void => {
+          console.log('🎯 Auto-scroll após carregar última sessão');
+          void scrollToBottom();
+        }, 700); // Delay maior para garantir carregamento completo da sessão
       }
     }
   } catch (error) {
-    console.error('Erro ao carregar última sessão:', error);
+    console.error('❌ Erro ao carregar última sessão:', error);
   }
 }
 
@@ -774,7 +933,13 @@ async function enviarMensagem() {
     // TEMPORARIAMENTE DESABILITADO - Processar resposta automática de personagens IA
     // void processarRespostasIA();
 
-    console.log('Mensagem adicionada e sessão salva');
+    console.log('📤 Mensagem adicionada e sessão salva');
+
+    // Auto-scroll para mostrar a nova mensagem
+    setTimeout((): void => {
+      console.log('🎯 Auto-scroll após envio de mensagem');
+      void scrollToBottom();
+    }, 200); // Delay moderado após envio
   } catch (error) {
     console.error('Erro ao enviar mensagem:', error);
     $q.notify({
@@ -1040,13 +1205,13 @@ async function processarTurnoIA(personagemData: { id: string; nome: string; isIA
 
       console.log('🤖 [DEBUG] processarTurnoIA - Turno avançado automaticamente');
 
-      console.log('🤖 [DEBUG] processarTurnoIA - Exibindo notificação de sucesso');
-      $q.notify({
-        type: 'positive',
-        message: `${personagemData.nome} agiu e passou o turno`,
-        caption: acaoIA,
-        icon: 'psychology',
-      });
+      // Removido notificação para reduzir spam - ação já é visível no chat
+      console.log(`🤖 [DEBUG] ${personagemData.nome} agiu e passou o turno:`, acaoIA);
+
+      // Auto-scroll para mostrar a nova mensagem da IA
+      setTimeout(() => {
+        void scrollToBottom();
+      }, 100);
 
       // Verificar se o próximo participante também é IA
       const proximoPersonagemId = sessaoAtual.value.getPersonagemTurnoAtual();

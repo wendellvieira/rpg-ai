@@ -52,13 +52,8 @@
 </template>
 
 <script setup lang="ts">
-import { useQuasar } from 'quasar';
-
 // Props
 const showDialog = defineModel<boolean>('modelValue', { required: true });
-
-// Quasar
-const $q = useQuasar();
 
 // Methods
 function criarNovaMagia() {

@@ -606,10 +606,8 @@ async function criarPersonagem() {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function editarPersonagem(personagem: PersonagemData) {
-  $q.notify({
-    type: 'info',
-    message: 'Edição de personagens em desenvolvimento',
-  });
+  // Removido notificação para reduzir spam
+  console.log('Edição de personagens não implementada ainda');
 }
 
 function confirmarExclusaoPersonagem(personagem: PersonagemData) {

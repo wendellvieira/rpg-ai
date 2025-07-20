@@ -381,12 +381,8 @@ function editarSessao(sessao: { id: string; nome: string; descricao: string }) {
 
 function confirmarEdicaoSessao() {
   try {
-    // Por enquanto, vamos apenas notificar que a funcionalidade está em desenvolvimento
-    // Isso será implementado quando tivermos métodos específicos para edição
-    $q.notify({
-      type: 'info',
-      message: 'Edição de sessões em desenvolvimento',
-    });
+    // Removido notificação para reduzir spam
+    console.log('Edição de sessões não implementada ainda');
 
     dialogEditarSessao.value = false;
   } catch (error) {

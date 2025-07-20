@@ -318,11 +318,8 @@ async function importarDados() {
     // Em uma versão completa, aqui seria implementada a lógica de importação
     console.log('Dados para importar:', backup.dados);
 
-    $q.notify({
-      type: 'positive',
-      message: 'Funcionalidade de importação em desenvolvimento',
-      position: 'top',
-    });
+    // Removido notificação para reduzir spam
+    console.log('Funcionalidade de importação não implementada ainda');
 
     onDialogOK({ action: 'import', success: true });
   } catch (error) {
