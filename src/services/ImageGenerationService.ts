@@ -3,7 +3,7 @@
  * Suporta text-to-image e inpainting
  */
 
-import { useConfigStore } from '../stores/configStore';
+import { useConfigStore, type ConfiguracaoGlobal } from '../stores/configStore';
 
 export interface ImageGenerationRequest {
   prompt: string;
@@ -60,7 +60,23 @@ export class ImageGenerationService {
     return (
       this.configStore.configuracao.stabilityModel ||
       import.meta.env.VITE_STABILITY_MODEL ||
-      'stable-image-core'
+      'sd3-large-turbo'
+    );
+  }
+
+  private get apiVersion(): string {
+    return (
+      (this.configStore.configuracao as ConfiguracaoGlobal).stabilityApiVersion ||
+      import.meta.env.VITE_STABILITY_API_VERSION ||
+      'v2beta'
+    );
+  }
+
+  private get engine(): string {
+    return (
+      (this.configStore.configuracao as ConfiguracaoGlobal).stabilityEngine ||
+      import.meta.env.VITE_STABILITY_ENGINE ||
+      'sd3-large-turbo'
     );
   }
 
@@ -141,6 +157,7 @@ export class ImageGenerationService {
       // Preparar dados para a API v2beta (usa FormData)
       const formData = new FormData();
       formData.append('prompt', this.enhancePrompt(request.prompt, request.style));
+      formData.append('model', this.model);
 
       if (request.negativePrompt) {
         formData.append('negative_prompt', request.negativePrompt);
@@ -165,8 +182,13 @@ export class ImageGenerationService {
         console.log(`${key}:`, value);
       }
 
-      // Usar API v2beta com stable-image-core
-      const response = await fetch(`${this.baseUrl}/v2beta/stable-image/generate/core`, {
+      // Construir URL da API dinamicamente
+      const apiUrl = `${this.baseUrl}/${this.apiVersion}/stable-image/generate/core`;
+      console.log('Using API URL:', apiUrl);
+      console.log('Using model:', this.model);
+      console.log('Using engine:', this.engine);
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${this.apiKey}`,
@@ -209,10 +231,123 @@ export class ImageGenerationService {
   }
 
   /**
+   * Traduz termos em português para inglês para a API
+   */
+  private translateToEnglish(text: string): string {
+    const translations: Record<string, string> = {
+      // Raridades
+      comum: 'common',
+      incomum: 'uncommon',
+      raro: 'rare',
+      'muito raro': 'very rare',
+      lendário: 'legendary',
+      épico: 'epic',
+
+      // Tipos de dano
+      cortante: 'slashing',
+      perfurante: 'piercing',
+      contundente: 'bludgeoning',
+      ácido: 'acid',
+      frio: 'cold',
+      fogo: 'fire',
+      força: 'force',
+      relâmpago: 'lightning',
+      necrótico: 'necrotic',
+      veneno: 'poison',
+      psíquico: 'psychic',
+      radiante: 'radiant',
+      trovão: 'thunder',
+
+      // Categorias de arma
+      espada: 'sword',
+      machado: 'axe',
+      martelo: 'hammer',
+      adaga: 'dagger',
+      arco: 'bow',
+      besta: 'crossbow',
+      lança: 'spear',
+      bastão: 'staff',
+      vara: 'wand',
+
+      // Tipos de equipamento
+      arma: 'weapon',
+      armadura: 'armor',
+      escudo: 'shield',
+      consumivel: 'consumable',
+      ferramenta: 'tool',
+      equipamento: 'equipment',
+      tesouro: 'treasure',
+      mágico: 'magical',
+      mágica: 'magical',
+
+      // Itens comuns de RPG
+      poção: 'potion',
+      pocao: 'potion',
+      elmo: 'helmet',
+      capacete: 'helmet',
+      peitoral: 'breastplate',
+      botas: 'boots',
+      luvas: 'gloves',
+      corda: 'rope',
+      tocha: 'torch',
+      mochila: 'backpack',
+      pergaminho: 'scroll',
+      grimório: 'grimoire',
+      livro: 'book',
+      anel: 'ring',
+      colar: 'necklace',
+      amuleto: 'amulet',
+      talismã: 'talisman',
+      cristal: 'crystal',
+      gema: 'gem',
+      pedra: 'stone',
+      chave: 'key',
+      moeda: 'coin',
+      ouro: 'gold',
+      prata: 'silver',
+      bronze: 'bronze',
+
+      // Materiais
+      ferro: 'iron',
+      aço: 'steel',
+      mithril: 'mithril',
+      adamantino: 'adamantine',
+      couro: 'leather',
+      madeira: 'wood',
+      metal: 'metal',
+
+      // Adjetivos comuns
+      brilhante: 'bright',
+      escuro: 'dark',
+      antigo: 'ancient',
+      novo: 'new',
+      velho: 'old',
+      dourado: 'golden',
+      prateado: 'silver',
+      negro: 'black',
+      branco: 'white',
+      azul: 'blue',
+      vermelho: 'red',
+      verde: 'green',
+      grande: 'large',
+      pequeno: 'small',
+    };
+
+    let translatedText = text;
+    Object.entries(translations).forEach(([pt, en]) => {
+      const regex = new RegExp(`\\b${pt}\\b`, 'gi');
+      translatedText = translatedText.replace(regex, en);
+    });
+
+    return translatedText;
+  }
+
+  /**
    * Melhora o prompt com base no estilo selecionado
    */
   private enhancePrompt(prompt: string, style?: string): string {
-    let enhancedPrompt = prompt;
+    // Primeiro traduzir termos em português para inglês
+    let enhancedPrompt = this.translateToEnglish(prompt);
 
     // Adicionar modificadores baseados no estilo
     switch (style) {

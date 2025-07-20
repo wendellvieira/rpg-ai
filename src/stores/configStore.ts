@@ -7,6 +7,8 @@ export interface ConfiguracaoGlobal {
   openaiTemperature: number;
   stabilityApiKey: string;
   stabilityModel: string;
+  stabilityApiVersion: string;
+  stabilityEngine: string;
   stabilityDefaultWidth: number;
   stabilityDefaultHeight: number;
   stabilityDefaultSteps: number;
@@ -35,6 +37,8 @@ const DEFAULT_CONFIG: ConfiguracaoGlobal = {
   openaiTemperature: 0.7,
   stabilityApiKey: '',
   stabilityModel: 'sd3-large-turbo',
+  stabilityApiVersion: 'v2beta',
+  stabilityEngine: 'sd3-large-turbo',
   stabilityDefaultWidth: 1024,
   stabilityDefaultHeight: 1024,
   stabilityDefaultSteps: 30,
@@ -157,6 +161,14 @@ export const useConfigStore = defineStore('config', () => {
 
   function definirStabilityModelo(modelo: string): void {
     atualizarConfiguracao({ stabilityModel: modelo });
+  }
+
+  function definirStabilityApiVersion(versao: string): void {
+    atualizarConfiguracao({ stabilityApiVersion: versao });
+  }
+
+  function definirStabilityEngine(engine: string): void {
+    atualizarConfiguracao({ stabilityEngine: engine });
   }
 
   function definirStabilityConfig(config: {
@@ -295,6 +307,8 @@ export const useConfigStore = defineStore('config', () => {
     definirTemperatura,
     definirStabilityApiKey,
     definirStabilityModelo,
+    definirStabilityApiVersion,
+    definirStabilityEngine,
     definirStabilityConfig,
     definirTema,
     alternarDebug,

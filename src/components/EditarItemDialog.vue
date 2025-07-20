@@ -529,9 +529,57 @@ const formularioValido = computed(() => {
   return form.value.nome.trim() !== '' && form.value.tipo !== '';
 });
 
+// Função para carregar item existente no formulário
+function carregarItem(item: ItemData) {
+  // Carregar propriedades básicas
+  form.value.nome = item.nome;
+  form.value.tipo = item.tipo;
+  form.value.descricao = item.descricao;
+  form.value.peso = item.peso;
+  form.value.valor = item.valor;
+  form.value.raridade = item.raridade;
+  form.value.magico = item.magico;
+  form.value.imagemUrl = item.imagemUrl || '';
+
+  // Carregar propriedades específicas se existirem
+  if (item.propriedades) {
+    const props = item.propriedades;
+
+    // Propriedades de arma
+    if (item.tipo === 'arma') {
+      if (props.dano) form.value.dano = props.dano as string;
+      if (props.tipoDano) form.value.tipoDano = props.tipoDano as string;
+      if (props.alcance !== undefined) form.value.alcance = props.alcance as number;
+      if (props.categoriaArma) form.value.categoriaArma = props.categoriaArma as string;
+      if (props.critico !== undefined) form.value.critico = props.critico as number;
+    }
+
+    // Propriedades de armadura
+    if (item.tipo === 'armadura' || item.tipo === 'escudo') {
+      if (props.bonusCA !== undefined) form.value.bonusCA = props.bonusCA as number;
+      if (props.maxDestreza !== undefined) form.value.maxDestreza = props.maxDestreza as number;
+      if (props.forcaMinima !== undefined) form.value.forcaMinima = props.forcaMinima as number;
+    }
+
+    // Propriedades de consumível
+    if (item.tipo === 'consumivel') {
+      if (props.efeito) form.value.efeito = props.efeito as string;
+      if (props.usos !== undefined) form.value.usos = props.usos as number;
+      if (props.tempoUso) form.value.tempoUso = props.tempoUso as string;
+    }
+
+    // Propriedades mágicas
+    if (item.magico) {
+      if (props.sintonizacao !== undefined) form.value.sintonizacao = props.sintonizacao as boolean;
+      if (props.cargas !== undefined) form.value.cargas = props.cargas as number;
+      if (props.recarga) form.value.recarga = props.recarga as string;
+    }
+  }
+}
+
 // Preenche o formulário se está editando um item existente
 if (props.item) {
-  Object.assign(form.value, props.item);
+  carregarItem(props.item);
 }
 
 // Limpa campos irrelevantes quando muda o tipo
