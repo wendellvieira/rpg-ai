@@ -100,6 +100,70 @@ function criarItemDeserializado(dados: Record<string, unknown>): Item | null {
   }
 }
 
+/**
+ * Cria uma instância de Item a partir de dados do formulário
+ */
+function criarItemDoFormulario(dados: Record<string, unknown>): Item | null {
+  try {
+    const tipo = dados.tipo as TipoItem;
+    const id =
+      (dados.id as string) || `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    const dadosBase = {
+      id,
+      nome: dados.nome as string,
+      descricao: (dados.descricao as string) || '',
+      valor: (dados.valor as number) || 0,
+      peso: (dados.peso as number) || 0,
+      raridade: (dados.raridade as RaridadeItem) || RaridadeItem.COMUM,
+      magico: (dados.magico as boolean) || false,
+      imagemUrl: (dados.imagemUrl as string) || '',
+    };
+
+    const propriedades = (dados.propriedades as Record<string, unknown>) || {};
+
+    switch (tipo) {
+      case TipoItem.ARMA:
+        return new Arma({
+          ...dadosBase,
+          categoria: (propriedades.categoriaArma as CategoriaArma) || 'espada',
+          dano: (propriedades.dano as string) || '1d4',
+          tipoDano: (propriedades.tipoDano as TipoDano) || 'cortante',
+          alcance: (propriedades.alcance as number) || 5,
+          propriedades: (propriedades.propriedades as PropriedadeArma[]) || [],
+          critico: (propriedades.critico as number) || 20,
+        });
+
+      case TipoItem.ARMADURA:
+      case TipoItem.ESCUDO:
+        return new Armadura({
+          ...dadosBase,
+          categoria: (propriedades.categoriaArmadura as CategoriaArmadura) || 'leve',
+          bonusCA: (propriedades.bonusCA as number) || 0,
+          maxDestreza: propriedades.maxDestreza as number,
+          forcaMinima: propriedades.forcaMinima as number,
+        });
+
+      case TipoItem.CONSUMIVEL:
+        return new Consumivel({
+          ...dadosBase,
+          tipoConsumivel: (propriedades.tipoConsumivel as TipoConsumivel) || 'pocao',
+          efeito: (propriedades.efeito as string) || '',
+          duracao: propriedades.duracao as string,
+          cura: propriedades.cura as number,
+          usos: propriedades.usos as number,
+        });
+
+      default:
+        console.warn(`Tipo de item não suportado para criação: ${tipo}`);
+        return null;
+    }
+  } catch (error) {
+    console.error('Erro ao criar item do formulário:', error, dados);
+    return null;
+  }
+}
+
 export const useItemStore = defineStore('item', () => {
   // Estado
   const itens = ref<Item[]>([]);
@@ -206,6 +270,14 @@ export const useItemStore = defineStore('item', () => {
       erro.value = 'Erro ao salvar item';
       throw new Error('Erro ao salvar item');
     }
+  }
+
+  async function salvarItemFormulario(dados: Record<string, unknown>): Promise<void> {
+    const item = criarItemDoFormulario(dados);
+    if (!item) {
+      throw new Error('Não foi possível criar o item com os dados fornecidos');
+    }
+    await salvarItem(item);
   }
 
   async function deletarItem(id: string): Promise<void> {
@@ -339,6 +411,7 @@ export const useItemStore = defineStore('item', () => {
     // Actions
     carregarItens,
     salvarItem,
+    salvarItemFormulario,
     deletarItem,
     limparErro,
     obterItemPorId,

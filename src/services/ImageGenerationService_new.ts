@@ -39,6 +39,17 @@ export interface MapTemplate {
   category: 'dungeon' | 'nature' | 'urban' | 'fantasy' | 'tactical';
 }
 
+interface StabilityAPIRequest {
+  prompt: string;
+  negative_prompt?: string;
+  width: number;
+  height: number;
+  cfg_scale: number;
+  steps: number;
+  output_format: string;
+  seed?: number;
+}
+
 export class ImageGenerationService {
   private configStore = useConfigStore();
   private baseUrl = 'https://api.stability.ai';
@@ -138,42 +149,39 @@ export class ImageGenerationService {
     }
 
     try {
-      // Preparar dados para a API v2beta (usa FormData)
-      const formData = new FormData();
-      formData.append('prompt', this.enhancePrompt(request.prompt, request.style));
+      // Preparar dados para a API v2beta (usa JSON em vez de FormData)
+      const requestData: StabilityAPIRequest = {
+        prompt: this.enhancePrompt(request.prompt, request.style),
+        width: request.width || this.defaultWidth,
+        height: request.height || this.defaultHeight,
+        cfg_scale: request.cfgScale || this.defaultCfgScale,
+        steps: request.steps || this.defaultSteps,
+        output_format: 'png',
+      };
 
       if (request.negativePrompt) {
-        formData.append('negative_prompt', request.negativePrompt);
+        requestData.negative_prompt = request.negativePrompt;
       }
-
-      // Validar e definir dimensões (devem ser múltiplos de 64)
-      const width = Math.max(512, Math.round((request.width || this.defaultWidth) / 64) * 64);
-      const height = Math.max(512, Math.round((request.height || this.defaultHeight) / 64) * 64);
-
-      formData.append('width', width.toString());
-      formData.append('height', height.toString());
-      formData.append('cfg_scale', (request.cfgScale || this.defaultCfgScale).toString());
-      formData.append('steps', (request.steps || this.defaultSteps).toString());
-      formData.append('output_format', 'png');
 
       if (request.seed) {
-        formData.append('seed', request.seed.toString());
+        requestData.seed = request.seed;
       }
 
-      console.log('Stability AI Request FormData:');
-      for (const [key, value] of formData.entries()) {
-        console.log(`${key}:`, value);
-      }
+      // Validar dimensões (devem ser múltiplos de 64)
+      requestData.width = Math.max(512, Math.round(requestData.width / 64) * 64);
+      requestData.height = Math.max(512, Math.round(requestData.height / 64) * 64);
+
+      console.log('Stability AI Request:', requestData);
 
       // Usar API v2beta com stable-image-core
       const response = await fetch(`${this.baseUrl}/v2beta/stable-image/generate/core`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
           Accept: 'application/json',
-          // Não definir Content-Type para FormData - o browser define automaticamente
         },
-        body: formData,
+        body: JSON.stringify(requestData),
       });
 
       if (!response.ok) {

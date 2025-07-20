@@ -674,28 +674,34 @@ function abrirDialogNovoItem() {
   });
 
   dialogRef.onOk((novoItem: ItemData) => {
-    try {
-      // Como a store ainda não está implementada completamente,
-      // vamos adicionar localmente
-      const itemCompleto = {
-        ...novoItem,
-        id: `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      };
+    // Usar Promise.resolve para lidar com a função async corretamente
+    void Promise.resolve().then(async () => {
+      try {
+        // Usar a store para persistir o item
+        const itemCompleto = {
+          ...novoItem,
+          id: `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        };
 
-      itens.value.push(itemCompleto);
+        // Salvar na store (que persiste automaticamente)
+        await itemStore.salvarItemFormulario(itemCompleto as unknown as Record<string, unknown>);
 
-      $q.notify({
-        type: 'positive',
-        message: 'Item criado com sucesso!',
-      });
-    } catch (error) {
-      console.error('Erro ao criar item:', error);
-      $q.notify({
-        type: 'negative',
-        message: 'Erro ao criar item',
-        caption: String(error),
-      });
-    }
+        // Recarregar itens da store
+        await carregarItens();
+
+        $q.notify({
+          type: 'positive',
+          message: 'Item criado com sucesso!',
+        });
+      } catch (error) {
+        console.error('Erro ao criar item:', error);
+        $q.notify({
+          type: 'negative',
+          message: 'Erro ao criar item',
+          caption: String(error),
+        });
+      }
+    });
   });
 }
 
@@ -706,24 +712,27 @@ function editarItem(item: ItemData) {
       item: item,
     },
   }).onOk((itemEditado: ItemData) => {
-    try {
-      const index = itens.value.findIndex((i) => i.id === item.id);
-      if (index >= 0) {
-        itens.value[index] = itemEditado;
-      }
+    void Promise.resolve().then(async () => {
+      try {
+        // Salvar na store em vez de apenas atualizar localmente
+        await itemStore.salvarItemFormulario(itemEditado as unknown as Record<string, unknown>);
 
-      $q.notify({
-        type: 'positive',
-        message: 'Item atualizado com sucesso!',
-      });
-    } catch (error) {
-      console.error('Erro ao editar item:', error);
-      $q.notify({
-        type: 'negative',
-        message: 'Erro ao editar item',
-        caption: String(error),
-      });
-    }
+        // Recarregar itens da store
+        await carregarItens();
+
+        $q.notify({
+          type: 'positive',
+          message: 'Item atualizado com sucesso!',
+        });
+      } catch (error) {
+        console.error('Erro ao editar item:', error);
+        $q.notify({
+          type: 'negative',
+          message: 'Erro ao editar item',
+          caption: String(error),
+        });
+      }
+    });
   });
 }
 
