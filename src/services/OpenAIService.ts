@@ -66,8 +66,12 @@ export class OpenAIService {
     const model = import.meta.env.VITE_OPENAI_MODEL;
     const organization = import.meta.env.VITE_OPENAI_ORGANIZATION;
 
+    console.log('🤖 [DEBUG] AutoConfigurar - API Key encontrada:', !!apiKey);
+    console.log('🤖 [DEBUG] AutoConfigurar - Model:', model || 'padrão');
+    console.log('🤖 [DEBUG] AutoConfigurar - Organization:', organization || 'nenhuma');
+
     if (apiKey) {
-      console.log('🤖 API Key encontrada no .env - configurando OpenAI automaticamente');
+      console.log('🤖 [DEBUG] API Key encontrada no .env - configurando OpenAI automaticamente');
       this.configurar({
         apiKey,
         model: model || 'gpt-4o-mini',
@@ -76,6 +80,7 @@ export class OpenAIService {
       });
 
       if (organization) {
+        console.log('🤖 [DEBUG] Configurando organização:', organization);
         // Se houver organização, reconfigurar o cliente com ela
         this.client = new OpenAI({
           apiKey,
@@ -83,6 +88,13 @@ export class OpenAIService {
           dangerouslyAllowBrowser: true,
         });
       }
+
+      console.log(
+        '🤖 [DEBUG] OpenAI configurado via .env - estaConfigurado:',
+        this.estaConfigurado(),
+      );
+    } else {
+      console.log('🤖 [DEBUG] Nenhuma API Key encontrada no .env');
     }
   }
 
@@ -90,6 +102,13 @@ export class OpenAIService {
    * Configura a API da OpenAI
    */
   configurar(config: ConfiguracaoIA): void {
+    console.log('🤖 [DEBUG] Configurando OpenAI com:', {
+      hasApiKey: !!config.apiKey,
+      model: config.model,
+      temperature: config.temperature,
+      maxTokens: config.maxTokens,
+    });
+
     this.configuracao = {
       model: 'gpt-3.5-turbo',
       temperature: 0.7,
@@ -101,6 +120,9 @@ export class OpenAIService {
       apiKey: config.apiKey,
       dangerouslyAllowBrowser: true, // Permitir uso no browser
     });
+
+    console.log('🤖 [DEBUG] OpenAI configurado - cliente criado:', !!this.client);
+    console.log('🤖 [DEBUG] OpenAI configurado - estaConfigurado:', this.estaConfigurado());
   }
 
   /**
@@ -114,11 +136,18 @@ export class OpenAIService {
    * Envia mensagem para a IA
    */
   async enviarMensagem(mensagens: MensagemIA[]): Promise<RespostaIA> {
+    console.log('🤖 [DEBUG] enviarMensagem - Verificando configuração...');
+    console.log('🤖 [DEBUG] enviarMensagem - Cliente existe:', !!this.client);
+    console.log('🤖 [DEBUG] enviarMensagem - Configuração existe:', !!this.configuracao);
+
     if (!this.client || !this.configuracao) {
-      throw new Error('OpenAI não está configurado');
+      const erro = 'OpenAI não está configurado';
+      console.error('🤖 [ERROR]', erro);
+      throw new Error(erro);
     }
 
     const inicioTempo = Date.now();
+    console.log('🤖 [DEBUG] enviarMensagem - Iniciando chamada para OpenAI...');
 
     try {
       const parametros: Record<string, unknown> = {
@@ -134,25 +163,46 @@ export class OpenAIService {
         parametros.max_tokens = this.configuracao.maxTokens;
       }
 
+      console.log('🤖 [DEBUG] enviarMensagem - Parâmetros:', {
+        model: parametros.model,
+        temperature: parametros.temperature,
+        max_tokens: parametros.max_tokens,
+        mensagens: mensagens.length,
+      });
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const resposta = await this.client.chat.completions.create(parametros as any);
 
       const tempoDecorrido = Date.now() - inicioTempo;
+      console.log('🤖 [DEBUG] enviarMensagem - Resposta recebida em', tempoDecorrido, 'ms');
 
       const conteudo = resposta.choices[0]?.message?.content || '';
       const tokens = resposta.usage?.total_tokens || 0;
 
-      return {
+      const resultado = {
         conteudo,
         tokens,
         modelo: this.configuracao.model!,
         tempo: tempoDecorrido,
       };
+
+      console.log('🤖 [DEBUG] enviarMensagem - Resultado final:', {
+        conteudo: conteudo.substring(0, 100) + '...',
+        tokens,
+        modelo: resultado.modelo,
+        tempo: resultado.tempo,
+      });
+
+      return resultado;
     } catch (error) {
-      console.error('Erro ao chamar OpenAI:', error);
-      throw new Error(
-        `Falha na comunicação com OpenAI: ${error instanceof Error ? error.message : 'Erro desconhecido'}`,
-      );
+      console.error('🤖 [ERROR] Erro ao chamar OpenAI:', error);
+      console.error('🤖 [ERROR] Tipo do erro:', typeof error);
+      console.error('🤖 [ERROR] Stack trace:', error instanceof Error ? error.stack : 'N/A');
+
+      const mensagemErro = error instanceof Error ? error.message : 'Erro desconhecido';
+      console.error('🤖 [ERROR] Mensagem final:', mensagemErro);
+
+      throw new Error(`Falha na comunicação com OpenAI: ${mensagemErro}`);
     }
   }
 

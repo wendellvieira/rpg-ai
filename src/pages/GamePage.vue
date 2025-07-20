@@ -986,26 +986,43 @@ async function processarTurnoIA(personagemData: { id: string; nome: string; isIA
 // Função para tentar usar IA avançada (OpenAI)
 async function tentarIAAvancada(personagem: Personagem): Promise<string | null> {
   try {
-    const openAIService = OpenAIService.getInstance();
     const configStore = useConfigStore();
 
     console.log('🤖 [DEBUG] Tentando IA avançada para:', personagem.nome);
+
+    // FORÇAR carregamento das configurações PRIMEIRO
+    if (!configStore.carregado) {
+      console.log('🤖 [DEBUG] Forçando carregamento do ConfigStore...');
+      configStore.carregarConfiguracoes();
+
+      // Aguardar um pouco para o carregamento processar
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+
     console.log('🤖 [DEBUG] Config Store carregado:', configStore.carregado);
     console.log('🤖 [DEBUG] API configurada (store):', configStore.isApiConfigured);
     console.log('🤖 [DEBUG] API Key presente (store):', !!configStore.configuracao.openaiApiKey);
-    console.log('🤖 [DEBUG] OpenAI Service configurado:', openAIService.estaConfigurado());
 
-    // Verificar se não está carregado ainda
-    if (!configStore.carregado) {
-      console.log('🤖 [DEBUG] ConfigStore não carregado ainda, carregando...');
-      configStore.carregarConfiguracoes();
+    // FORÇAR configuração do OpenAI Service se não estiver configurado
+    const openAIService = OpenAIService.getInstance();
+    console.log('🤖 [DEBUG] OpenAI Service configurado antes:', openAIService.estaConfigurado());
+
+    // Se store tem API key mas service não está configurado, configurar manualmente
+    if (configStore.configuracao.openaiApiKey && !openAIService.estaConfigurado()) {
+      console.log('🤖 [DEBUG] Configurando OpenAI Service manualmente...');
+      openAIService.configurar({
+        apiKey: configStore.configuracao.openaiApiKey,
+        model: configStore.configuracao.openaiModel || 'gpt-4o-mini',
+        temperature: configStore.configuracao.openaiTemperature || 0.7,
+        maxTokens: 1000,
+      });
     }
 
-    // Verificar se a API está configurada no store OU no serviço
-    const apiConfigurada = configStore.isApiConfigured || openAIService.estaConfigurado();
+    console.log('🤖 [DEBUG] OpenAI Service configurado depois:', openAIService.estaConfigurado());
 
-    if (!apiConfigurada) {
-      console.log('🤖 [DEBUG] OpenAI não configurada em lugar nenhum, usando IA básica');
+    // Verificar se a API está configurada
+    if (!openAIService.estaConfigurado()) {
+      console.log('🤖 [DEBUG] OpenAI ainda não configurada, usando IA básica');
       return null;
     }
 
@@ -1024,9 +1041,11 @@ Decida sua ação neste turno. Responda como o personagem falaria, em primeira p
 
     console.log('🤖 [DEBUG] Prompt criado:', prompt.substring(0, 100) + '...');
 
+    console.log('🤖 [DEBUG] Fazendo chamada para OpenAI...');
     const resposta = await openAIService.enviarMensagem([{ role: 'user', content: prompt }]);
 
     console.log('🤖 [DEBUG] Resposta recebida da OpenAI:', resposta);
+    console.log('🤖 [DEBUG] Conteúdo da resposta:', resposta?.conteudo);
 
     return resposta.conteudo || null;
   } catch (error) {
