@@ -15,7 +15,8 @@ function criarItemDeserializado(dados: Record<string, unknown>): Item | null {
     const tipo = dados.tipo as TipoItem;
 
     switch (tipo) {
-      case TipoItem.ARMA:
+      case TipoItem.ARMA: {
+        const propriedades = (dados.propriedades as Record<string, unknown>) || {};
         return new Arma({
           id: dados.id as string,
           nome: dados.nome as string,
@@ -25,16 +26,20 @@ function criarItemDeserializado(dados: Record<string, unknown>): Item | null {
           raridade: dados.raridade as RaridadeItem,
           magico: dados.magico as boolean,
           imagemUrl: dados.imagemUrl as string,
-          categoria: dados.categoria as CategoriaArma,
-          dano: dados.dano as string,
-          tipoDano: dados.tipoDano as TipoDano,
-          alcance: dados.alcance as number,
-          propriedades: dados.propriedades as PropriedadeArma[],
-          critico: dados.critico as number,
+          categoria: (propriedades.categoria as CategoriaArma) || 'corpo-a-corpo',
+          dano: (propriedades.dano as string) || '1d4',
+          tipoDano: (propriedades.tipoDano as TipoDano) || 'cortante',
+          alcance: (propriedades.alcance as number) || 1.5,
+          propriedades: (propriedades.propriedadesArma as PropriedadeArma[]) || [],
+          critico: (propriedades.critico as number) || 2,
+          bonusAtaque: (propriedades.bonusAtaque as number) || 0,
+          bonusDano: (propriedades.bonusDano as number) || 0,
         });
+      }
 
       case TipoItem.ARMADURA:
       case TipoItem.ESCUDO: {
+        const propriedades = (dados.propriedades as Record<string, unknown>) || {};
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const armaduraData: any = {
           id: dados.id as string,
@@ -45,22 +50,23 @@ function criarItemDeserializado(dados: Record<string, unknown>): Item | null {
           raridade: dados.raridade as RaridadeItem,
           magico: dados.magico as boolean,
           imagemUrl: dados.imagemUrl as string,
-          categoria: dados.categoria as CategoriaArmadura,
-          bonusCA: dados.bonusCA as number,
+          categoria: (propriedades.categoria as CategoriaArmadura) || 'leve',
+          bonusCA: (propriedades.bonusCA as number) || 0,
         };
 
         // Adicionar propriedades opcionais apenas se existirem
-        if (dados.maxDestreza !== undefined) {
-          armaduraData.maxDestreza = dados.maxDestreza as number;
+        if (propriedades.maxDestreza !== undefined) {
+          armaduraData.maxDestreza = propriedades.maxDestreza as number;
         }
-        if (dados.forcaMinima !== undefined) {
-          armaduraData.forcaMinima = dados.forcaMinima as number;
+        if (propriedades.forcaMinima !== undefined) {
+          armaduraData.forcaMinima = propriedades.forcaMinima as number;
         }
 
         return new Armadura(armaduraData);
       }
 
       case TipoItem.CONSUMIVEL: {
+        const propriedades = (dados.propriedades as Record<string, unknown>) || {};
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const consumivelData: any = {
           id: dados.id as string,
@@ -71,19 +77,19 @@ function criarItemDeserializado(dados: Record<string, unknown>): Item | null {
           raridade: dados.raridade as RaridadeItem,
           magico: dados.magico as boolean,
           imagemUrl: dados.imagemUrl as string,
-          tipoConsumivel: dados.tipoConsumivel as TipoConsumivel,
-          efeito: dados.efeito as string,
+          tipoConsumivel: (propriedades.tipoConsumivel as TipoConsumivel) || 'pocao',
+          efeito: (propriedades.efeito as string) || '',
         };
 
         // Adicionar propriedades opcionais apenas se existirem
-        if (dados.duracao !== undefined) {
-          consumivelData.duracao = dados.duracao as string;
+        if (propriedades.duracao !== undefined) {
+          consumivelData.duracao = propriedades.duracao as string;
         }
-        if (dados.cura !== undefined) {
-          consumivelData.cura = dados.cura as number;
+        if (propriedades.cura !== undefined) {
+          consumivelData.cura = propriedades.cura as number;
         }
-        if (dados.usos !== undefined) {
-          consumivelData.usos = dados.usos as number;
+        if (propriedades.usos !== undefined) {
+          consumivelData.usos = propriedades.usos as number;
         }
 
         return new Consumivel(consumivelData);
@@ -126,12 +132,14 @@ function criarItemDoFormulario(dados: Record<string, unknown>): Item | null {
       case TipoItem.ARMA:
         return new Arma({
           ...dadosBase,
-          categoria: (propriedades.categoriaArma as CategoriaArma) || 'espada',
+          categoria: (propriedades.categoriaArma as CategoriaArma) || 'corpo-a-corpo',
           dano: (propriedades.dano as string) || '1d4',
           tipoDano: (propriedades.tipoDano as TipoDano) || 'cortante',
-          alcance: (propriedades.alcance as number) || 5,
-          propriedades: (propriedades.propriedades as PropriedadeArma[]) || [],
-          critico: (propriedades.critico as number) || 20,
+          alcance: (propriedades.alcance as number) || 1.5,
+          propriedades: (propriedades.propriedadesArma as PropriedadeArma[]) || [],
+          critico: (propriedades.critico as number) || 2,
+          bonusAtaque: (propriedades.bonusAtaque as number) || 0,
+          bonusDano: (propriedades.bonusDano as number) || 0,
         });
 
       case TipoItem.ARMADURA:

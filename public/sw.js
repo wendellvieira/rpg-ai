@@ -85,6 +85,12 @@ self.addEventListener('fetch', (event) => {
 
   // Estratégia: Network First para APIs e dados dinâmicos
   if (url.pathname.includes('/api/') || url.origin !== self.location.origin) {
+    // Não fazer cache de métodos POST, PUT, DELETE
+    if (request.method !== 'GET') {
+      event.respondWith(fetch(request));
+      return;
+    }
+
     event.respondWith(
       fetch(request)
         .then((response) => {
@@ -108,6 +114,12 @@ self.addEventListener('fetch', (event) => {
   }
 
   // Estratégia: Stale While Revalidate para outros recursos
+  // Não fazer cache de métodos POST, PUT, DELETE
+  if (request.method !== 'GET') {
+    event.respondWith(fetch(request));
+    return;
+  }
+
   event.respondWith(
     caches.match(request).then((response) => {
       const fetchPromise = fetch(request).then((networkResponse) => {

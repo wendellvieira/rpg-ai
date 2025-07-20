@@ -345,7 +345,7 @@ async function confirmarNovaSessao() {
     });
 
     // Ir para a página do jogo
-    void router.push('/game');
+    await router.push('/game');
   } catch (error) {
     console.error('Erro ao criar sessão:', error);
     $q.notify({
@@ -359,7 +359,7 @@ async function confirmarNovaSessao() {
 async function abrirSessao(sessaoId: string) {
   try {
     await sessaoStore.carregarSessao(sessaoId);
-    void router.push('/game');
+    await router.push('/game');
   } catch (error) {
     console.error('Erro ao abrir sessão:', error);
     $q.notify({
@@ -428,12 +428,12 @@ function confirmarExclusao(sessao: { id: string; nome: string }) {
   });
 }
 
-function abrirGerenciamento() {
-  void router.push('/setup');
+async function abrirGerenciamento() {
+  await router.push('/setup');
 }
 
-function abrirConfiguracoes() {
-  void router.push('/setup?tab=config');
+async function abrirConfiguracoes() {
+  await router.push('/setup?tab=config');
 }
 
 async function exportarBackup() {
