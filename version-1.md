@@ -377,11 +377,6 @@ Este documento contém todas as tarefas necessárias para refatorar o projeto RP
   - **Source:** `/src/services/ThemeService.ts`
   - **Destination:** `/src/utils/ThemeHelper.ts`
 
-- [ ] **Melhorar useAccessibility:**
-  - **Description:** Expandir composable de acessibilidade
-  - **Source:** `/src/composables/useAccessibility.ts`
-  - **Destination:** `/src/composables/useAccessibility.ts`
-
 ---
 
 ## 🔧 CONFIGURAÇÃO E BUILD
@@ -392,18 +387,6 @@ Este documento contém todas as tarefas necessárias para refatorar o projeto RP
   - **Description:** Padronizar ordem de imports em todos os arquivos conforme diretrizes
   - **Source:** Todos os arquivos .ts/.vue
   - **Destination:** Todos os arquivos .ts/.vue
-
-- [ ] **Adicionar JSDoc:**
-  - **Description:** Adicionar documentação JSDoc em controllers e classes principais
-  - **Source:** Controllers e classes
-  - **Destination:** Controllers e classes
-
-### 17. Performance
-
-- [ ] **Lazy loading de componentes:**
-  - **Description:** Implementar lazy loading para componentes pesados
-  - **Source:** GamePage e modais grandes
-  - **Destination:** Implementação com defineAsyncComponent
 
 ---
 
@@ -429,12 +412,7 @@ Este documento contém todas as tarefas necessárias para refatorar o projeto RP
 10. Componentes complexos
 11. Definitions files
 12. Validação Zod
-
-### 🔵 Prioridade BAIXA (Polish)
-
-13. JSDoc documentation
-14. Performance optimizations
-15. Accessibility improvements
+13. Aplicar diretrizes de imports
 
 ---
 
@@ -606,16 +584,10 @@ Para cada tarefa completada, verificar:
 18. **TAREFA #14** - Validação Zod
 19. **TAREFA #21** - Internacionalização (Código → Inglês, UI → Português)
 
-### 🟪 **FASE 5 - FINALIZAÇÃO** (Documentação e otimização)
-
-20. **TAREFA #16** - JSDoc documentation
-21. **TAREFA #17** - Performance optimizations
-22. **TAREFA #15** - Accessibility improvements
-
 ---
 
-**Estimativa total:** 🕐 6-8 semanas para desenvolvedor sênior (+2 semanas pelas novas tarefas CSS/Layout)  
-**Total de tarefas:** **53 tarefas** (47 originais + 6 novas)  
+**Estimativa total:** 🕐 5-6 semanas para desenvolvedor sênior (+2 semanas pelas novas tarefas CSS/Layout)  
+**Total de tarefas:** **50 tarefas** (47 originais + 3 removidas da FASE 5)  
 **Arquivos impactados:** ~95% do projeto (devido CSS Grid migration + internacionalização)  
 **Breaking changes:** Moderados (navegação + layout system + nomes de variáveis)  
 **Benefícios:** UX melhorada, CSS moderno, IA integrada, layout consistente, padrão internacional
@@ -627,3 +599,5 @@ Para cada tarefa completada, verificar:
 3. **Sistema Grid** substitui dependência do Quasar
 4. **Tailwind** moderniza todo CSS do projeto
 5. **Utils migration** limpa arquitetura antes dos services
+
+**PROJETO FOCADO:** Sem polish desnecessário - apenas funcionalidades essenciais e arquitetura sólida!

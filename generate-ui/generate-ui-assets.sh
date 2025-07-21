@@ -23,9 +23,9 @@ PUBLIC_DIR="public/generated-assets"
 mkdir -p "$ASSETS_DIR"/{icons,backgrounds,characters,items,spells,maps}
 mkdir -p "$PUBLIC_DIR"/{icons,backgrounds,characters,items,spells,maps}
 
-# 🎭 IDENTIDADE VISUAL BASE
-BASE_STYLE="fantasy RPG, dark magical theme, purple and gold accents, mystical aura, detailed digital art"
-NEGATIVE_PROMPT="ugly, blurry, low quality, watermark, text, signature, realistic photo"
+# 🎭 IDENTIDADE VISUAL BASE - ESTILO GAME CARTOON
+BASE_STYLE="cartoon game asset style, thick black outline, vibrant colors, cel-shaded, flat design, clean vector style, mobile game icons, colorful and cheerful, simple shadows, game UI elements"
+NEGATIVE_PROMPT="realistic, photographic, complex shadows, gradient, blurry, low quality, watermark, text, signature, messy lines, detailed textures"
 
 # 📱 FUNÇÃO PARA GERAR IMAGEM
 generate_image() {

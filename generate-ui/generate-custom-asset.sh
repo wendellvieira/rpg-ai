@@ -95,9 +95,9 @@ PUBLIC_DIR="public/generated-assets"
 mkdir -p "$ASSETS_DIR/$CATEGORY"
 mkdir -p "$PUBLIC_DIR/$CATEGORY"
 
-# 🎭 IDENTIDADE VISUAL BASE
-BASE_STYLE="fantasy RPG style, dark magical theme, purple and gold accents, mystical aura, detailed digital art, game asset"
-NEGATIVE_PROMPT="ugly, blurry, low quality, watermark, text, signature, realistic photo, human faces"
+# 🎭 IDENTIDADE VISUAL BASE - ESTILO GAME CARTOON
+BASE_STYLE="cartoon game asset style, thick black outline, vibrant colors, cel-shaded, flat design, clean vector style, mobile game icons, colorful and cheerful, simple shadows, game UI elements"
+NEGATIVE_PROMPT="realistic, photographic, complex shadows, gradient, blurry, low quality, watermark, text, signature, messy lines, detailed textures"
 
 # 📱 FUNÇÃO PARA GERAR IMAGEM CUSTOMIZADA
 generate_custom_image() {
@@ -122,7 +122,7 @@ generate_custom_image() {
     local height=$(echo "$target_size" | cut -d'x' -f2)
     
     echo "🔧 Configurações:"
-    echo "   Dimensões: ${width}x${height}"
+    echo "   Dimensões solicitadas: ${width}x${height}"
     echo "   Prompt completo: $full_prompt"
     echo ""
     
@@ -244,6 +244,7 @@ if [ ! -z "$MULTI_SIZES" ]; then
     done
     
     echo "🔍 Maior tamanho detectado: $largest_size"
+    echo "💰 Gerando apenas 1 imagem no maior tamanho (economia de API calls!)"
     echo "🎨 Gerando imagem principal..."
     
     # Gerar a imagem no maior tamanho
@@ -282,35 +283,40 @@ elif [ ! -z "$CUSTOM_SIZE" ]; then
     generate_custom_image "$USER_PROMPT" "$CATEGORY" "$FILENAME" "$CUSTOM_SIZE" "-$CUSTOM_SIZE"
     
 else
-    # Modo padrão - determinar tamanho pela categoria
+    # Modo padrão - determinar tamanho pela categoria (economizando API calls)
     echo "🎯 === MODO TAMANHO AUTOMÁTICO ==="
     
-    # Determinar tamanho baseado na categoria
-    default_size="512x512"
+    # Tamanhos otimizados para economizar API calls
+    default_size="1024x1024"  # Padrão geral (boa qualidade)
     case "$CATEGORY" in
-        "icons"|"spells") default_size="128x128" ;;
-        "items"|"characters") default_size="256x256" ;;
-        "backgrounds") default_size="1024x1024" ;;
-        "maps") default_size="512x512" ;;
+        "icons"|"spells") default_size="512x512" ;;      # Menor para ícones
+        "items"|"characters") default_size="512x512" ;;  # Médio para itens
+        "backgrounds") default_size="1024x1024" ;;       # Maior para backgrounds
+        "maps") default_size="512x512" ;;                # Médio para mapas
     esac
     
-    echo "📏 Tamanho automático para categoria '$CATEGORY': $default_size"
+    echo "📏 Tamanho otimizado para categoria '$CATEGORY': $default_size"
+    echo "💰 (Reduzindo custos de API com tamanhos inteligentes)"
     generate_custom_image "$USER_PROMPT" "$CATEGORY" "$FILENAME" "$default_size" ""
 fi
 
 echo ""
 echo "💡 === DICAS DE USO ==="
+echo "💰 Sistema otimizado para economia de API calls:"
+echo ""
 echo "🎨 Tamanho único:"
 echo "   ./generate-custom-asset.sh -s 128x128 \"Ícone de espada\" icons espada"
+echo "   ↳ Gera exatamente 128x128 (1 call de API)"
 echo ""
-echo "🎯 Múltiplos tamanhos:"
+echo "🎯 Múltiplos tamanhos (INTELIGENTE):"
 echo "   ./generate-custom-asset.sh -m 64x64,128x128,256x256 \"Poção vermelha\" items pocao"
+echo "   ↳ Gera 256x256 e redimensiona para 128x128 e 64x64 (1 call de API)"
 echo ""
-echo "📂 Categorias e tamanhos automáticos:"
-echo "   icons, spells     → 128x128"
-echo "   items, characters → 256x256" 
-echo "   backgrounds       → 1024x1024"
-echo "   maps              → 512x512"
+echo "📂 Categorias e tamanhos automáticos otimizados:"
+echo "   icons, spells     → 512x512  (economia vs 1024x1024)"
+echo "   items, characters → 512x512  (economia vs 1024x1024)"
+echo "   backgrounds       → 1024x1024 (necessário para qualidade)"
+echo "   maps              → 512x512  (equilibrio qualidade/custo)"
 echo ""
 echo "🔧 Para usar no Vue:"
 if [ ! -z "$MULTI_SIZES" ]; then
