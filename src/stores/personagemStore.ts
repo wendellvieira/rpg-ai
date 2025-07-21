@@ -121,6 +121,8 @@ export const usePersonagemStore = defineStore('personagem', () => {
         ...(updates.promptPersonalidade !== undefined && {
           promptPersonalidade: updates.promptPersonalidade,
         }),
+        // Incluir conhecimentos se fornecidos
+        ...(updates.conhecimento !== undefined && { conhecimentos: updates.conhecimento }),
       };
 
       const personagemAtualizado = Personagem.deserializar(dadosAtualizados);
@@ -170,29 +172,6 @@ export const usePersonagemStore = defineStore('personagem', () => {
             }
           }
         }
-      }
-
-      // Atualizar conhecimentos se fornecidos
-      if (updates.conhecimento) {
-        // Limpar conhecimentos existentes e adicionar os novos
-        const dadosPersonagem = personagemAtualizado.serializar();
-        dadosPersonagem.conhecimentos = updates.conhecimento;
-        const personagemComConhecimentoAtualizado = Personagem.deserializar(dadosPersonagem);
-
-        // Para o inventário, como os métodos precisam de objetos Item, vamos implementar uma solução mais simples
-        // que atualiza via serialização/deserialização
-        if (updates.inventario) {
-          const dadosAtualizadosComInventario = personagemComConhecimentoAtualizado.serializar();
-          dadosAtualizadosComInventario.inventario = updates.inventario.map(
-            (item) => [item.id, item.quantidade] as [string, number],
-          );
-          const personagemFinal = Personagem.deserializar(dadosAtualizadosComInventario);
-          await salvarPersonagem(personagemFinal);
-          return personagemFinal;
-        }
-
-        await salvarPersonagem(personagemComConhecimentoAtualizado);
-        return personagemComConhecimentoAtualizado;
       }
 
       // Para o inventário, como os métodos precisam de objetos Item, vamos implementar uma solução mais simples

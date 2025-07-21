@@ -381,9 +381,8 @@
 import { ref, onMounted, watch, defineAsyncComponent, computed } from 'vue';
 import { useQuasar } from 'quasar';
 import { useRoute, useRouter } from 'vue-router';
-import { PersistenceManager } from '../services/PersistenceManager';
 import { OpenAIService } from '../services/OpenAIService';
-import { Personagem } from '../classes/Personagem';
+import type { Personagem } from '../classes/Personagem';
 import type { AtributosPrimarios, AtributosDerivados, ConhecimentoPersonagem } from '../types';
 import { useConfigStore } from '../stores/configStore';
 import { useItemStore } from '../stores/itemStore';
@@ -551,20 +550,18 @@ watch(abaAtiva, (novaAba) => {
 async function carregarPersonagens() {
   carregandoPersonagens.value = true;
   try {
-    const persistence = PersistenceManager.getInstance();
-    await persistence.inicializar();
-    const personagensIndice = await persistence.listarPersonagens();
+    // Usar o store para carregar personagens (que também popula o store.personagens)
+    await personagemStore.carregarPersonagens();
 
-    // Carregar dados completos dos personagens
-    const personagensCompletos = [];
-    for (const indice of personagensIndice) {
-      const personagem = await persistence.carregarPersonagem(indice.id);
-      if (personagem) {
-        personagensCompletos.push(personagem);
-      }
-    }
-
-    personagens.value = personagensCompletos;
+    // Mapear para o formato local da SetupPage
+    personagens.value = personagemStore.personagens.map((p) => ({
+      id: p.id,
+      nome: p.nome,
+      raca: p.raca,
+      classe: p.classe,
+      isIA: p.isIA,
+      descricao: p.descricao || '',
+    }));
   } catch (error) {
     console.error('Erro ao carregar personagens:', error);
     $q.notify({
@@ -579,17 +576,13 @@ async function carregarPersonagens() {
 
 async function criarPersonagem() {
   try {
-    const novoPersonagemData = new Personagem({
+    // Usar o store para criar o personagem
+    await personagemStore.criarPersonagem({
       nome: novoPersonagem.value.nome,
       raca: novoPersonagem.value.raca,
       classe: novoPersonagem.value.classe,
-      isIA: novoPersonagem.value.isIA,
-      promptPersonalidade: novoPersonagem.value.promptPersonalidade || '',
-      descricao: novoPersonagem.value.descricao || '',
+      ehNPC: novoPersonagem.value.isIA,
     });
-
-    const persistence = PersistenceManager.getInstance();
-    await persistence.salvarPersonagem(novoPersonagemData);
 
     await carregarPersonagens();
     dialogNovoPersonagem.value = false;
@@ -620,12 +613,12 @@ async function criarPersonagem() {
 
 async function editarPersonagem(personagem: PersonagemData) {
   try {
-    personagemParaEditar.value = personagem; // Carregar o personagem completo do persistence para garantir tipo correto
-    const persistence = PersistenceManager.getInstance();
-    const personagemCompleto = await persistence.carregarPersonagem(personagem.id);
+    personagemParaEditar.value = personagem;
 
-    personagemCompletoParaEditar.value = personagemCompleto || null;
+    // Usar o store para carregar o personagem completo
+    const personagemCompleto = await personagemStore.carregarPersonagem(personagem.id);
 
+    personagemCompletoParaEditar.value = personagemCompleto;
     mostrarEditarPersonagem.value = true;
   } catch (error) {
     console.error('Erro ao carregar personagem para edição:', error);
@@ -652,25 +645,19 @@ async function salvarPersonagemEditado(dadosPersonagem: {
 }) {
   try {
     if (dadosPersonagem.id) {
-      // Editando personagem existente
-      const personagemExistente = personagemStore.personagens.find(
-        (p) => p.id === dadosPersonagem.id,
-      );
-      if (personagemExistente) {
-        // Atualizar personagem com todos os dados do formulário
-        await personagemStore.atualizarPersonagem(dadosPersonagem.id, {
-          nome: dadosPersonagem.nome,
-          raca: dadosPersonagem.raca,
-          classe: dadosPersonagem.classe,
-          descricao: dadosPersonagem.descricao,
-          isIA: dadosPersonagem.isIA,
-          promptPersonalidade: dadosPersonagem.promptPersonalidade,
-          atributosPrimarios: dadosPersonagem.atributosPrimarios,
-          atributosDerivados: dadosPersonagem.atributosDerivados,
-          inventario: dadosPersonagem.inventario,
-          conhecimento: dadosPersonagem.conhecimento,
-        });
-      }
+      // Editando personagem existente - usar o store
+      await personagemStore.atualizarPersonagem(dadosPersonagem.id, {
+        nome: dadosPersonagem.nome,
+        raca: dadosPersonagem.raca,
+        classe: dadosPersonagem.classe,
+        descricao: dadosPersonagem.descricao,
+        isIA: dadosPersonagem.isIA,
+        promptPersonalidade: dadosPersonagem.promptPersonalidade,
+        atributosPrimarios: dadosPersonagem.atributosPrimarios,
+        atributosDerivados: dadosPersonagem.atributosDerivados,
+        inventario: dadosPersonagem.inventario,
+        conhecimento: dadosPersonagem.conhecimento,
+      });
     } else {
       // Criando novo personagem
       await personagemStore.criarPersonagem({
@@ -680,7 +667,6 @@ async function salvarPersonagemEditado(dadosPersonagem: {
       });
     }
 
-    // Removido notificação para reduzir spam - salvamento é automático
     console.log('Personagem salvo:', dadosPersonagem.nome);
 
     mostrarEditarPersonagem.value = false;
@@ -704,8 +690,8 @@ function confirmarExclusaoPersonagem(personagem: PersonagemData) {
   }).onOk(() => {
     void (async () => {
       try {
-        const persistence = PersistenceManager.getInstance();
-        await persistence.removerPersonagem(personagem.id);
+        // Usar o store para deletar o personagem
+        await personagemStore.deletarPersonagem(personagem.id);
         await carregarPersonagens();
 
         $q.notify({
