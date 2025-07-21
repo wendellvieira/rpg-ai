@@ -842,10 +842,7 @@ async function salvarPersonagemEditado(dadosPersonagem: {
           atributosPrimarios: dadosPersonagem.atributosPrimarios,
           atributosDerivados: dadosPersonagem.atributosDerivados,
           inventario: dadosPersonagem.inventario,
-          conhecimento: dadosPersonagem.conhecimento.map((c) => ({
-            area: c.topico,
-            descricao: c.conteudo,
-          })),
+          conhecimento: dadosPersonagem.conhecimento,
         });
       }
     } else {
