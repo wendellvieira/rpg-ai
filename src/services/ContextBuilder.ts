@@ -294,7 +294,36 @@ export class ContextBuilder {
 
     // Status do personagem
     seções.push(`STATUS PERSONAGEM:`);
-    seções.push(JSON.stringify(contexto.statusPersonagem, null, 2));
+    const status = contexto.statusPersonagem;
+    seções.push(`HP: ${String(status.hp)} | MP: ${String(status.mp)} | Nível: ${String(status.nivel)} | CA: ${String(status.ca)}`);
+    seções.push(`Iniciativa: ${String(status.iniciativa)}`);
+
+    // Atributos
+    seções.push(`ATRIBUTOS:`);
+    const attrs = status.atributos as Record<string, number>;
+    const mods = status.modificadores as Record<string, number>;
+    if (attrs && mods) {
+      Object.keys(attrs).forEach((attr) => {
+        const modValue = mods[attr];
+        if (modValue !== undefined) {
+          seções.push(`${attr}: ${attrs[attr]} (mod: ${modValue >= 0 ? '+' : ''}${modValue})`);
+        }
+      });
+    }
+
+    // Conhecimentos do personagem
+    const conhecimentos = status.conhecimentos as Array<{
+      topico: string;
+      conteudo: string;
+      categoria: string;
+      fonte: string;
+    }>;
+    if (conhecimentos && conhecimentos.length > 0) {
+      seções.push(`CONHECIMENTOS DO PERSONAGEM:`);
+      conhecimentos.forEach((conhecimento) => {
+        seções.push(`- ${conhecimento.topico}: ${conhecimento.conteudo} (${conhecimento.categoria})`);
+      });
+    }
 
     // Equipamentos e itens
     if (contexto.equipamentosDisponiveis.length > 0) {
@@ -382,6 +411,7 @@ export class ContextBuilder {
         sabedoria: attrs.getModificador('sabedoria'),
         carisma: attrs.getModificador('carisma'),
       },
+      conhecimentos: personagem.getConhecimentos,
     };
   }
 

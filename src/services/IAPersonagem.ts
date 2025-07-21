@@ -218,6 +218,14 @@ CONFIGURAÇÃO:
       })
       .join('\n');
 
+    // Construir seção de conhecimentos do personagem
+    const conhecimentos = this.personagem.getConhecimentos;
+    let secaoConhecimentos = '';
+    if (conhecimentos.length > 0) {
+      secaoConhecimentos = `\nCONHECIMENTOS DO SEU PERSONAGEM:
+${conhecimentos.map(c => `- ${c.topico}: ${c.conteudo} (categoria: ${c.categoria})`).join('\n')}`;
+    }
+
     return `SITUAÇÃO ATUAL:
 Turno: ${contexto.turno} | Rodada: ${contexto.rodada}
 Ambiente: ${contexto.ambiente}
@@ -230,7 +238,7 @@ STATUS DO PERSONAGEM:
 ${JSON.stringify(contexto.statusPersonagem, null, 2)}
 
 EQUIPAMENTOS DISPONÍVEIS: ${contexto.equipamentosDisponiveis.join(', ')}
-ITENS DISPONÍVEIS: ${contexto.itensDisponiveis.join(', ')}
+ITENS DISPONÍVEIS: ${contexto.itensDisponiveis.join(', ')}${secaoConhecimentos}
 
 O que você vai fazer neste turno? Responda em JSON.`;
   }

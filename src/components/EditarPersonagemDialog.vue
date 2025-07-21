@@ -463,6 +463,7 @@ import { ref, computed, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { useMagiaStore, type DadosMagiaSerializados } from '../stores/magiaStore';
 import PrepararMagiasDialog from './PrepararMagiasDialog.vue';
+import ConhecimentoEditor from './ConhecimentoEditor.vue';
 import type { Personagem } from '../classes/Personagem';
 import type {
   AtributosPrimarios,
@@ -683,8 +684,16 @@ function adicionarConhecimento() {
 }
 
 function editarConhecimento() {
-  // Removido notificação para reduzir spam
-  console.log('Editor de conhecimento não implementado ainda');
+  // Abrir o ConhecimentoEditor para editar conhecimentos
+  $q.dialog({
+    component: ConhecimentoEditor,
+    componentProps: {
+      personagem: props.personagem,
+    },
+  }).onOk((conhecimentosAtualizados: ConhecimentoPersonagem[]) => {
+    // Atualizar os conhecimentos no formulário
+    form.value.conhecimento = [...conhecimentosAtualizados];
+  });
 }
 
 function removerConhecimento(index: number) {

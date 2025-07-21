@@ -213,6 +213,12 @@
           </div>
         </div>
       </q-card-section>
+
+      <!-- Ações do Dialog -->
+      <q-card-actions align="right" class="bg-grey-1">
+        <q-btn flat label="Cancelar" color="primary" @click="cancelarEdicao" />
+        <q-btn flat label="Aplicar Alterações" color="primary" @click="aplicarAlteracoes" />
+      </q-card-actions>
     </q-card>
   </q-dialog>
 </template>
@@ -231,7 +237,7 @@ const props = defineProps<Props>();
 
 defineEmits([...useDialogPluginComponent.emits]);
 
-const { dialogRef, onDialogHide } = useDialogPluginComponent();
+const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent();
 const $q = useQuasar();
 
 // Estado reativo
@@ -435,6 +441,16 @@ function formatarData(data: Date): string {
     hour: '2-digit',
     minute: '2-digit',
   });
+}
+
+function cancelarEdicao(): void {
+  // Usar o padrão do dialog plugin do Quasar para cancelar
+  onDialogCancel();
+}
+
+function aplicarAlteracoes(): void {
+  // Usar o padrão do dialog plugin do Quasar para retornar os dados
+  onDialogOK(conhecimentos.value);
 }
 </script>
 
