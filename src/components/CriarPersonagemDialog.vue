@@ -142,9 +142,10 @@
             </template>
           </q-input>
 
-          <q-textarea
+          <q-input
             v-model="form.descricao"
             label="Descrição/História"
+            type="textarea"
             outlined
             rows="3"
             placeholder="Descreva brevemente a aparência e história do personagem..."
@@ -153,7 +154,7 @@
             <template v-slot:prepend>
               <q-icon name="description" />
             </template>
-          </q-textarea>
+          </q-input>
 
           <!-- Configurações -->
           <q-separator />
@@ -165,9 +166,10 @@
           </div>
 
           <div v-if="form.npc" class="q-mt-md">
-            <q-textarea
+            <q-input
               v-model="form.personalidade"
               label="Personalidade (para IA)"
+              type="textarea"
               outlined
               rows="2"
               placeholder="Descreva a personalidade do NPC para a IA interpretar..."

@@ -82,9 +82,10 @@
                     :rules="[(val: string) => !!val || 'Categoria é obrigatória']"
                   />
 
-                  <q-textarea
+                  <q-input
                     v-model="formulario.conteudo"
                     label="Conteúdo *"
+                    type="textarea"
                     outlined
                     rows="4"
                     :rules="[(val: string) => !!val || 'Conteúdo é obrigatório']"

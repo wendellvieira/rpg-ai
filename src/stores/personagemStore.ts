@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { Personagem } from '../classes/Personagem';
 import { PersistenceManager } from '../services/PersistenceManager';
-import type { AtributosPrimarios, AtributosDerivados } from '../types';
+import type { AtributosPrimarios, AtributosDerivados, ConhecimentoPersonagem } from '../types';
 
 export const usePersonagemStore = defineStore('personagem', () => {
   // Estado
@@ -97,7 +97,7 @@ export const usePersonagemStore = defineStore('personagem', () => {
       atributosPrimarios?: AtributosPrimarios;
       atributosDerivados?: AtributosDerivados;
       inventario?: Array<{ id: string; nome: string; quantidade: number }>;
-      conhecimento?: Array<{ area: string; descricao: string }>;
+      conhecimento?: ConhecimentoPersonagem[];
     },
   ): Promise<Personagem> {
     try {
@@ -174,10 +174,12 @@ export const usePersonagemStore = defineStore('personagem', () => {
 
       // Atualizar conhecimentos se fornecidos
       if (updates.conhecimento) {
-        // Adicionar novos conhecimentos (sobrescrevendo existentes)
-        for (const conhecimento of updates.conhecimento) {
-          personagemAtualizado.adicionarConhecimento(conhecimento.area, conhecimento.descricao);
-        }
+        // Limpar conhecimentos existentes e adicionar os novos
+        const dadosPersonagem = personagemAtualizado.serializar();
+        dadosPersonagem.conhecimentos = updates.conhecimento;
+        const personagemComConhecimentoAtualizado = Personagem.deserializar(dadosPersonagem);
+        await salvarPersonagem(personagemComConhecimentoAtualizado);
+        return personagemComConhecimentoAtualizado;
       }
 
       // Para o inventário, como os métodos precisam de objetos Item, vamos implementar uma solução mais simples
