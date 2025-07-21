@@ -406,39 +406,118 @@
 
               <!-- Aba Conhecimento -->
               <div v-if="abaAtiva === 'conhecimento'" class="q-gutter-md">
-                <div class="text-h5 q-mb-md">Base de Conhecimento</div>
+                <!-- Cabeçalho com busca e botão novo -->
+                <div class="row q-gutter-md items-center">
+                  <div class="col">
+                    <q-input
+                      v-model="termoBuscaConhecimento"
+                      label="Pesquisar conhecimentos..."
+                      outlined
+                      dense
+                      clearable
+                    >
+                      <template v-slot:prepend>
+                        <q-icon name="search" />
+                      </template>
+                    </q-input>
+                  </div>
+                  <div class="col-auto">
+                    <q-btn color="primary" icon="add" label="Novo" @click="abrirNovoConhecimento" />
+                  </div>
+                </div>
 
-                <div class="q-mb-md">
-                  <q-btn
-                    color="primary"
-                    icon="add"
-                    label="Adicionar Conhecimento"
-                    @click="adicionarConhecimento"
+                <!-- Filtros por categoria -->
+                <div class="row q-gutter-xs">
+                  <q-chip
+                    clickable
+                    :outline="categoriaFiltroConhecimento !== ''"
+                    :color="categoriaFiltroConhecimento === '' ? 'primary' : 'grey-6'"
+                    text-color="white"
+                    label="Todos"
+                    @click="categoriaFiltroConhecimento = ''"
+                  />
+                  <q-chip
+                    v-for="categoria in categoriasConhecimentoDisponiveis"
+                    :key="categoria"
+                    clickable
+                    :outline="categoriaFiltroConhecimento !== categoria"
+                    :color="
+                      categoriaFiltroConhecimento === categoria
+                        ? getCategoriaColor(categoria)
+                        : 'grey-6'
+                    "
+                    text-color="white"
+                    :label="categoria"
+                    @click="toggleCategoriaFiltro(categoria)"
                   />
                 </div>
 
-                <q-list bordered separator>
-                  <q-item v-for="(conhecimento, index) in form.conhecimento" :key="index">
-                    <q-item-section>
-                      <q-item-label>{{ conhecimento.topico }}</q-item-label>
-                      <q-item-label caption>{{ conhecimento.conteudo }}</q-item-label>
-                    </q-item-section>
-                    <q-item-section side>
-                      <q-btn flat round icon="edit" color="primary" @click="editarConhecimento()" />
-                      <q-btn
-                        flat
-                        round
-                        icon="delete"
-                        color="negative"
-                        @click="removerConhecimento(index)"
-                      />
-                    </q-item-section>
-                  </q-item>
-                </q-list>
-
-                <div v-if="form.conhecimento.length === 0" class="text-center q-py-lg">
+                <!-- Lista de conhecimentos com cards ricos -->
+                <div v-if="conhecimentosFiltrados.length === 0" class="text-center q-py-xl">
                   <q-icon name="psychology" size="48px" color="grey-5" />
-                  <div class="text-caption text-grey-6">Nenhum conhecimento registrado</div>
+                  <div class="text-h6 text-grey-6 q-mt-md">
+                    {{
+                      termoBuscaConhecimento || categoriaFiltroConhecimento
+                        ? 'Nenhum conhecimento encontrado'
+                        : 'Nenhum conhecimento registrado'
+                    }}
+                  </div>
+                  <div class="q-mt-sm text-grey-6">
+                    {{
+                      termoBuscaConhecimento || categoriaFiltroConhecimento
+                        ? 'Tente outros termos de busca'
+                        : 'Adicione o primeiro conhecimento!'
+                    }}
+                  </div>
+                </div>
+
+                <div v-else class="q-gutter-sm">
+                  <q-card
+                    v-for="conhecimento in conhecimentosFiltrados"
+                    :key="conhecimento.id"
+                    flat
+                    bordered
+                    class="conhecimento-card"
+                  >
+                    <q-card-section>
+                      <div class="row items-start">
+                        <div class="col">
+                          <div class="text-h6 q-mb-xs">{{ conhecimento.topico }}</div>
+                          <div class="text-body2 q-mb-sm">{{ conhecimento.conteudo }}</div>
+                          <div class="row items-center text-caption text-grey-6">
+                            <q-badge
+                              :color="getCategoriaColor(conhecimento.categoria)"
+                              :label="conhecimento.categoria"
+                            />
+                            <q-space />
+                            <q-icon name="source" size="xs" class="q-mr-xs" />
+                            {{ conhecimento.fonte }}
+                            <q-icon name="schedule" size="xs" class="q-ml-md q-mr-xs" />
+                            {{ formatarDataConhecimento(conhecimento.criadoEm) }}
+                          </div>
+                        </div>
+                        <div class="col-auto">
+                          <q-btn
+                            flat
+                            dense
+                            round
+                            icon="edit"
+                            size="sm"
+                            @click="editarConhecimentoItem(conhecimento)"
+                          />
+                          <q-btn
+                            flat
+                            dense
+                            round
+                            icon="delete"
+                            size="sm"
+                            color="negative"
+                            @click="confirmarExclusaoConhecimento(conhecimento)"
+                          />
+                        </div>
+                      </div>
+                    </q-card-section>
+                  </q-card>
                 </div>
               </div>
             </div>
@@ -463,7 +542,7 @@ import { ref, computed, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { useMagiaStore, type DadosMagiaSerializados } from '../stores/magiaStore';
 import PrepararMagiasDialog from './PrepararMagiasDialog.vue';
-import ConhecimentoEditor from './ConhecimentoEditor.vue';
+import NovoConhecimentoDialog from './NovoConhecimentoDialog.vue';
 import type { Personagem } from '../classes/Personagem';
 import type {
   AtributosPrimarios,
@@ -511,6 +590,23 @@ const magiaStore = useMagiaStore();
 const splitterModel = ref(25);
 const abaAtiva = ref('basico');
 const mostrarPrepararMagias = ref(false);
+
+// Estado da aba conhecimento
+const termoBuscaConhecimento = ref('');
+const categoriaFiltroConhecimento = ref('');
+
+// Categorias disponíveis para conhecimento
+const categoriasConhecimentoDisponiveis = [
+  'Personagens',
+  'Locais',
+  'História',
+  'Magias',
+  'Itens',
+  'Criaturas',
+  'Organizações',
+  'Segredos',
+  'Geral',
+];
 
 // Tabs de navegação
 const tabs = [
@@ -581,6 +677,26 @@ const magiasPreparadas = computed(() => {
   return idsPreparadas
     .map((id) => magiaStore.obterMagia(id))
     .filter((magia): magia is DadosMagiaSerializados => Boolean(magia));
+});
+
+// Computed para conhecimentos filtrados
+const conhecimentosFiltrados = computed(() => {
+  let resultados = form.value.conhecimento;
+
+  // Filtrar por busca
+  if (termoBuscaConhecimento.value) {
+    const termo = termoBuscaConhecimento.value.toLowerCase();
+    resultados = resultados.filter(
+      (c) => c.topico.toLowerCase().includes(termo) || c.conteudo.toLowerCase().includes(termo),
+    );
+  }
+
+  // Filtrar por categoria
+  if (categoriaFiltroConhecimento.value) {
+    resultados = resultados.filter((c) => c.categoria === categoriaFiltroConhecimento.value);
+  }
+
+  return resultados;
 });
 
 // Methods
@@ -671,33 +787,84 @@ function abrirPrepararMagias() {
   emit('abrirPreparacao', props.personagem);
 }
 
-function adicionarConhecimento() {
-  const novoConhecimento: ConhecimentoPersonagem = {
-    id: `conhecimento_${Date.now()}`,
-    topico: 'Novo Conhecimento',
-    conteudo: 'Adicione o conteúdo aqui...',
-    categoria: 'geral',
-    criadoEm: new Date(),
-    fonte: 'aprendido' as const,
-  };
-  form.value.conhecimento.push(novoConhecimento);
-}
-
-function editarConhecimento() {
-  // Abrir o ConhecimentoEditor para editar conhecimentos
+// Funções para conhecimento
+function abrirNovoConhecimento() {
   $q.dialog({
-    component: ConhecimentoEditor,
-    componentProps: {
-      personagem: props.personagem,
-    },
-  }).onOk((conhecimentosAtualizados: ConhecimentoPersonagem[]) => {
-    // Atualizar os conhecimentos no formulário
-    form.value.conhecimento = [...conhecimentosAtualizados];
+    component: NovoConhecimentoDialog,
+  }).onOk((novoConhecimento: Omit<ConhecimentoPersonagem, 'id' | 'criadoEm'>) => {
+    const conhecimentoCompleto: ConhecimentoPersonagem = {
+      id: gerarId(),
+      criadoEm: new Date(),
+      ...novoConhecimento,
+    };
+    form.value.conhecimento.push(conhecimentoCompleto);
   });
 }
 
-function removerConhecimento(index: number) {
-  form.value.conhecimento.splice(index, 1);
+function editarConhecimentoItem(conhecimento: ConhecimentoPersonagem) {
+  $q.dialog({
+    component: NovoConhecimentoDialog,
+    componentProps: {
+      conhecimento,
+    },
+  }).onOk((conhecimentoEditado: Omit<ConhecimentoPersonagem, 'id' | 'criadoEm'>) => {
+    const index = form.value.conhecimento.findIndex((c) => c.id === conhecimento.id);
+    if (index !== -1) {
+      form.value.conhecimento[index] = {
+        ...conhecimento,
+        ...conhecimentoEditado,
+      };
+    }
+  });
+}
+
+function confirmarExclusaoConhecimento(conhecimento: ConhecimentoPersonagem) {
+  $q.dialog({
+    title: 'Confirmar Exclusão',
+    message: `Tem certeza que deseja excluir o conhecimento "${conhecimento.topico}"?`,
+    cancel: true,
+    persistent: true,
+  }).onOk(() => {
+    const index = form.value.conhecimento.findIndex((c) => c.id === conhecimento.id);
+    if (index !== -1) {
+      form.value.conhecimento.splice(index, 1);
+    }
+  });
+}
+
+function toggleCategoriaFiltro(categoria: string) {
+  categoriaFiltroConhecimento.value =
+    categoriaFiltroConhecimento.value === categoria ? '' : categoria;
+}
+
+function getCategoriaColor(categoria: string): string {
+  const cores: Record<string, string> = {
+    Personagens: 'blue',
+    Locais: 'green',
+    História: 'orange',
+    Magias: 'purple',
+    Itens: 'teal',
+    Criaturas: 'red',
+    Organizações: 'indigo',
+    Segredos: 'deep-orange',
+    Geral: 'grey',
+  };
+
+  return cores[categoria] || 'grey';
+}
+
+function formatarDataConhecimento(data: Date): string {
+  return new Date(data).toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function gerarId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2);
 }
 
 function cancelar() {
@@ -811,5 +978,13 @@ watch(showDialog, (show) => {
 <style scoped>
 .scroll {
   overflow-y: auto;
+}
+
+.conhecimento-card {
+  transition: transform 0.2s;
+}
+
+.conhecimento-card:hover {
+  transform: translateY(-1px);
 }
 </style>

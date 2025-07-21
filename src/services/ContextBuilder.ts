@@ -295,7 +295,9 @@ export class ContextBuilder {
     // Status do personagem
     seções.push(`STATUS PERSONAGEM:`);
     const status = contexto.statusPersonagem;
-    seções.push(`HP: ${String(status.hp)} | MP: ${String(status.mp)} | Nível: ${String(status.nivel)} | CA: ${String(status.ca)}`);
+    seções.push(
+      `HP: ${String(status.hp)} | MP: ${String(status.mp)} | Nível: ${String(status.nivel)} | CA: ${String(status.ca)}`,
+    );
     seções.push(`Iniciativa: ${String(status.iniciativa)}`);
 
     // Atributos
@@ -321,7 +323,9 @@ export class ContextBuilder {
     if (conhecimentos && conhecimentos.length > 0) {
       seções.push(`CONHECIMENTOS DO PERSONAGEM:`);
       conhecimentos.forEach((conhecimento) => {
-        seções.push(`- ${conhecimento.topico}: ${conhecimento.conteudo} (${conhecimento.categoria})`);
+        seções.push(
+          `- ${conhecimento.topico}: ${conhecimento.conteudo} (${conhecimento.categoria})`,
+        );
       });
     }
 

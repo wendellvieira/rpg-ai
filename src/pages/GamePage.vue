@@ -1313,12 +1313,21 @@ async function tentarIAAvancada(personagem: Personagem): Promise<string | null> 
 
     // Construir contexto para a IA
     const contexto = construirContextoIA();
+
+    // Incluir conhecimentos do personagem no prompt
+    const conhecimentos = personagem.getConhecimentos;
+    let secaoConhecimentos = '';
+    if (conhecimentos.length > 0) {
+      secaoConhecimentos = `\n\nSEUS CONHECIMENTOS:
+${conhecimentos.map((c) => `- ${c.topico}: ${c.conteudo}`).join('\n')}`;
+    }
+
     const prompt = `Você é ${personagem.nome}, um ${personagem.raca} ${personagem.classe}.
 
 ${personagem.promptPersonalidade ? `Personalidade: ${personagem.promptPersonalidade}` : ''}
 
 Contexto atual:
-${contexto}
+${contexto}${secaoConhecimentos}
 
 Decida sua ação neste turno. Responda como o personagem falaria, em primeira pessoa, de forma concisa (máximo 2 frases).`;
 

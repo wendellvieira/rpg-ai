@@ -223,7 +223,7 @@ CONFIGURAÇÃO:
     let secaoConhecimentos = '';
     if (conhecimentos.length > 0) {
       secaoConhecimentos = `\nCONHECIMENTOS DO SEU PERSONAGEM:
-${conhecimentos.map(c => `- ${c.topico}: ${c.conteudo} (categoria: ${c.categoria})`).join('\n')}`;
+${conhecimentos.map((c) => `- ${c.topico}: ${c.conteudo} (categoria: ${c.categoria})`).join('\n')}`;
     }
 
     return `SITUAÇÃO ATUAL:
