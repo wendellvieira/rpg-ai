@@ -87,13 +87,6 @@
                       <q-btn
                         flat
                         size="sm"
-                        icon="library_books"
-                        label="Conhecimento"
-                        @click="abrirConhecimento(personagem)"
-                      />
-                      <q-btn
-                        flat
-                        size="sm"
                         icon="edit"
                         label="Editar"
                         @click="editarPersonagem(personagem)"
@@ -395,7 +388,6 @@ import type { AtributosPrimarios, AtributosDerivados, ConhecimentoPersonagem } f
 import { useConfigStore } from '../stores/configStore';
 import { useItemStore } from '../stores/itemStore';
 import { usePersonagemStore } from '../stores/personagemStore';
-import ConhecimentoEditor from '../components/ConhecimentoEditor.vue';
 import MapaViewer from '../components/MapaViewer.vue';
 
 // Lazy loading para diálogos pesados
@@ -628,9 +620,7 @@ async function criarPersonagem() {
 
 async function editarPersonagem(personagem: PersonagemData) {
   try {
-    personagemParaEditar.value = personagem;
-
-    // Carregar o personagem completo do persistence para garantir tipo correto
+    personagemParaEditar.value = personagem; // Carregar o personagem completo do persistence para garantir tipo correto
     const persistence = PersistenceManager.getInstance();
     const personagemCompleto = await persistence.carregarPersonagem(personagem.id);
 
@@ -963,39 +953,6 @@ async function testarConexaoAPI() {
     });
   } finally {
     testandoAPI.value = false;
-  }
-}
-
-// Métodos para conhecimento
-async function abrirConhecimento(personagemData: PersonagemData) {
-  try {
-    // Carregar o personagem completo
-    const persistence = PersistenceManager.getInstance();
-    const personagem = await persistence.carregarPersonagem(personagemData.id);
-
-    if (!personagem) {
-      throw new Error('Personagem não encontrado');
-    }
-
-    $q.dialog({
-      component: ConhecimentoEditor,
-      componentProps: {
-        personagem: personagem,
-      },
-    }).onOk(() => {
-      // Opcional: recarregar dados se necessário
-      $q.notify({
-        type: 'positive',
-        message: 'Base de conhecimento atualizada!',
-      });
-    });
-  } catch (error) {
-    console.error('Erro ao abrir conhecimento:', error);
-    $q.notify({
-      type: 'negative',
-      message: 'Erro ao abrir base de conhecimento',
-      caption: String(error),
-    });
   }
 }
 

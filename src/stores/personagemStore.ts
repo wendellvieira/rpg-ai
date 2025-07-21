@@ -178,6 +178,19 @@ export const usePersonagemStore = defineStore('personagem', () => {
         const dadosPersonagem = personagemAtualizado.serializar();
         dadosPersonagem.conhecimentos = updates.conhecimento;
         const personagemComConhecimentoAtualizado = Personagem.deserializar(dadosPersonagem);
+
+        // Para o inventário, como os métodos precisam de objetos Item, vamos implementar uma solução mais simples
+        // que atualiza via serialização/deserialização
+        if (updates.inventario) {
+          const dadosAtualizadosComInventario = personagemComConhecimentoAtualizado.serializar();
+          dadosAtualizadosComInventario.inventario = updates.inventario.map(
+            (item) => [item.id, item.quantidade] as [string, number],
+          );
+          const personagemFinal = Personagem.deserializar(dadosAtualizadosComInventario);
+          await salvarPersonagem(personagemFinal);
+          return personagemFinal;
+        }
+
         await salvarPersonagem(personagemComConhecimentoAtualizado);
         return personagemComConhecimentoAtualizado;
       }
