@@ -189,9 +189,12 @@ export class Select_Ctrl {
     if (config.transitionHide) this.transitionHide = config.transitionHide;
     if (config.popupContentClass) this.popupContentClass = config.popupContentClass;
     if (config.popupContentStyle) this.popupContentStyle = config.popupContentStyle;
-    if (config.virtualScrollSliceSize !== undefined) this.virtualScrollSliceSize = config.virtualScrollSliceSize;
-    if (config.virtualScrollSliceRatio !== undefined) this.virtualScrollSliceRatio = config.virtualScrollSliceRatio;
-    if (config.virtualScrollItemSize !== undefined) this.virtualScrollItemSize = config.virtualScrollItemSize;
+    if (config.virtualScrollSliceSize !== undefined)
+      this.virtualScrollSliceSize = config.virtualScrollSliceSize;
+    if (config.virtualScrollSliceRatio !== undefined)
+      this.virtualScrollSliceRatio = config.virtualScrollSliceRatio;
+    if (config.virtualScrollItemSize !== undefined)
+      this.virtualScrollItemSize = config.virtualScrollItemSize;
     if (config.behavior) this.behavior = config.behavior;
 
     return this;
@@ -255,9 +258,12 @@ export class Select_Ctrl {
     if (data.transitionHide) this.transitionHide = data.transitionHide;
     if (data.popupContentClass) this.popupContentClass = data.popupContentClass;
     if (data.popupContentStyle) this.popupContentStyle = data.popupContentStyle;
-    if (data.virtualScrollSliceSize !== undefined) this.virtualScrollSliceSize = data.virtualScrollSliceSize;
-    if (data.virtualScrollSliceRatio !== undefined) this.virtualScrollSliceRatio = data.virtualScrollSliceRatio;
-    if (data.virtualScrollItemSize !== undefined) this.virtualScrollItemSize = data.virtualScrollItemSize;
+    if (data.virtualScrollSliceSize !== undefined)
+      this.virtualScrollSliceSize = data.virtualScrollSliceSize;
+    if (data.virtualScrollSliceRatio !== undefined)
+      this.virtualScrollSliceRatio = data.virtualScrollSliceRatio;
+    if (data.virtualScrollItemSize !== undefined)
+      this.virtualScrollItemSize = data.virtualScrollItemSize;
     if (data.behavior) this.behavior = data.behavior;
 
     return this;
@@ -316,9 +322,12 @@ export class Select_Ctrl {
     if (this.transitionHide !== 'fade') data.transitionHide = this.transitionHide;
     if (this.popupContentClass !== undefined) data.popupContentClass = this.popupContentClass;
     if (this.popupContentStyle !== undefined) data.popupContentStyle = this.popupContentStyle;
-    if (this.virtualScrollSliceSize !== undefined) data.virtualScrollSliceSize = this.virtualScrollSliceSize;
-    if (this.virtualScrollSliceRatio !== undefined) data.virtualScrollSliceRatio = this.virtualScrollSliceRatio;
-    if (this.virtualScrollItemSize !== undefined) data.virtualScrollItemSize = this.virtualScrollItemSize;
+    if (this.virtualScrollSliceSize !== undefined)
+      data.virtualScrollSliceSize = this.virtualScrollSliceSize;
+    if (this.virtualScrollSliceRatio !== undefined)
+      data.virtualScrollSliceRatio = this.virtualScrollSliceRatio;
+    if (this.virtualScrollItemSize !== undefined)
+      data.virtualScrollItemSize = this.virtualScrollItemSize;
     if (this.behavior !== 'default') data.behavior = this.behavior;
 
     return data;
@@ -344,13 +353,13 @@ export class Select_Ctrl {
 
   get selectedOption() {
     if (this.multiple) return null;
-    return this.options.find(opt => opt.value === this.value) || null;
+    return this.options.find((opt) => opt.value === this.value) || null;
   }
 
   get selectedOptions() {
     if (!this.multiple || !Array.isArray(this.value)) return [];
     const valueArray = this.value as unknown[];
-    return this.options.filter(opt => valueArray.includes(opt.value));
+    return this.options.filter((opt) => valueArray.includes(opt.value));
   }
 
   get optionsToShow() {
@@ -377,7 +386,12 @@ export class Select_Ctrl {
     }
 
     // Validação de valores máximos (para múltiplo)
-    if (this.multiple && this.maxValues && Array.isArray(this.value) && this.value.length > this.maxValues) {
+    if (
+      this.multiple &&
+      this.maxValues &&
+      Array.isArray(this.value) &&
+      this.value.length > this.maxValues
+    ) {
       this.error = true;
       this.errorMessage = `Máximo de ${this.maxValues} seleções`;
       return false;
@@ -400,18 +414,18 @@ export class Select_Ctrl {
   }
 
   removeOption(value: unknown) {
-    this.options = this.options.filter(opt => opt.value !== value);
-    
+    this.options = this.options.filter((opt) => opt.value !== value);
+
     // Remove da seleção se estiver selecionado
     if (this.multiple && Array.isArray(this.value)) {
-      this.value = this.value.filter(val => val !== value);
+      this.value = this.value.filter((val) => val !== value);
     } else if (this.value === value) {
       this.value = null;
     }
   }
 
   findOption(value: unknown): SelectOption | undefined {
-    return this.options.find(opt => opt.value === value);
+    return this.options.find((opt) => opt.value === value);
   }
 
   getOptionLabel(value: unknown): string {
@@ -440,7 +454,7 @@ export class Select_Ctrl {
   deselectOption(value: unknown) {
     if (this.multiple && Array.isArray(this.value)) {
       const valueArray = this.value as unknown[];
-      this.value = valueArray.filter(val => val !== value);
+      this.value = valueArray.filter((val) => val !== value);
     } else if (this.value === value) {
       this.value = null;
     }
@@ -471,15 +485,16 @@ export class Select_Ctrl {
    */
   filter(inputValue: string) {
     this.filterValue = inputValue.toLowerCase();
-    
+
     if (!this.filterValue) {
       this.filteredOptions = [];
       return;
     }
 
-    this.filteredOptions = this.options.filter(option =>
-      option.label.toLowerCase().includes(this.filterValue) ||
-      (option.description && option.description.toLowerCase().includes(this.filterValue))
+    this.filteredOptions = this.options.filter(
+      (option) =>
+        option.label.toLowerCase().includes(this.filterValue) ||
+        (option.description && option.description.toLowerCase().includes(this.filterValue)),
     );
   }
 

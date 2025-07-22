@@ -181,7 +181,7 @@ export class Input_Ctrl {
     if (data.fillMask !== undefined) this.fillMask = data.fillMask;
     if (data.reverseFillMask !== undefined) this.reverseFillMask = data.reverseFillMask;
     if (data.unmaskedValue !== undefined) this.unmaskedValue = data.unmaskedValue;
-    
+
     return this;
   }
 
@@ -284,14 +284,24 @@ export class Input_Ctrl {
     }
 
     // Validação de valor mínimo (para números)
-    if (this.type === 'number' && this.min !== undefined && this.value !== null && Number(this.value) < this.min) {
+    if (
+      this.type === 'number' &&
+      this.min !== undefined &&
+      this.value !== null &&
+      Number(this.value) < this.min
+    ) {
       this.error = true;
       this.errorMessage = `Valor mínimo: ${this.min}`;
       return false;
     }
 
     // Validação de valor máximo (para números)
-    if (this.type === 'number' && this.max !== undefined && this.value !== null && Number(this.value) > this.max) {
+    if (
+      this.type === 'number' &&
+      this.max !== undefined &&
+      this.value !== null &&
+      Number(this.value) > this.max
+    ) {
       this.error = true;
       this.errorMessage = `Valor máximo: ${this.max}`;
       return false;

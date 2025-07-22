@@ -197,7 +197,11 @@ interface Emits {
   (e: 'clear', value: unknown): void;
   (e: 'add', details: { index: number; value: unknown }): void;
   (e: 'remove', details: { index: number; value: unknown }): void;
-  (e: 'new-value', inputValue: string, done: (item?: unknown, mode?: 'add' | 'add-unique' | 'toggle') => void): void;
+  (
+    e: 'new-value',
+    inputValue: string,
+    done: (item?: unknown, mode?: 'add' | 'add-unique' | 'toggle') => void,
+  ): void;
   (e: 'keydown', event: KeyboardEvent): void;
   (e: 'keyup', event: KeyboardEvent): void;
   (e: 'change', value: unknown): void;
@@ -253,14 +257,14 @@ const ctrl = computed(() => {
 // Classes CSS dinâmicas
 const selectClasses = computed(() => {
   const classes: Record<string, boolean> = {};
-  
+
   if (props.class) {
     if (typeof props.class === 'string') {
-      props.class.split(' ').forEach(cls => {
+      props.class.split(' ').forEach((cls) => {
         if (cls.trim()) classes[cls.trim()] = true;
       });
     } else if (Array.isArray(props.class)) {
-      props.class.forEach(cls => {
+      props.class.forEach((cls) => {
         if (cls.trim()) classes[cls.trim()] = true;
       });
     } else {
@@ -320,7 +324,10 @@ function onRemove(details: { index: number; value: unknown }) {
   emit('remove', details);
 }
 
-function onNewValue(inputValue: string, done: (item?: unknown, mode?: 'add' | 'add-unique' | 'toggle') => void) {
+function onNewValue(
+  inputValue: string,
+  done: (item?: unknown, mode?: 'add' | 'add-unique' | 'toggle') => void,
+) {
   emit('new-value', inputValue, done);
 }
 
@@ -383,9 +390,12 @@ function syncPropsToController() {
   if (props.transitionHide !== undefined) config.transitionHide = props.transitionHide;
   if (props.popupContentClass !== undefined) config.popupContentClass = props.popupContentClass;
   if (props.popupContentStyle !== undefined) config.popupContentStyle = props.popupContentStyle;
-  if (props.virtualScrollSliceSize !== undefined) config.virtualScrollSliceSize = props.virtualScrollSliceSize;
-  if (props.virtualScrollSliceRatio !== undefined) config.virtualScrollSliceRatio = props.virtualScrollSliceRatio;
-  if (props.virtualScrollItemSize !== undefined) config.virtualScrollItemSize = props.virtualScrollItemSize;
+  if (props.virtualScrollSliceSize !== undefined)
+    config.virtualScrollSliceSize = props.virtualScrollSliceSize;
+  if (props.virtualScrollSliceRatio !== undefined)
+    config.virtualScrollSliceRatio = props.virtualScrollSliceRatio;
+  if (props.virtualScrollItemSize !== undefined)
+    config.virtualScrollItemSize = props.virtualScrollItemSize;
   if (props.behavior !== undefined) config.behavior = props.behavior;
 
   ctrl.value.mount(config);

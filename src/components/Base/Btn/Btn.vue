@@ -153,14 +153,14 @@ const ctrl = computed(() => {
 // Classes CSS dinâmicas
 const btnClasses = computed(() => {
   const classes: Record<string, boolean> = {};
-  
+
   if (props.class) {
     if (typeof props.class === 'string') {
-      props.class.split(' ').forEach(cls => {
+      props.class.split(' ').forEach((cls) => {
         if (cls.trim()) classes[cls.trim()] = true;
       });
     } else if (Array.isArray(props.class)) {
-      props.class.forEach(cls => {
+      props.class.forEach((cls) => {
         if (cls.trim()) classes[cls.trim()] = true;
       });
     } else {

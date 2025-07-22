@@ -322,7 +322,7 @@ export class Btn_Ctrl {
 
     try {
       this.loading = true;
-      
+
       if (this.onClick) {
         await this.onClick();
       }

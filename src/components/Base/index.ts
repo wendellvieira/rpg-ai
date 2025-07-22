@@ -8,7 +8,7 @@
 export { Input, Input_Ctrl } from './Input';
 export type { Input_Data, InputConfig } from './Input';
 
-// Btn - Substitui QBtn  
+// Btn - Substitui QBtn
 export { Btn, Btn_Ctrl } from './Btn';
 export type { Btn_Data, BtnConfig } from './Btn';
 
