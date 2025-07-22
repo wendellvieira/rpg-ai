@@ -757,6 +757,312 @@ Para cada tarefa completada, verificar:
   - **Usage:** Estilizar componentes Quasar com classes Tailwind
   - **Benefits:** Utilitários CSS, design system consistente, responsividade
 
+### 26. Padrão Factory para Classes de Domínio
+
+- [ ] **Implementar Static Factory Pattern em todas as classes de domínio:**
+  - **Description:** Padronizar criação de instâncias com factory method estático e estrutura de dados consistente
+  - **Source:** Todas as classes em `/src/domain/entities/`
+  - **Destination:** Mesmas classes refatoradas
+  - **Pattern Implementation:**
+
+    ```typescript
+    // Exemplo: Personagem.ts
+    interface Personagem_Data {
+      id: string;
+      nome: string;
+      nivel: number;
+      // ... outras propriedades de persistência
+    }
+
+    export class Personagem {
+      // ✅ OBRIGATÓRIO: Static factory method
+      static create(data: Personagem_Data): Personagem {
+        const instance = new Personagem();
+        instance.data = data; // ✅ Atribuição direta ao data
+        return instance;
+      }
+
+      static createEmpty(): Personagem {
+        const instance = new Personagem();
+        instance.data = {
+          id: '',
+          nome: '',
+          nivel: 1,
+        };
+        return instance;
+      }
+
+      // ✅ OBRIGATÓRIO: Propriedade data tipada
+      public data: Personagem_Data | null = null;
+
+      // ❌ PROIBIDO: Propriedades individuais de persistência
+      // public nome: string = '';
+      // public nivel: number = 1;
+
+      // ✅ PERMITIDO: Propriedades calculadas/getters
+      get nome(): string {
+        return this.data?.nome || '';
+      }
+
+      get nivel(): number {
+        return this.data?.nivel || 1;
+      }
+
+      // ✅ PERMITIDO: Métodos de negócio
+      podeSubirNivel(): boolean {
+        return this.nivel < 20;
+      }
+
+      // ✅ CORRETO: Atualização via substituição do data
+      updateData(newData: Partial<Personagem_Data>): void {
+        if (this.data) {
+          this.data = { ...this.data, ...newData }; // ✅ Substituição completa
+          // ❌ ERRADO: this.data.nome = newData.nome
+        }
+      }
+    }
+    ```
+
+  - **Files to Refactor:**
+    - `Personagem.ts` → Factory pattern + data structure
+    - `Item.ts` → Factory pattern + data structure
+    - `Arma.ts` → Factory pattern + data structure
+    - `Armadura.ts` → Factory pattern + data structure
+    - `Consumivel.ts` → Factory pattern + data structure
+    - `Magia.ts` → Factory pattern + data structure
+    - `Atributos.ts` → Factory pattern + data structure
+
+### 27. Configuração de Testes (Jest + Vue Test Utils)
+
+- [ ] **Configurar ambiente de testes completo:**
+  - **Description:** Implementar Jest para arquivos TypeScript e Vue Test Utils para componentes Vue
+  - **Source:** Nova configuração
+  - **Destination:** Configuração global + arquivos de teste
+  - **Setup Dependencies:**
+    ```bash
+    npm install -D jest @types/jest ts-jest
+    npm install -D @vue/test-utils @vue/vue3-jest
+    npm install -D jest-environment-jsdom
+    npm install -D @testing-library/vue @testing-library/jest-dom
+    ```
+  - **Files to Create:**
+    ```
+    /jest.config.js              # Configuração do Jest
+    /src/test-utils/            # Utilitários de teste
+    ├── setup.ts                # Setup global dos testes
+    ├── mocks.ts               # Mocks comuns
+    └── helpers.ts             # Helpers para testes
+    ```
+  - **Jest Configuration:**
+    ```javascript
+    // jest.config.js
+    module.exports = {
+      preset: 'ts-jest',
+      testEnvironment: 'jsdom',
+      moduleFileExtensions: ['js', 'ts', 'json', 'vue'],
+      transform: {
+        '^.+\\.ts$': 'ts-jest',
+        '^.+\\.vue$': '@vue/vue3-jest',
+      },
+      moduleNameMapping: {
+        '^@/(.*)$': '<rootDir>/src/$1',
+        '^src/(.*)$': '<rootDir>/src/$1',
+      },
+      testMatch: [
+        '<rootDir>/src/**/__tests__/**/*.test.{js,ts}',
+        '<rootDir>/src/**/*.test.{js,ts}',
+        '<rootDir>/src/**/__tests__/**/*.spec.{js,ts}',
+        '<rootDir>/src/**/*.spec.{js,ts}',
+      ],
+      collectCoverageFrom: ['src/**/*.{ts,vue}', '!src/**/*.d.ts', '!src/test-utils/**'],
+      setupFilesAfterEnv: ['<rootDir>/src/test-utils/setup.ts'],
+    };
+    ```
+
+- [ ] **Implementar testes para arquivos TypeScript (.ts):**
+  - **Description:** Criar testes unitários usando Jest para classes, services, utils e engines
+  - **Pattern for .ts files:**
+
+    ```typescript
+    // Exemplo: src/domain/entities/Character/__tests__/Personagem.test.ts
+    import { Personagem } from '../Personagem';
+    import type { Personagem_Data } from '../Personagem_Data';
+
+    describe('Personagem', () => {
+      const mockData: Personagem_Data = {
+        id: '123',
+        nome: 'Gandalf',
+        nivel: 5,
+      };
+
+      describe('Factory Methods', () => {
+        it('should create instance with data', () => {
+          const personagem = Personagem.create(mockData);
+
+          expect(personagem.data).toEqual(mockData);
+          expect(personagem.nome).toBe('Gandalf');
+          expect(personagem.nivel).toBe(5);
+        });
+
+        it('should create empty instance', () => {
+          const personagem = Personagem.createEmpty();
+
+          expect(personagem.data).toBeDefined();
+          expect(personagem.nome).toBe('');
+          expect(personagem.nivel).toBe(1);
+        });
+      });
+
+      describe('Business Logic', () => {
+        it('should allow level up when below max level', () => {
+          const personagem = Personagem.create({ ...mockData, nivel: 10 });
+
+          expect(personagem.podeSubirNivel()).toBe(true);
+        });
+
+        it('should not allow level up at max level', () => {
+          const personagem = Personagem.create({ ...mockData, nivel: 20 });
+
+          expect(personagem.podeSubirNivel()).toBe(false);
+        });
+      });
+
+      describe('Data Updates', () => {
+        it('should update data correctly', () => {
+          const personagem = Personagem.create(mockData);
+
+          personagem.updateData({ nome: 'Saruman', nivel: 8 });
+
+          expect(personagem.nome).toBe('Saruman');
+          expect(personagem.nivel).toBe(8);
+          expect(personagem.data?.id).toBe('123'); // Mantém outros dados
+        });
+      });
+    });
+    ```
+
+- [ ] **Implementar testes para componentes Vue (.vue):**
+  - **Description:** Criar testes de componentes usando Vue Test Utils
+  - **Pattern for .vue files:**
+
+    ```typescript
+    // Exemplo: src/components/Base/Input/__tests__/Input.spec.ts
+    import { mount } from '@vue/test-utils';
+    import { describe, it, expect, vi } from 'vitest';
+    import Input from '../Input.vue';
+
+    describe('Input Component', () => {
+      it('should render with initial value', () => {
+        const wrapper = mount(Input, {
+          props: {
+            modelValue: 'test value',
+            label: 'Test Label',
+          },
+        });
+
+        expect(wrapper.find('input').element.value).toBe('test value');
+        expect(wrapper.text()).toContain('Test Label');
+      });
+
+      it('should emit update on input change', async () => {
+        const wrapper = mount(Input, {
+          props: {
+            modelValue: '',
+            label: 'Test',
+          },
+        });
+
+        const input = wrapper.find('input');
+        await input.setValue('new value');
+
+        expect(wrapper.emitted('update:modelValue')).toBeTruthy();
+        expect(wrapper.emitted('update:modelValue')?.[0]).toEqual(['new value']);
+      });
+
+      it('should display error state', () => {
+        const wrapper = mount(Input, {
+          props: {
+            modelValue: '',
+            label: 'Test',
+            error: true,
+            errorMessage: 'Required field',
+          },
+        });
+
+        expect(wrapper.classes()).toContain('error');
+        expect(wrapper.text()).toContain('Required field');
+      });
+    });
+    ```
+
+- [ ] **Implementar testes para Controllers:**
+  - **Description:** Testes específicos para padrão de Controller com reatividade
+  - **Pattern for Controllers:**
+
+    ```typescript
+    // Exemplo: src/pages/Game/__tests__/GamePage_PageCtrl.test.ts
+    import { GamePage_PageCtrl } from '../GamePage_PageCtrl';
+
+    describe('GamePage_PageCtrl', () => {
+      let ctrl: GamePage_PageCtrl;
+
+      beforeEach(() => {
+        ctrl = GamePage_PageCtrl.reactive();
+      });
+
+      describe('Initialization', () => {
+        it('should create reactive controller', () => {
+          expect(ctrl).toBeDefined();
+          expect(ctrl.loading).toBe(false);
+        });
+
+        it('should mount with data correctly', async () => {
+          const mockData = { sessionId: '123' };
+
+          await ctrl.mount(mockData);
+
+          expect(ctrl.data).toEqual(mockData);
+        });
+      });
+
+      describe('Modal Management', () => {
+        it('should open modal and return result', async () => {
+          const resultPromise = ctrl.modalPersonagem.open();
+          ctrl.modalPersonagem.close({ nome: 'Test Character' });
+
+          const result = await resultPromise;
+          expect(result).toEqual({ nome: 'Test Character' });
+        });
+      });
+    });
+    ```
+
+- [ ] **Criar estrutura de testes:**
+  - **Description:** Organizar testes seguindo estrutura do projeto
+  - **Test Structure:**
+    ```
+    src/
+    ├── domain/entities/
+    │   └── Character/
+    │       ├── Personagem.ts
+    │       └── __tests__/
+    │           └── Personagem.test.ts
+    ├── services/Engine/
+    │   └── Commands/
+    │       ├── CommandRunner.ts
+    │       └── __tests__/
+    │           └── CommandRunner.test.ts
+    ├── components/Base/
+    │   └── Input/
+    │       ├── Input.vue
+    │       └── __tests__/
+    │           └── Input.spec.ts
+    └── pages/Game/
+        ├── GamePage_PageCtrl.ts
+        └── __tests__/
+            └── GamePage_PageCtrl.test.ts
+    ```
+
 ---
 
 ## 📊 PRIORIZAÇÃO ATUALIZADA - ORDEM CORRETA DE EXECUÇÃO
@@ -764,73 +1070,94 @@ Para cada tarefa completada, verificar:
 ### 🔴 **FASE 1 - FUNDAÇÃO** (Base para tudo - EXECUTAR PRIMEIRO)
 
 1. **TAREFA #18** - Reorganização Estrutural (domain/entities, services/Engine, services/Business, utils/)
-2. **TAREFA #4** - Criar componentes Base (Input, Btn, Select)
-3. **TAREFA #13** - Criar helper Deferred
-4. **TAREFA #24** - Sistema de Layout Grid (components/Layout/Space)
-5. **TAREFA #25** - Integração do Tailwind CSS
-6. **TAREFA #8** - Migrar funções utilitárias para /src/utils/
+2. **TAREFA #26** - Padrão Factory para Classes de Domínio (Static factory + data structure)
+3. **TAREFA #27** - Configuração de Testes (Jest + Vue Test Utils)
+4. **TAREFA #4** - Criar componentes Base (Input, Btn, Select)
+5. **TAREFA #13** - Criar helper Deferred
+6. **TAREFA #24** - Sistema de Layout Grid (components/Layout/Space)
+7. **TAREFA #25** - Integração do Tailwind CSS
+8. **TAREFA #8** - Migrar funções utilitárias para /src/utils/
 
 ### 🟡 **FASE 2 - SERVICES & CORE** (Lógica de negócio)
 
-7. **TAREFA #7** - Services refactoring (Classes Estáticas)
-8. **TAREFA #19** - Sistema de Comandos Base (CommandRunner, CommandParser)
-9. **TAREFA #22** - Sistema de Prompts Centralizado (PromptEngine)
-10. **TAREFA #5** - Conversão das stores principais
-11. **TAREFA #6** - Padrão Entity-Document
+9. **TAREFA #7** - Services refactoring (Classes Estáticas)
+10. **TAREFA #19** - Sistema de Comandos Base (CommandRunner, CommandParser)
+11. **TAREFA #22** - Sistema de Prompts Centralizado (PromptEngine)
+12. **TAREFA #5** - Conversão das stores principais
+13. **TAREFA #6** - Padrão Entity-Document
 
 ### 🔵 **FASE 3 - COMPONENTS & PAGES** (Interface)
 
-12. **TAREFA #1** - GamePage_PageCtrl (1789 linhas!)
-13. **TAREFA #20** - Separação das Tabs de Configuração (Personagens, Itens, Magias, Mapas como páginas)
-14. **TAREFA #2** - Refatoração dos modais (14 modais)
-15. **TAREFA #3** - Componentes complexos
-16. **TAREFA #10** - Reorganização de pastas
+14. **TAREFA #1** - GamePage_PageCtrl (1789 linhas!)
+15. **TAREFA #20** - Separação das Tabs de Configuração (Personagens, Itens, Magias, Mapas como páginas)
+16. **TAREFA #2** - Refatoração dos modais (14 modais)
+17. **TAREFA #3** - Componentes complexos
+18. **TAREFA #10** - Reorganização de pastas
 
-### � **FASE 4 - FEATURES & INTEGRAÇÃO** (Funcionalidades avançadas)
+### 🟢 **FASE 4 - FEATURES & INTEGRAÇÃO** (Funcionalidades avançadas)
 
-17. **TAREFA #19** - Comandos de Comunicação, Ação e IA (TalkCommand, AttackCommand, etc)
-18. **TAREFA #21** - Criação Rápida com IA nos Modais
-19. **TAREFA #9** - Consolidação SistemaTurnos
-20. **TAREFA #11** - Definitions files
-21. **TAREFA #14** - Validação Zod
-22. **TAREFA #23** - Internacionalização (Código → Inglês, UI → Português)
-23. **TAREFA #16** - Aplicar diretrizes de imports
+19. **TAREFA #19** - Comandos de Comunicação, Ação e IA (TalkCommand, AttackCommand, etc)
+20. **TAREFA #21** - Criação Rápida com IA nos Modais
+21. **TAREFA #9** - Consolidação SistemaTurnos
+22. **TAREFA #11** - Definitions files
+23. **TAREFA #14** - Validação Zod
+24. **TAREFA #23** - Internacionalização (Código → Inglês, UI → Português)
+25. **TAREFA #16** - Aplicar diretrizes de imports
 
 ---
 
-**Estimativa total:** 🕐 **8-10 semanas** para desenvolvedor sênior (+3 semanas pelas tarefas estruturais e comandos)  
-**Total de tarefas:** **58 tarefas** (50 originais + 8 novas da arquitetura Tio Bobby)  
-**Arquivos impactados:** **~98% do projeto** (reorganização estrutural completa)  
-**Breaking changes:** **Altos** (mudança completa de arquitetura + navegação + layout + comandos)  
-**Benefícios:** **Arquitetura enterprise-grade, sistema de comandos avançado, IA integrada, separação clara de responsabilidades**
+**Estimativa total:** 🕐 **10-12 semanas** para desenvolvedor sênior (+2 semanas pelas tarefas de Factory Pattern e Testes)  
+**Total de tarefas:** **62 tarefas** (58 originais + 4 novas: Factory Pattern + Testes)  
+**Arquivos impactados:** **~99% do projeto** (reorganização + factory pattern + testes completos)  
+**Breaking changes:** **Altos** (mudança completa de arquitetura + factory pattern em todas as classes)  
+**Benefícios:** **Arquitetura enterprise-grade + padrões consistentes + cobertura de testes completa + qualidade de código profissional**
 
 ## 🎯 **PRÓXIMOS PASSOS IMEDIATOS:**
 
 1. **FASE 1** deve ser executada sequencialmente (reorganização estrutural é pré-requisito para tudo)
-2. **Reorganização Estrutural** (TAREFA #18) é **CRÍTICA** - transforma completamente a arquitetura
-3. **Componentes Base** são pré-requisito para toda UI
-4. **Sistema de Comandos** representa salto qualitativo enorme no projeto
-5. **Command Pattern** + **Engine Architecture** = Projeto enterprise-grade
+2. **Factory Pattern** (TAREFA #26) é **CRÍTICO** - padroniza todas as classes de domínio
+3. **Configuração de Testes** (TAREFA #27) é **ESSENCIAL** - garante qualidade desde o início
+4. **Componentes Base** são pré-requisito para toda UI
+5. **Sistema de Comandos** representa salto qualitativo enorme no projeto
+6. **Cobertura de Testes** garante confiabilidade empresarial
 
-**PROJETO TRANSFORMADO:** De código "estudantil" para **arquitetura empresarial** com separação clara de responsabilidades, sistema de comandos avançado e integração profunda com IA!
+**PROJETO TRANSFORMADO:** De código "estudantil" para **arquitetura empresarial** com padrões consistentes, sistema de comandos avançado, integração profunda com IA e **cobertura de testes profissional**!
 
 ## 🏆 **RESULTADO FINAL:**
 
 ```
 📁 src/
-├── 📁 domain/entities/          # Entidades puras do domínio
-├── 📁 services/Engine/          # Motores do jogo (Combat, AI, Commands, Dice)
-├── 📁 services/Business/        # Lógica de negócio e orchestração
-├── 📁 services/Infrastructure/  # Persistência, PWA, Backup
-├── 📁 utils/                    # Helpers e utilitários estáticos
-├── 📁 components/Base/          # Componentes padronizados
-├── 📁 components/Layout/        # Sistema de Grid próprio
-└── 📁 pages/                    # Páginas com pattern Page+PageCtrl
-    ├── Game/                    # Chat de IA + comandos
-    ├── Characters/              # Página de personagens
-    ├── Items/                   # Página de itens
-    ├── Spells/                  # Página de magias
-    └── Maps/                    # Página de mapas
+├── 📁 domain/entities/          # Entidades com Factory Pattern + testes
+├── 📁 services/Engine/          # Motores testados (Combat, AI, Commands, Dice)
+├── 📁 services/Business/        # Lógica de negócio testada
+├── 📁 services/Infrastructure/  # Persistência, PWA, Backup testados
+├── 📁 utils/                    # Helpers testados
+├── 📁 components/Base/          # Componentes testados com Vue Test Utils
+├── 📁 components/Layout/        # Sistema de Grid testado
+├── 📁 test-utils/              # Utilitários de teste centralizados
+└── 📁 pages/                    # Páginas testadas com pattern Page+PageCtrl
+    ├── Game/                    # Chat de IA + comandos testado
+    ├── Characters/              # Página de personagens testada
+    ├── Items/                   # Página de itens testada
+    ├── Spells/                  # Página de magias testada
+    └── Maps/                    # Página de mapas testada
 ```
 
-**UM PROJETO DIGNO DE PORTFÓLIO PROFISSIONAL!** 🚀
+## 🧪 **QUALIDADE GARANTIDA:**
+
+### **Factory Pattern aplicado em:**
+
+- ✅ Todas as entidades de domínio
+- ✅ Estrutura `data` consistente
+- ✅ Métodos estáticos de criação
+- ✅ Atualizações via substituição de data
+
+### **Cobertura de Testes:**
+
+- ✅ **Jest** para arquivos `.ts` (classes, services, utils)
+- ✅ **Vue Test Utils** para componentes `.vue`
+- ✅ **Controllers** testados com padrão reativo
+- ✅ **Engines** testados unitariamente
+- ✅ **Componentes** testados com props/emits/states
+
+**UM PROJETO ENTERPRISE-GRADE COMPLETO!** 🚀✨
