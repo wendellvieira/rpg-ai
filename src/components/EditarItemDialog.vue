@@ -678,16 +678,6 @@ async function gerarComIA() {
   try {
     // Importar dinamicamente o OpenAIService
     const { OpenAIService, limparRespostaJSON } = await import('../services/OpenAIService');
-    const openAIService = OpenAIService.getInstance();
-
-    // Verificar se a IA está configurada
-    if (!openAIService.estaConfigurado()) {
-      $q.notify({
-        type: 'warning',
-        message: 'Configure a API da OpenAI nas configurações antes de usar a IA.',
-      });
-      return;
-    }
 
     const prompt = `Analise o item "${form.value.nome}" e determine suas propriedades para um RPG D&D 5e.
 
@@ -726,7 +716,7 @@ Retorne APENAS um objeto JSON válido com a seguinte estrutura:
 
 Seja criativo mas equilibrado. Para itens lendários como "Excalibur", torne-os poderosos mas não quebrados.`;
 
-    const response = await openAIService.enviarMensagem([
+    const response = await OpenAIService.enviarMensagens([
       {
         role: 'user',
         content: prompt,

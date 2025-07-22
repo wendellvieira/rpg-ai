@@ -1284,13 +1284,14 @@ async function tentarIAAvancada(personagem: Personagem): Promise<string | null> 
     console.log('🤖 [DEBUG] API Key presente (store):', !!configStore.configuracao.openaiApiKey);
 
     // FORÇAR configuração do OpenAI Service se não estiver configurado
-    const openAIService = OpenAIService.getInstance();
-    console.log('🤖 [DEBUG] OpenAI Service configurado antes:', openAIService.estaConfigurado());
+    console.log(
+      '🤖 [DEBUG] OpenAI Service configurado antes: configuração será feita na primeira chamada',
+    );
 
-    // Se store tem API key mas service não está configurado, configurar manualmente
-    if (configStore.configuracao.openaiApiKey && !openAIService.estaConfigurado()) {
+    // Se store tem API key, configurar OpenAI Service
+    if (configStore.configuracao.openaiApiKey) {
       console.log('🤖 [DEBUG] Configurando OpenAI Service manualmente...');
-      openAIService.configurar({
+      OpenAIService.configurar({
         apiKey: configStore.configuracao.openaiApiKey,
         model: configStore.configuracao.openaiModel || 'gpt-4o-mini',
         temperature: configStore.configuracao.openaiTemperature || 0.7,
@@ -1298,13 +1299,7 @@ async function tentarIAAvancada(personagem: Personagem): Promise<string | null> 
       });
     }
 
-    console.log('🤖 [DEBUG] OpenAI Service configurado depois:', openAIService.estaConfigurado());
-
-    // Verificar se a API está configurada
-    if (!openAIService.estaConfigurado()) {
-      console.log('🤖 [DEBUG] OpenAI ainda não configurada, usando IA básica');
-      return null;
-    }
+    console.log('🤖 [DEBUG] OpenAI Service configurado');
 
     console.log('🤖 [DEBUG] Iniciando chamada para OpenAI...');
 
@@ -1331,7 +1326,7 @@ Decida sua ação neste turno. Responda como o personagem falaria, em primeira p
     console.log('🤖 [DEBUG] Prompt criado:', prompt.substring(0, 100) + '...');
 
     console.log('🤖 [DEBUG] Fazendo chamada para OpenAI...');
-    const resposta = await openAIService.enviarMensagem([{ role: 'user', content: prompt }]);
+    const resposta = await OpenAIService.enviarMensagens([{ role: 'user', content: prompt }]);
 
     console.log('🤖 [DEBUG] Resposta recebida da OpenAI:', resposta);
     console.log('🤖 [DEBUG] Conteúdo da resposta:', resposta?.conteudo);

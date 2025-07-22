@@ -7,7 +7,7 @@ import type {
   MagiaResult,
   MovimentoResult,
 } from './MCPTypes';
-import { Dados } from '../classes/Dados';
+import { Dados } from '../../../classes/Dados';
 
 /**
  * Implementação das funções MCP disponíveis para as IAs

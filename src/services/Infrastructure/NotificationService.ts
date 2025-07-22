@@ -3,7 +3,7 @@
  */
 
 import { Notify, Loading, Dialog } from 'quasar';
-import { useAccessibility } from '../composables/useAccessibility';
+import { useAccessibility } from '../../composables/useAccessibility';
 
 export interface NotificationOptions {
   message: string;

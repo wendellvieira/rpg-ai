@@ -914,15 +914,14 @@ async function testarConexaoAPI() {
 
   testandoAPI.value = true;
   try {
-    const openAI = OpenAIService.getInstance();
-    openAI.configurar({
+    OpenAIService.configurar({
       apiKey,
       model: configuracoes.value.modelo,
       temperature: configuracoes.value.temperature,
       maxTokens: configuracoes.value.maxTokens,
     });
 
-    await openAI.enviarMensagem([{ role: 'user', content: 'Teste de conexão' }]);
+    await OpenAIService.enviarMensagens([{ role: 'user', content: 'Teste de conexão' }]);
 
     $q.notify({
       type: 'positive',

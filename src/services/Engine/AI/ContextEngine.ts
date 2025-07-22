@@ -1,7 +1,7 @@
-import type { Personagem } from '../classes/Personagem';
-import type { SessaoJogo } from '../classes/SessaoJogo';
-import type { MCPContext } from '../mcp/MCPTypes';
-import type { Mensagem, MensagemAcao, MensagemFala } from '../types';
+import type { Personagem } from '../../../domain/entities/Character/Personagem';
+import type { SessaoJogo } from '../../../classes/SessaoJogo';
+import type { MCPContext } from '../../../mcp/MCPTypes';
+import type { Mensagem, MensagemAcao, MensagemFala } from '../../../types';
 
 export interface ContextoCompleto extends MCPContext {
   historico: HistoricoResumo;

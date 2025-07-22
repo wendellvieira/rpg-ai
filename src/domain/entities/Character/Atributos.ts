@@ -1,5 +1,5 @@
-import type { AtributosPrimarios, AtributosDerivados, AtributoTipo } from '../types';
-import { Dados } from './Dados';
+import type { AtributosPrimarios, AtributosDerivados, AtributoTipo } from '../../../types';
+import { Dados } from '../../../classes/Dados';
 
 /**
  * Gerencia os atributos de um personagem D&D 5e

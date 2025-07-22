@@ -4,7 +4,7 @@ import { CategoriaArma, TipoDano, PropriedadeArma } from './Arma_Data';
 import { TipoItem, RaridadeItem } from '../../../types';
 import type { ResultadoDados } from '../../../types';
 import { riid } from '../../../utils/riid';
-import { Dados } from '../../../services/Engine/Dice/DiceEngine';
+import { Dados } from '../../../classes/Dados';
 
 /**
  * Classe para armas do jogo

@@ -1,7 +1,7 @@
 import { OpenAIService, type MensagemIA } from './OpenAIService';
 import { MCPHandler } from '../mcp/MCPHandler';
 import type { MCPContext, MCPRequest } from '../mcp/MCPTypes';
-import type { Personagem } from '../classes/Personagem';
+import type { Personagem } from '../domain/entities/Character/Personagem';
 import type { SessaoJogo } from '../classes/SessaoJogo';
 
 export interface ConfiguracaoIAPersonagem {
@@ -30,7 +30,6 @@ export class IAPersonagem {
   private sessao: SessaoJogo;
   private configuracao: ConfiguracaoIAPersonagem;
   private estado: EstadoIAPersonagem;
-  private openAI: OpenAIService;
   private mcp: MCPHandler;
   private timeoutId: NodeJS.Timeout | null = null;
 
@@ -38,7 +37,6 @@ export class IAPersonagem {
     this.personagem = config.personagem;
     this.sessao = config.sessao;
     this.configuracao = config;
-    this.openAI = OpenAIService.getInstance();
     this.mcp = MCPHandler.getInstance();
 
     this.estado = {
@@ -58,10 +56,7 @@ export class IAPersonagem {
    * Ativa o personagem IA
    */
   ativar(): void {
-    if (!this.openAI.estaConfigurado()) {
-      throw new Error('OpenAI não está configurado');
-    }
-
+    // A verificação de configuração agora é feita na primeira chamada da API
     this.estado.ativo = true;
     this.agendarProximaVerificacao();
   }
@@ -169,7 +164,7 @@ export class IAPersonagem {
       },
     ];
 
-    const resposta = await this.openAI.enviarMensagem(mensagens);
+    const resposta = await OpenAIService.enviarMensagens(mensagens);
 
     return this.parsearDecisao(resposta.conteudo);
   }
@@ -378,7 +373,7 @@ O que você vai fazer neste turno? Responda em JSON.`;
       },
     ];
 
-    const resposta = await this.openAI.enviarMensagem(mensagens);
+    const resposta = await OpenAIService.enviarMensagens(mensagens);
     return resposta.conteudo.trim().replace(/['"]/g, '');
   }
 

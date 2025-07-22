@@ -47,9 +47,6 @@ export class OpenAIService {
   // Cache de clientes OpenAI por configuração
   private static clients = new Map<string, OpenAI>();
 
-  // Configuração externa (definida via configurar())
-  private static _externalConfig: Partial<ConfiguracaoIA> = {};
-
   /**
    * Obtém configuração padrão do ambiente
    */
@@ -61,13 +58,6 @@ export class OpenAIService {
       temperature: 0.7,
       maxTokens: 1000,
     };
-  }
-
-  /**
-   * Configura o serviço com uma configuração externa
-   */
-  static configurar(config: Partial<ConfiguracaoIA>): void {
-    OpenAIService._externalConfig = { ...OpenAIService._externalConfig, ...config };
   }
 
   /**

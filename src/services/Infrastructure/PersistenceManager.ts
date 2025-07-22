@@ -1,8 +1,8 @@
 import { DatabaseService } from './DatabaseService';
 import { BackupService } from './BackupService';
-import { Personagem } from '../classes/Personagem';
-import { SessaoJogo } from '../classes/SessaoJogo';
-import type { Item } from '../classes/Item';
+import { Personagem } from '../../domain/entities/Character/Personagem';
+import { SessaoJogo } from '../../classes/SessaoJogo';
+import type { Item } from '../../domain/entities/Items/Item';
 
 /**
  * Gerenciador principal de persistência
