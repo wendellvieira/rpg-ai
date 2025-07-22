@@ -13,6 +13,11 @@ import {
   type JustifyContent,
 } from './layout-types';
 
+// Definindo nome do componente para resolver problema ESLint
+defineOptions({
+  name: 'LayoutCluster',
+});
+
 interface Props extends ResponsiveGap {
   // Alinhamento vertical dos itens
   align?: AlignItems;

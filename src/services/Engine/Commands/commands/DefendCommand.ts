@@ -256,14 +256,11 @@ export class DefendCommand extends BaseCommand {
    */
   private calculateDefense(
     defenseType: DefenseType,
-    defender: unknown,
-    protectedAlly: unknown | null,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _defender: unknown,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _protectedAlly: unknown,
   ): DefenseResult {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _defender = defender; // Para evitar warning de unused
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _protectedAlly = protectedAlly; // Para evitar warning de unused
-
     let bonus = 0;
     const duration = 1;
     let description = '';

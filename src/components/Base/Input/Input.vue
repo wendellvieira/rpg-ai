@@ -96,6 +96,11 @@ import { computed, onMounted, ref } from 'vue';
 import { Input_Ctrl } from './Input_Ctrl';
 import type { InputConfig } from './Input_Data';
 
+// Definindo nome do componente para resolver problema ESLint
+defineOptions({
+  name: 'BaseInput',
+});
+
 interface Props {
   ctrl?: Input_Ctrl;
   config?: InputConfig;
@@ -180,12 +185,18 @@ const emit = defineEmits<Emits>();
 
 // Controller interno ou injetado
 const internalCtrl = ref<Input_Ctrl | null>(null);
-const ctrl = computed(() => {
-  if (props.ctrl) return props.ctrl;
-  if (!internalCtrl.value) {
+
+// Inicializa o controller se necessário
+const initializeController = () => {
+  if (!internalCtrl.value && !props.ctrl) {
     internalCtrl.value = Input_Ctrl.create(props.config || {});
   }
-  return internalCtrl.value;
+};
+
+const ctrl = computed(() => {
+  if (props.ctrl) return props.ctrl;
+  initializeController();
+  return internalCtrl.value!;
 });
 
 // Classes CSS dinâmicas

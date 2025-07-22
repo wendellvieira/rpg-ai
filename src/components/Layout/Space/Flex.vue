@@ -9,10 +9,14 @@ import { computed } from 'vue';
 import {
   LayoutUtils,
   type ResponsiveGap,
-  type AlignContent,
-  type JustifyContent,
   type AlignItems,
+  type JustifyContent,
 } from './layout-types';
+
+// Definindo nome do componente para resolver problema ESLint
+defineOptions({
+  name: 'LayoutFlex',
+});
 
 interface Props extends ResponsiveGap {
   // Direção do flex

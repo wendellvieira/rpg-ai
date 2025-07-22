@@ -8,6 +8,11 @@
 import { computed } from 'vue';
 import { LayoutUtils, type ResponsiveGap, type AlignItems } from './layout-types';
 
+// Definindo nome do componente para resolver problema ESLint
+defineOptions({
+  name: 'LayoutStack',
+});
+
 interface Props extends ResponsiveGap {
   // Alinhamento horizontal dos itens
   align?: AlignItems;

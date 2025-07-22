@@ -159,7 +159,7 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from 'vue';
-import { QIcon, QToggle, QSpinner } from 'quasar';
+import { QIcon, QToggle } from 'quasar';
 import { useThemeSystem } from 'src/composables/useThemeSystem';
 
 // Props
@@ -167,6 +167,8 @@ interface Props {
   compact?: boolean;
 }
 
+// Usado para configurações futuras
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const props = withDefaults(defineProps<Props>(), {
   compact: false,
 });
@@ -216,6 +218,8 @@ const selectTheme = async (themeId: string) => {
   }
 };
 
+// Função para reset futuro
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const resetToDefault = async () => {
   if (isChangingTheme.value) return;
 
@@ -229,6 +233,8 @@ const resetToDefault = async () => {
   }
 };
 
+// Função para exportar tema futuro
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const exportTheme = () => {
   const themeCSS = generateThemeCSS(currentTheme.value);
   const blob = new Blob([themeCSS], { type: 'text/css' });

@@ -133,6 +133,11 @@ import { computed, onMounted, ref } from 'vue';
 import { Select_Ctrl } from './Select_Ctrl';
 import type { SelectConfig, SelectOption } from './Select_Data';
 
+// Definindo nome do componente para resolver problema ESLint
+defineOptions({
+  name: 'BaseSelect',
+});
+
 interface Props {
   ctrl?: Select_Ctrl;
   config?: SelectConfig;
@@ -246,12 +251,18 @@ const emit = defineEmits<Emits>();
 
 // Controller interno ou injetado
 const internalCtrl = ref<Select_Ctrl | null>(null);
-const ctrl = computed(() => {
-  if (props.ctrl) return props.ctrl;
-  if (!internalCtrl.value) {
+
+// Inicializa o controller se necessário
+const initializeController = () => {
+  if (!internalCtrl.value && !props.ctrl) {
     internalCtrl.value = Select_Ctrl.create(props.config || {});
   }
-  return internalCtrl.value;
+};
+
+const ctrl = computed(() => {
+  if (props.ctrl) return props.ctrl;
+  initializeController();
+  return internalCtrl.value!;
 });
 
 // Classes CSS dinâmicas

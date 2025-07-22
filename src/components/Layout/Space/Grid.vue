@@ -8,6 +8,11 @@
 import { computed } from 'vue';
 import { type GridProps, GAP_VALUES } from './layout-types';
 
+// Definindo nome do componente para resolver problema ESLint
+defineOptions({
+  name: 'LayoutGrid',
+});
+
 const props = withDefaults(defineProps<GridProps>(), {
   autoFlow: 'row',
   alignItems: 'stretch',

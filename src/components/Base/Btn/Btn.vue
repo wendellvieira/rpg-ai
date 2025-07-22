@@ -61,6 +61,11 @@ import { computed, onMounted, ref } from 'vue';
 import { Btn_Ctrl } from './Btn_Ctrl';
 import type { BtnConfig } from './Btn_Data';
 
+// Definindo nome do componente para resolver problema ESLint
+defineOptions({
+  name: 'BaseBtn',
+});
+
 interface Props {
   ctrl?: Btn_Ctrl;
   config?: BtnConfig;
@@ -142,12 +147,18 @@ const emit = defineEmits<Emits>();
 
 // Controller interno ou injetado
 const internalCtrl = ref<Btn_Ctrl | null>(null);
-const ctrl = computed(() => {
-  if (props.ctrl) return props.ctrl;
-  if (!internalCtrl.value) {
+
+// Inicializa o controller se necessário
+const initializeController = () => {
+  if (!internalCtrl.value && !props.ctrl) {
     internalCtrl.value = Btn_Ctrl.create(props.config || {});
   }
-  return internalCtrl.value;
+};
+
+const ctrl = computed(() => {
+  if (props.ctrl) return props.ctrl;
+  initializeController();
+  return internalCtrl.value!;
 });
 
 // Classes CSS dinâmicas

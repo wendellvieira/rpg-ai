@@ -129,7 +129,7 @@ import { useTailwindQuasar, useTailwindTheme } from 'src/composables/useTailwind
 const {
   buttonClasses,
   cardClasses: tailwindCardClasses,
-  inputClasses: tailwindInputClasses,
+  // inputClasses: tailwindInputClasses, // Comentado pois não está sendo usado
   combineClasses,
 } = useTailwindQuasar();
 
