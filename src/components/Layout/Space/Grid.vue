@@ -6,11 +6,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { GridProps, GAP_VALUES } from './layout-types';
+import { type GridProps, GAP_VALUES } from './layout-types';
 
-interface Props extends GridProps {}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<GridProps>(), {
   autoFlow: 'row',
   alignItems: 'stretch',
   alignContent: 'stretch',

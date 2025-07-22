@@ -1,4 +1,10 @@
 // app global css in SCSS form
 
+// Import design tokens first
+@import './design-tokens.css';
+
+// Import Tailwind CSS utilities
+@import './tailwind.css';
+
 // Import theme styles
 @import './themes.scss';

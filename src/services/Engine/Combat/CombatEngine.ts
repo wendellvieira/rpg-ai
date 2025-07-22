@@ -515,7 +515,7 @@ export class SistemaCombate {
     // Processa salvaguarda se houver
     if (magia.salvaguarda && magia.salvaguarda !== TipoSalvaguarda.NENHUM) {
       const salvaguardas = alvos.map((alvo) => {
-        const rolagem = this.rolarSalvaguarda(alvo, magia.salvaguarda!);
+        const rolagem = this.rolarSalvaguarda(alvo, magia.salvaguarda);
         return {
           personagemId: alvo.id,
           sucesso: rolagem.total >= cdSalvaguarda,
