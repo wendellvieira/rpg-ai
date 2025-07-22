@@ -1,3 +1,7 @@
+---
+applyTo: '**'
+---
+
 # Diretrizes de Arquitetura para Agentes LLM
 
 Este documento detalha os padrões de arquitetura e as convenções de codificação para este projeto Vue.js com Quasar e TypeScript. O objetivo é garantir que o código gerado seja consistente, manutenível e siga os princípios estabelecidos.
@@ -66,38 +70,38 @@ Controllers são o cérebro da aplicação.
   import { reactive } from 'vue';
 
   export class MeuController_Ctrl {
-  	// 1. Método estático para criar a instância reativa
-  	static reactive() {
-  		return reactive(new MeuController_Ctrl()) as MeuController_Ctrl;
-  	}
+    // 1. Método estático para criar a instância reativa
+    static reactive() {
+      return reactive(new MeuController_Ctrl()) as MeuController_Ctrl;
+    }
 
-  	// 2. Propriedades de estado (públicas)
-  	public data: MeuTipo_Data | null = null;
-  	public loading = false;
+    // 2. Propriedades de estado (públicas)
+    public data: MeuTipo_Data | null = null;
+    public loading = false;
 
-  	// 3. Dependências (protegidas)
-  	protected parent: ParentType | null = null;
+    // 3. Dependências (protegidas)
+    protected parent: ParentType | null = null;
 
-  	// 4. Métodos de ciclo de vida
-  	async mount(data: MeuTipo_Data) {
-  		this.data = data;
-  		// ... lógica de inicialização
-  		return this;
-  	}
+    // 4. Métodos de ciclo de vida
+    async mount(data: MeuTipo_Data) {
+      this.data = data;
+      // ... lógica de inicialização
+      return this;
+    }
 
-  	connect(parent: ParentType) {
-  		this.parent = parent;
-  		return this;
-  	}
+    connect(parent: ParentType) {
+      this.parent = parent;
+      return this;
+    }
 
-  	// 5. Métodos de persistência (opcional)
-  	restore(data: MeuTipo_Data) {
-  		this.data = data;
-  	}
+    // 5. Métodos de persistência (opcional)
+    restore(data: MeuTipo_Data) {
+      this.data = data;
+    }
 
-  	takeSnapshot() {
-  		return this.data;
-  	}
+    takeSnapshot() {
+      return this.data;
+    }
   }
   ```
 
@@ -106,13 +110,11 @@ Controllers são o cérebro da aplicação.
 Componentes são primariamente para a UI.
 
 - **Quando Criar um Componente?**
-
   - **Reutilização**: Será usado em mais de um local.
   - **Complexidade**: Template com mais de 100 linhas ou lógica de UI complexa.
   - **Responsabilidade Única**: Encapsula uma funcionalidade específica.
 
 - **Quando NÃO Criar?**
-
   - Uso único e simples (menos de 50 linhas).
   - Fortemente acoplado ao componente pai.
 
@@ -120,29 +122,29 @@ Componentes são primariamente para a UI.
 
   ```vue
   <template>
-  	<!-- O template interage com as propriedades e métodos do controller -->
-  	<div>{{ ctrl.data?.name }}</div>
+    <!-- O template interage com as propriedades e métodos do controller -->
+    <div>{{ ctrl.data?.name }}</div>
   </template>
 
   <script setup lang="ts">
-  	import { onMounted } from 'vue';
-  	import { MeuComponente_Ctrl } from './MeuComponente_Ctrl';
+  import { onMounted } from 'vue';
+  import { MeuComponente_Ctrl } from './MeuComponente_Ctrl';
 
-  	interface Props {
-  		initialData?: MeuTipo_Data;
-  	}
+  interface Props {
+    initialData?: MeuTipo_Data;
+  }
 
-  	const props = defineProps<Props>();
-  	const ctrl = MeuComponente_Ctrl.reactive();
+  const props = defineProps<Props>();
+  const ctrl = MeuComponente_Ctrl.reactive();
 
-  	// Expõe o controller para o template e para componentes pais
-  	defineExpose({ ctrl });
+  // Expõe o controller para o template e para componentes pais
+  defineExpose({ ctrl });
 
-  	onMounted(() => {
-  		if (props.initialData) {
-  			ctrl.mount(props.initialData);
-  		}
-  	});
+  onMounted(() => {
+    if (props.initialData) {
+      ctrl.mount(props.initialData);
+    }
+  });
   </script>
   ```
 
@@ -170,32 +172,32 @@ Modais possuem um padrão de controller específico para gerenciar seu ciclo de 
 
   ```typescript
   export class MeuModal_Ctrl {
-  	static reactive() {
-  		/* ... */
-  	}
+    static reactive() {
+      /* ... */
+    }
 
-  	public status = false; // Controla a visibilidade
-  	public deferred: Deferred<ResultType | null> = new Deferred();
-  	public data: MeuModal_Data | null = null;
+    public status = false; // Controla a visibilidade
+    public deferred: Deferred<ResultType | null> = new Deferred();
+    public data: MeuModal_Data | null = null;
 
-  	// Retorna uma promessa que resolve quando o modal é fechado
-  	public async open(initialData?: MeuModal_Data) {
-  		this.reset();
-  		this.data = initialData;
-  		this.status = true;
-  		return this.deferred.promise;
-  	}
+    // Retorna uma promessa que resolve quando o modal é fechado
+    public async open(initialData?: MeuModal_Data) {
+      this.reset();
+      this.data = initialData;
+      this.status = true;
+      return this.deferred.promise;
+    }
 
-  	// Fecha o modal e resolve a promessa
-  	public close(result: ResultType | null = null) {
-  		this.deferred.resolve(result);
-  		this.status = false;
-  	}
+    // Fecha o modal e resolve a promessa
+    public close(result: ResultType | null = null) {
+      this.deferred.resolve(result);
+      this.status = false;
+    }
 
-  	public reset() {
-  		this.data = null;
-  		this.deferred = new Deferred();
-  	}
+    public reset() {
+      this.data = null;
+      this.deferred = new Deferred();
+    }
   }
   ```
 
@@ -210,23 +212,23 @@ Para estado global, usamos Pinia com um padrão de classe.
   import { transformClass } from 'src/utils/transformClass'; // Helper para converter classe em setup store
 
   export class Feature_Store {
-  	// State
-  	public data: MyData[] = [];
-  	public loading = false;
+    // State
+    public data: MyData[] = [];
+    public loading = false;
 
-  	// Getters (usando 'get' do ES6)
-  	get items() {
-  		return this.data;
-  	}
+    // Getters (usando 'get' do ES6)
+    get items() {
+      return this.data;
+    }
 
-  	// Actions (métodos da classe)
-  	async loadData() {
-  		// ...
-  	}
+    // Actions (métodos da classe)
+    async loadData() {
+      // ...
+    }
   }
 
   export const useFeatureStore = defineStore('feature', () => {
-  	return transformClass(Feature_Store);
+    return transformClass(Feature_Store);
   });
   ```
 
@@ -248,12 +250,12 @@ Para lógica pura e reutilizável.
   ```typescript
   // src/utils/FormatHelper.ts
   export class FormatHelper {
-  	static date(d: Date): string {
-  		// ...
-  	}
-  	static currency(v: number): string {
-  		// ...
-  	}
+    static date(d: Date): string {
+      // ...
+    }
+    static currency(v: number): string {
+      // ...
+    }
   }
   ```
 
@@ -266,17 +268,17 @@ Exceto para controllers de entrypoint (como Páginas), as instâncias de control
   ```typescript
   // Parent_Ctrl.ts
   class Parent_Ctrl {
-  	static reactive() {
-  		/* ... */
-  	}
+    static reactive() {
+      /* ... */
+    }
 
-  	// 1. Declare o tipo do controller escravo
-  	public modal: MinhaClasseDeCtrl_Ctrl;
+    // 1. Declare o tipo do controller escravo
+    public modal: MinhaClasseDeCtrl_Ctrl;
 
-  	constructor() {
-  		// 2. Instancie o controller escravo no construtor
-  		this.modal = MinhaClasseDeCtrl_Ctrl.reactive();
-  	}
+    constructor() {
+      // 2. Instancie o controller escravo no construtor
+      this.modal = MinhaClasseDeCtrl_Ctrl.reactive();
+    }
   }
   ```
 
@@ -292,20 +294,20 @@ Exceto para controllers de entrypoint (como Páginas), as instâncias de control
   ```vue
   <!-- ComponentePai.vue -->
   <template>
-  	<Modal :ctrl="ctrl.modal" />
+    <Modal :ctrl="ctrl.modal" />
   </template>
   <script setup lang="ts">
-  	// ...
-  	const ctrl = Parent_Ctrl.reactive();
+  // ...
+  const ctrl = Parent_Ctrl.reactive();
   </script>
   ```
 
   ```vue
   <!-- Modal.vue -->
   <script setup lang="ts">
-  	defineProps<{
-  		ctrl: MinhaClasseDeCtrl_Ctrl;
-  	}>();
+  defineProps<{
+    ctrl: MinhaClasseDeCtrl_Ctrl;
+  }>();
   </script>
   ```
 
@@ -314,7 +316,6 @@ Exceto para controllers de entrypoint (como Páginas), as instâncias de control
 Para dados que precisam ser persistidos e compartilhados na aplicação, utilizamos um padrão que combina um repositório central (Entidade) com modelos de dados reativos (Documento).
 
 - **Entidade (`_Entity.Store.ts`)**:
-
   - É uma Store Pinia que atua como um cache centralizado para um tipo de dado.
   - Normalmente, armazena os documentos em uma estrutura de `Map` para acesso rápido por ID.
   - Responsável por buscar dados da API e popular a coleção de documentos.
@@ -325,16 +326,15 @@ Para dados que precisam ser persistidos e compartilhados na aplicação, utiliza
   import { User_Doc } from './User_Doc';
 
   class Users_Entity {
-  	public users: Map<string, User_Doc> = new Map();
+    public users: Map<string, User_Doc> = new Map();
 
-  	// Métodos para buscar, adicionar, remover usuários...
+    // Métodos para buscar, adicionar, remover usuários...
   }
 
   // ... export da store com Pinia
   ```
 
 - **Documento (`_Doc.ts`)**:
-
   - É uma classe reativa que representa um único registro de dados (ex: um usuário).
   - Contém as propriedades dos dados, getters para dados derivados, e métodos para regras de negócio e validação (ex: com Zod).
   - O construtor geralmente aceita um objeto `snap` (snapshot) para popular a instância.
@@ -343,32 +343,32 @@ Para dados que precisam ser persistidos e compartilhados na aplicação, utiliza
   ```typescript
   // Exemplo: src/stores/modules/users/User_Doc.ts
   interface User_Data {
-  	sub: string;
-  	name: string;
+    sub: string;
+    name: string;
   }
 
   class User_Doc {
-  	constructor(snap: User_Data) {
-  		Object.assign(this, snap);
-  	}
+    constructor(snap: User_Data) {
+      Object.assign(this, snap);
+    }
 
-  	public sub = '';
-  	public name = '';
+    public sub = '';
+    public name = '';
 
-  	get isValid() {
-  		// ...lógica de validação
-  		return true;
-  	}
+    get isValid() {
+      // ...lógica de validação
+      return true;
+    }
 
-  	async tryValidate() {
-  		// ...validação com Zod
-  	}
+    async tryValidate() {
+      // ...validação com Zod
+    }
 
-  	// Outras regras de negócio
+    // Outras regras de negócio
 
-  	takeSnapshot(): User_Data {
-  		return { sub: this.sub, name: this.name };
-  	}
+    takeSnapshot(): User_Data {
+      return { sub: this.sub, name: this.name };
+    }
   }
   ```
 
@@ -427,7 +427,3 @@ Antes de gerar ou modificar código, siga este checklist:
   - [ ] As props e emits dos componentes estão claros e tipados?
   - [ ] O novo código é testável de forma isolada?
   - [ ] Adicionei JSDoc ou comentários onde a lógica é complexa?
-
----
-
-_Este documento é a fonte da verdade para o desenvolvimento neste projeto. Consulte-o sempre._
