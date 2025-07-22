@@ -1,76 +1,126 @@
 import { Item } from './Item';
-import { TipoItem, type RaridadeItem } from '../types';
-
-export enum CategoriaArmadura {
-  LEVE = 'leve',
-  MEDIA = 'media',
-  PESADA = 'pesada',
-  ESCUDO = 'escudo',
-}
-
-interface DadosArmadura {
-  id?: string;
-  nome: string;
-  descricao: string;
-  valor: number;
-  peso: number;
-  raridade?: RaridadeItem;
-  magico?: boolean;
-  imagemUrl?: string;
-  categoria: CategoriaArmadura;
-  bonusCA: number;
-  maxDestreza?: number; // Máximo de bônus Destreza aplicável
-  penalidade?: number; // Penalidade em testes de furtividade
-  forcaMinima?: number; // Força mínima para usar sem penalidades
-  resistencias?: string[]; // Resistências a tipos de dano
-}
+import type { Armadura_Data, ArmaduraConfig } from './Armadura_Data';
+import { TipoArmadura, LocalArmadura } from './Armadura_Data';
+import { TipoItem, RaridadeItem } from '../../../types';
+import { riid } from '../../../utils/riid';
 
 /**
  * Classe para armaduras e escudos
+ * Implementa o padrão Factory para criação de instâncias
  */
 export class Armadura extends Item {
-  public readonly categoria: CategoriaArmadura;
-  public readonly bonusCA: number;
-  public readonly maxDestreza: number | undefined;
-  public readonly penalidade: number | undefined;
-  public readonly forcaMinima: number | undefined;
-  public readonly resistencias: string[];
+  // ✅ OBRIGATÓRIO: Propriedade data tipada
+  public override data: Armadura_Data | null = null;
 
-  constructor(dados: DadosArmadura) {
-    const tipo = dados.categoria === CategoriaArmadura.ESCUDO ? TipoItem.ESCUDO : TipoItem.ARMADURA;
+  protected constructor() {
+    super();
+  }
 
-    super({
-      ...dados,
+  // ✅ MÉTODOS ESPECÍFICOS DA ARMADURA
+  static createArmadura(data: Armadura_Data): Armadura {
+    const armadura = new Armadura();
+    armadura.data = data;
+    return armadura;
+  }
+
+  static createArmaduraFromConfig(config: ArmaduraConfig): Armadura {
+    const tipo = config.tipoArmadura === TipoArmadura.ESCUDO ? TipoItem.ESCUDO : TipoItem.ARMADURA;
+    
+    const data: Armadura_Data = {
+      id: config.id || riid(),
+      nome: config.nome,
       tipo,
+      descricao: config.descricao,
+      valor: config.valor,
+      peso: config.peso,
+      raridade: config.raridade || RaridadeItem.COMUM,
+      magico: config.magico || false,
       propriedades: {
-        categoria: dados.categoria,
-        bonusCA: dados.bonusCA,
-        maxDestreza: dados.maxDestreza,
-        penalidade: dados.penalidade,
-        forcaMinima: dados.forcaMinima,
-        resistencias: dados.resistencias || [],
+        tipoArmadura: config.tipoArmadura,
+        local: config.local,
+        classeArmadura: config.classeArmadura,
+        modMaxDes: config.modMaxDes,
+        penalidade: config.penalidade || 0,
+        bonusCA: config.bonusCA || 0,
+        resistencias: config.resistencias || [],
       },
-    });
+      ...(config.imagemUrl && { imagemUrl: config.imagemUrl }),
+      // Propriedades específicas da armadura
+      tipoArmadura: config.tipoArmadura,
+      local: config.local,
+      classeArmadura: config.classeArmadura,
+      modMaxDes: config.modMaxDes || null,
+      penalidade: config.penalidade || 0,
+      bonusCA: config.bonusCA || 0,
+      resistencias: config.resistencias || [],
+    };
+    
+    return Armadura.createArmadura(data);
+  }
 
-    this.categoria = dados.categoria;
-    this.bonusCA = dados.bonusCA;
-    this.maxDestreza = dados.maxDestreza;
-    this.penalidade = dados.penalidade;
-    this.forcaMinima = dados.forcaMinima;
-    this.resistencias = dados.resistencias || [];
+  static createEmptyArmadura(): Armadura {
+    const data: Armadura_Data = {
+      id: riid(),
+      nome: '',
+      tipo: TipoItem.ARMADURA,
+      descricao: '',
+      valor: 0,
+      peso: 0,
+      raridade: RaridadeItem.COMUM,
+      magico: false,
+      propriedades: {},
+      tipoArmadura: TipoArmadura.LEVE,
+      local: LocalArmadura.CORPO,
+      classeArmadura: 10,
+      modMaxDes: null,
+      penalidade: 0,
+      bonusCA: 0,
+      resistencias: [],
+    };
+    
+    return Armadura.createArmadura(data);
+  }
+
+  // ✅ PERMITIDO: Propriedades calculadas/getters
+  get tipoArmadura(): TipoArmadura {
+    return this.data?.tipoArmadura || TipoArmadura.LEVE;
+  }
+
+  get local(): LocalArmadura {
+    return this.data?.local || LocalArmadura.CORPO;
+  }
+
+  get classeArmadura(): number {
+    return this.data?.classeArmadura || 10;
+  }
+
+  get modMaxDes(): number | null {
+    return this.data?.modMaxDes || null;
+  }
+
+  get penalidade(): number {
+    return this.data?.penalidade || 0;
+  }
+
+  get bonusCA(): number {
+    return this.data?.bonusCA || 0;
+  }
+
+  get resistencias(): string[] {
+    return this.data?.resistencias || [];
   }
 
   /**
    * Verifica se a armadura pode ser usada
    */
-  override podeUsar(): boolean {
+  podeUsar(): boolean {
     return true; // Armaduras sempre podem ser equipadas
   }
 
   /**
    * "Usa" a armadura (a equipa)
    */
-  override usar(): { sucesso: boolean; mensagem: string } {
+  usar(): { sucesso: boolean; mensagem: string } {
     return {
       sucesso: true,
       mensagem: `${this.nome} foi equipada.`,
@@ -81,60 +131,53 @@ export class Armadura extends Item {
    * Calcula a CA total considerando bônus de Destreza
    */
   calcularCA(modificadorDestreza: number): number {
-    let ca = this.bonusCA;
+    let ca = this.classeArmadura + this.bonusCA;
 
-    if (this.maxDestreza !== undefined) {
+    if (this.modMaxDes !== null) {
       // Aplica o máximo de bônus Destreza permitido
-      ca += Math.min(modificadorDestreza, this.maxDestreza);
-    } else if (this.categoria === CategoriaArmadura.LEVE) {
+      ca += Math.min(modificadorDestreza, this.modMaxDes);
+    } else if (this.tipoArmadura === TipoArmadura.LEVE) {
       // Armadura leve: aplica todo o bônus de Destreza
       ca += modificadorDestreza;
     }
-    // Armadura pesada: não aplica bônus de Destreza (já incluído no bonusCA)
+    // Armadura pesada: não aplica bônus de Destreza
 
     return ca;
-  }
-
-  /**
-   * Verifica se o personagem tem força suficiente para usar sem penalidades
-   */
-  podeUsarSemPenalidade(forca: number): boolean {
-    return !this.forcaMinima || forca >= this.forcaMinima;
   }
 
   /**
    * Verifica se tem penalidade em furtividade
    */
   temPenalidadeFurtividade(): boolean {
-    return this.penalidade !== undefined && this.penalidade > 0;
+    return this.penalidade > 0;
   }
 
   /**
    * Verifica se é armadura leve
    */
   isLeve(): boolean {
-    return this.categoria === CategoriaArmadura.LEVE;
+    return this.tipoArmadura === TipoArmadura.LEVE;
   }
 
   /**
    * Verifica se é armadura média
    */
   isMedia(): boolean {
-    return this.categoria === CategoriaArmadura.MEDIA;
+    return this.tipoArmadura === TipoArmadura.MEDIA;
   }
 
   /**
    * Verifica se é armadura pesada
    */
   isPesada(): boolean {
-    return this.categoria === CategoriaArmadura.PESADA;
+    return this.tipoArmadura === TipoArmadura.PESADA;
   }
 
   /**
    * Verifica se é escudo
    */
   isEscudo(): boolean {
-    return this.categoria === CategoriaArmadura.ESCUDO;
+    return this.tipoArmadura === TipoArmadura.ESCUDO;
   }
 
   /**
@@ -148,31 +191,21 @@ export class Armadura extends Item {
    * Cria uma cópia da armadura
    */
   override clonar(): Armadura {
-    const dados: DadosArmadura = {
+    return Armadura.createArmaduraFromConfig({
       nome: this.nome,
       descricao: this.descricao,
       valor: this.valor,
       peso: this.peso,
       raridade: this.raridade,
       magico: this.magico,
-      categoria: this.categoria,
+      tipoArmadura: this.tipoArmadura,
+      local: this.local,
+      classeArmadura: this.classeArmadura,
+      modMaxDes: this.modMaxDes,
+      penalidade: this.penalidade,
       bonusCA: this.bonusCA,
       resistencias: [...this.resistencias],
-    };
-
-    if (this.maxDestreza !== undefined) {
-      dados.maxDestreza = this.maxDestreza;
-    }
-
-    if (this.penalidade !== undefined) {
-      dados.penalidade = this.penalidade;
-    }
-
-    if (this.forcaMinima !== undefined) {
-      dados.forcaMinima = this.forcaMinima;
-    }
-
-    return new Armadura(dados);
+    });
   }
 
   /**
@@ -182,19 +215,20 @@ export class Armadura extends Item {
     let descricao = super.getDescricaoCompleta();
 
     descricao += `\n\n**Estatísticas de Proteção:**\n`;
-    descricao += `• CA Base: ${this.bonusCA}\n`;
-    descricao += `• Categoria: ${this.categoria}\n`;
+    descricao += `• CA: ${this.classeArmadura}\n`;
+    descricao += `• Tipo: ${this.tipoArmadura}\n`;
+    descricao += `• Local: ${this.local}\n`;
 
-    if (this.maxDestreza !== undefined) {
-      descricao += `• Máx. Bônus Destreza: +${this.maxDestreza}\n`;
+    if (this.modMaxDes !== null) {
+      descricao += `• Máx. Bônus Destreza: +${this.modMaxDes}\n`;
     }
 
-    if (this.penalidade) {
+    if (this.penalidade > 0) {
       descricao += `• Penalidade Furtividade: -${this.penalidade}\n`;
     }
 
-    if (this.forcaMinima) {
-      descricao += `• Força Mínima: ${this.forcaMinima}\n`;
+    if (this.bonusCA > 0) {
+      descricao += `• Bônus CA Mágico: +${this.bonusCA}\n`;
     }
 
     if (this.resistencias.length > 0) {
@@ -205,63 +239,59 @@ export class Armadura extends Item {
   }
 
   // Factory methods para armaduras comuns
-  static criarCouroSimples(): Armadura {
-    return new Armadura({
+  static criarArmaduraCouro(): Armadura {
+    return Armadura.createArmaduraFromConfig({
       nome: 'Armadura de Couro',
-      descricao: 'Armadura flexível feita de couro endurecido.',
+      descricao: 'Armadura leve feita de couro endurecido.',
       valor: 10,
       peso: 4.5,
-      categoria: CategoriaArmadura.LEVE,
-      bonusCA: 11,
+      tipoArmadura: TipoArmadura.LEVE,
+      local: LocalArmadura.CORPO,
+      classeArmadura: 11,
+      modMaxDes: null, // Sem limite de Destreza
+      penalidade: 0,
     });
   }
 
-  static criarCottaDeMalha(): Armadura {
-    return new Armadura({
+  static criarCotaMalha(): Armadura {
+    return Armadura.createArmaduraFromConfig({
       nome: 'Cota de Malha',
-      descricao: 'Armadura feita de anéis de metal entrelaçados.',
-      valor: 75,
+      descricao: 'Armadura média feita de anéis de metal entrelaçados.',
+      valor: 50,
       peso: 9,
-      categoria: CategoriaArmadura.MEDIA,
-      bonusCA: 13,
-      maxDestreza: 2,
+      tipoArmadura: TipoArmadura.MEDIA,
+      local: LocalArmadura.CORPO,
+      classeArmadura: 13,
+      modMaxDes: 2,
+      penalidade: 0,
     });
   }
 
-  static criarPlacas(): Armadura {
-    return new Armadura({
+  static criarArmaduraPlacas(): Armadura {
+    return Armadura.createArmaduraFromConfig({
       nome: 'Armadura de Placas',
-      descricao: 'Armadura completa de placas de metal articuladas.',
+      descricao: 'Armadura pesada de metal moldado cobrindo todo o corpo.',
       valor: 1500,
-      peso: 29.5,
-      categoria: CategoriaArmadura.PESADA,
-      bonusCA: 18,
+      peso: 30,
+      tipoArmadura: TipoArmadura.PESADA,
+      local: LocalArmadura.CORPO,
+      classeArmadura: 18,
+      modMaxDes: 0,
       penalidade: 1,
-      forcaMinima: 15,
     });
   }
 
   static criarEscudo(): Armadura {
-    return new Armadura({
+    return Armadura.createArmaduraFromConfig({
       nome: 'Escudo',
-      descricao: 'Escudo de madeira reforçado com metal.',
+      descricao: 'Um escudo de madeira reforçado com metal.',
       valor: 10,
       peso: 2.7,
-      categoria: CategoriaArmadura.ESCUDO,
-      bonusCA: 2,
-    });
-  }
-
-  static criarEscudoTorre(): Armadura {
-    return new Armadura({
-      nome: 'Escudo Torre',
-      descricao: 'Escudo grande que oferece cobertura quase completa.',
-      valor: 50,
-      peso: 13.6,
-      categoria: CategoriaArmadura.ESCUDO,
-      bonusCA: 3,
-      penalidade: 2,
-      forcaMinima: 13,
+      tipoArmadura: TipoArmadura.ESCUDO,
+      local: LocalArmadura.ESCUDO,
+      classeArmadura: 2,
+      modMaxDes: null,
+      penalidade: 0,
     });
   }
 }

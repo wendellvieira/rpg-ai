@@ -1,10 +1,6 @@
 import { Item } from './Item';
 import type { Arma_Data, ArmaConfig } from './Arma_Data';
-import { 
-  CategoriaArma, 
-  TipoDano, 
-  PropriedadeArma
-} from './Arma_Data';
+import { CategoriaArma, TipoDano, PropriedadeArma } from './Arma_Data';
 import { TipoItem, RaridadeItem } from '../../../types';
 import type { ResultadoDados } from '../../../types';
 import { riid } from '../../../utils/riid';
@@ -60,7 +56,7 @@ export class Arma extends Item {
       bonusAtaque: config.bonusAtaque || 0,
       bonusDano: config.bonusDano || 0,
     };
-    
+
     return Arma.createArma(data);
   }
 
@@ -84,7 +80,7 @@ export class Arma extends Item {
       bonusAtaque: 0,
       bonusDano: 0,
     };
-    
+
     return Arma.createArma(data);
   }
 
