@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia';
-import { transformClass } from '../utils/transformClass';
-import { Personagem, type PersonagemConfig } from '../domain/entities/Character/Personagem';
-import type { Personagem_Data } from '../domain/entities/Character/Personagem_Data';
-import { PersistenceManager } from '../services/Infrastructure/PersistenceManager';
+import { transformClass } from '../../../utils/transformClass';
+import { Personagem, type PersonagemConfig } from '../../../domain/entities/Character/Personagem';
+import type { Personagem_Data } from '../../../domain/entities/Character/Personagem_Data';
+import { PersistenceManager } from '../../../services/Infrastructure/PersistenceManager';
 
 /**
  * ✅ Store moderna para gerenciamento de personagens

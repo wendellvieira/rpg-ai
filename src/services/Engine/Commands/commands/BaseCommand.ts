@@ -99,6 +99,7 @@ export enum CommandCategory {
   COMMUNICATION = 'communication',
   ACTION = 'action',
   COMBAT = 'combat',
+  MECHANICS = 'mechanics',
   AI = 'ai',
   SYSTEM = 'system',
   UTILITY = 'utility',

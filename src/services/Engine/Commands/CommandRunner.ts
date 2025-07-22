@@ -4,6 +4,12 @@ import type { CommandExecutionContext } from './CommandContext';
 
 // Importar comandos disponíveis
 import { TalkCommand, AttackCommand } from './commands';
+import { RollCommand } from './commands/RollCommand';
+import { CastCommand } from './commands/CastCommand';
+import { MoveCommand } from './commands/MoveCommand';
+import { HealCommand } from './commands/HealCommand';
+import { DefendCommand } from './commands/DefendCommand';
+import { AIControlCommand } from './commands/AIControlCommand';
 
 /**
  * Executor centralizado para sistema de comandos
@@ -31,11 +37,21 @@ export class CommandRunner {
 
     // Comandos de combate
     this.registerCommand(new AttackCommand());
+    this.registerCommand(new DefendCommand());
+
+    // Comandos de mecânicas
+    this.registerCommand(new RollCommand());
+
+    // Comandos de ação
+    this.registerCommand(new CastCommand());
+    this.registerCommand(new MoveCommand());
+    this.registerCommand(new HealCommand());
+
+    // Comandos de IA
+    this.registerCommand(new AIControlCommand());
 
     console.log(`🎮 Comandos padrão registrados: ${this.commands.size} comandos`);
-  }
-
-  /**
+  } /**
    * Registra um comando no sistema
    */
   registerCommand(command: BaseCommand): void {

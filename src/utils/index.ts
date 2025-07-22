@@ -10,6 +10,7 @@ export { ThemeHelper } from './ThemeHelper';
 export { FormatHelper } from './FormatHelper';
 export { ValidationHelper } from './ValidationHelper';
 export { DateHelper } from './DateHelper';
+export { transformClass } from './transformClass';
 
 // Deferred (já existente)
 export { Deferred } from './Deferred';

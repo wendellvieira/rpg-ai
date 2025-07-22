@@ -307,13 +307,14 @@
           <!-- Controles do mestre -->
           <div v-if="sessaoAtual" class="q-pa-md bg-grey-1">
             <div class="row q-gutter-sm">
-              <div class="col">
+              <div class="col relative-position">
                 <q-input
                   v-model="novaMensagem"
-                  placeholder="Digite uma mensagem ou ação... (Use @nome para personificar)"
+                  placeholder="Digite uma mensagem, ação ou comando (/help para ajuda)"
                   outlined
                   dense
                   @keyup.enter="enviarMensagem"
+                  @input="atualizarAutoComplete"
                 >
                   <template v-slot:prepend v-if="personagemPersonificado">
                     <q-avatar
@@ -334,6 +335,43 @@
                     />
                   </template>
                 </q-input>
+
+                <!-- Auto-complete dropdown -->
+                <q-menu
+                  v-model="mostrarAutoComplete"
+                  no-focus
+                  no-refocus
+                  anchor="bottom left"
+                  self="top left"
+                  class="q-mt-xs"
+                  style="min-width: 300px"
+                >
+                  <q-list dense>
+                    <q-item
+                      v-for="sugestao in sugestoesComando"
+                      :key="sugestao.command"
+                      clickable
+                      @click="selecionarComando(sugestao.command)"
+                      class="q-py-sm"
+                    >
+                      <q-item-section avatar>
+                        <q-icon :name="sugestao.icon" />
+                      </q-item-section>
+                      <q-item-section>
+                        <q-item-label class="text-weight-medium">{{
+                          sugestao.command
+                        }}</q-item-label>
+                        <q-item-label caption>{{ sugestao.description }}</q-item-label>
+                      </q-item-section>
+                    </q-item>
+
+                    <q-item v-if="sugestoesComando.length === 0">
+                      <q-item-section>
+                        <q-item-label class="text-grey-6">Nenhum comando encontrado</q-item-label>
+                      </q-item-section>
+                    </q-item>
+                  </q-list>
+                </q-menu>
               </div>
             </div>
 
@@ -450,6 +488,7 @@ import { usePersonagemStore } from '../stores/personagemStore';
 import { useConfigStore } from '../stores/configStore';
 import { PersistenceManager } from '../services/PersistenceManager';
 import { OpenAIService } from '../services/OpenAIService';
+import { GameCommandService } from '../services/GameCommandService';
 import { Dados } from '../classes/Dados';
 import type { Personagem } from '../classes/Personagem';
 import { StatusSessao, type SessaoJogo } from '../classes/SessaoJogo';
@@ -515,6 +554,11 @@ const modificadorRolagem = ref(0);
 
 // Opções
 const tiposRolagem = ['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100'];
+
+// ✅ Sistema de Comandos
+const commandService = new GameCommandService();
+const mostrarAutoComplete = ref(false);
+const sugestoesComando = ref<Array<{ command: string; description: string; icon: string }>>([]);
 
 // Computed
 const sessaoAtual = computed(() => sessaoStore.sessaoAtual);
@@ -894,12 +938,89 @@ function salvarAlteracaoPersonagem() {
   }
 }
 
+// ✅ Auto-complete para comandos
+function atualizarAutoComplete() {
+  const input = novaMensagem.value;
+
+  if (!input.startsWith('/')) {
+    mostrarAutoComplete.value = false;
+    sugestoesComando.value = [];
+    return;
+  }
+
+  try {
+    const sugestoes = commandService.getAutoComplete(input);
+    sugestoesComando.value = sugestoes.map((s) => ({
+      command: s.command,
+      description: s.description,
+      icon: s.icon,
+    }));
+    mostrarAutoComplete.value = sugestoes.length > 0;
+  } catch (error) {
+    console.error('Erro ao gerar auto-complete:', error);
+    mostrarAutoComplete.value = false;
+  }
+}
+
+function selecionarComando(comando: string) {
+  novaMensagem.value = comando;
+  mostrarAutoComplete.value = false;
+}
+
 async function enviarMensagem() {
   if (!novaMensagem.value.trim() || !sessaoAtual.value) return;
 
   try {
     const mensagem = novaMensagem.value.trim();
 
+    // ✅ NOVA FUNCIONALIDADE: Verificar se é um comando primeiro
+    if (commandService.isCommand(mensagem)) {
+      console.log('🎯 Processando comando:', mensagem);
+
+      const resultado = await commandService.processCommand(mensagem);
+
+      if (resultado.success && resultado.result) {
+        // Comando executado com sucesso - adicionar resultado ao chat
+        sessaoAtual.value.adicionarMensagem({
+          tipo: 'mestre',
+          conteudo: `${mensagem}\n\n✅ ${resultado.result.message}`,
+        } as Omit<MensagemMestre, 'id' | 'timestamp' | 'turno' | 'rodada'>);
+
+        // Mostrar feedback visual se disponível
+        if (resultado.visualFeedback) {
+          $q.notify({
+            type: resultado.visualFeedback.type === 'error' ? 'negative' : 'positive',
+            message: resultado.visualFeedback.message,
+            icon: resultado.visualFeedback.icon,
+            timeout: 3000,
+          });
+        }
+      } else {
+        // Comando falhou - mostrar erro
+        const errorMsg = resultado.error || 'Comando não reconhecido';
+        sessaoAtual.value.adicionarMensagem({
+          tipo: 'mestre',
+          conteudo: `${mensagem}\n\n❌ ${errorMsg}`,
+        } as Omit<MensagemMestre, 'id' | 'timestamp' | 'turno' | 'rodada'>);
+
+        $q.notify({
+          type: 'negative',
+          message: errorMsg,
+          icon: 'error',
+          timeout: 3000,
+        });
+      }
+
+      novaMensagem.value = '';
+      await sessaoStore.salvarSessao(sessaoAtual.value as SessaoJogo);
+
+      setTimeout((): void => {
+        void scrollToBottom();
+      }, 200);
+      return;
+    }
+
+    // Processamento normal de mensagens (código existente)
     // Verificar se a mensagem contém personificação usando @player
     const matchPersonificacao = mensagem.match(/^@(\w+)\s+(.+)$/);
     if (matchPersonificacao) {
