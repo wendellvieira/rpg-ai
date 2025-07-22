@@ -4,6 +4,7 @@ applyTo: '**'
 
 ## Regras de trabalho.
 
+- Sempre que terminar uma tarefa vc deve atualizar o "todo.md" que a originou. Exp: para as tarefas do v1 vc atualiza o "docs/version-1.md"
 - Você deve usar "npx quasar build" sempre que quiser testar o projeto. Ele tem o mesmo efeito do quasar dev.
 - Você NÃO deve usar "npx quasar dev", pois ele não entrega o resultado da compilação correto.
 - Para testes unitários, você deve usar "npm run test:unit:ci" (execução única) ao invés de "npm run test:unit" (modo watch que trava o terminal).

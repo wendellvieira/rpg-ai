@@ -557,22 +557,22 @@ Para cada tarefa completada, verificar:
 
 ### 19. Sistema de Comandos Avançado (Command Pattern)
 
-- [ ] **Implementar Command Pattern base:**
+- [x] **Implementar Command Pattern base:**
   - **Description:** Criar sistema de comandos extensível usando Command Pattern com CommandRunner centralizado
   - **Source:** Planejamento em TODO-comandos-ia.md
   - **Destination:** `/src/services/Engine/Commands/`
   - **Files to Create:**
-    - `CommandRunner.ts` - Executor e registry centralizado
-    - `CommandParser.ts` - Parse de sintaxe `/` e `@npc`
-    - `CommandContext.ts` - Contexto de execução de comandos
-    - `commands/BaseCommand.ts` - Interface abstrata para comandos
+    - `CommandRunner.ts` - Executor e registry centralizado ✅
+    - `CommandParser.ts` - Parse de sintaxe `/` e `@npc` ✅
+    - `CommandContext.ts` - Contexto de execução de comandos ✅
+    - `commands/BaseCommand.ts` - Interface abstrata para comandos ✅
 
 - [ ] **Implementar comandos de comunicação:**
   - **Description:** Comandos básicos de fala e comunicação entre NPCs
   - **Source:** Especificação em TODO-comandos-ia.md
   - **Destination:** `/src/services/Engine/Commands/commands/`
   - **Files to Create:**
-    - `TalkCommand.ts` - `/talk [msg]`, `/talk @npc [msg]`
+    - `TalkCommand.ts` - `/talk [msg]`, `/talk @npc [msg]` ✅
     - `WhisperCommand.ts` - `/whisper @npc [msg]`
     - `OOCCommand.ts` - `/ooc [msg]` (Out of Character)
 
@@ -581,7 +581,7 @@ Para cada tarefa completada, verificar:
   - **Source:** Especificação em TODO-comandos-ia.md
   - **Destination:** `/src/services/Engine/Commands/commands/`
   - **Files to Create:**
-    - `AttackCommand.ts` - `/attack @alvo [arma?]`
+    - `AttackCommand.ts` - `/attack @alvo [arma?]` ✅
     - `CastCommand.ts` - `/cast [magia] [@alvo?]`
     - `RollCommand.ts` - `/roll [notação]`
     - `MoveCommand.ts` - `/move [local]`
@@ -1161,3 +1161,28 @@ Para cada tarefa completada, verificar:
 - ✅ **Componentes** testados com props/emits/states
 
 **UM PROJETO ENTERPRISE-GRADE COMPLETO!** 🚀✨
+
+---
+
+## 📝 **NOTAS DE PROGRESSO:**
+
+### ✅ **TAREFA #7 CONCLUÍDA** (18/01/2025):
+
+- OpenAIService convertido de singleton para classe estática
+- Configuração externa via ServiceConfig
+- Cache de instâncias implementado
+- Imports corrigidos em todo o projeto
+- Build errors reduzidos de 41 para 34
+
+### ✅ **TAREFA #19 EM PROGRESSO** (18/01/2025):
+
+- ✅ Command Pattern base infrastructure criada:
+  - BaseCommand.ts - Classe abstrata com interfaces e validação
+  - CommandContext.ts - Sistema de contexto com builder pattern
+  - CommandParser.ts - Parser avançado com tokenização e auto-complete
+  - CommandRunner.ts - Registry central com histórico e permissões
+- ✅ Comandos iniciais implementados:
+  - TalkCommand.ts - Comunicação entre personagens
+  - AttackCommand.ts - Sistema de combate básico
+- ⚠️ Dependências de import ainda precisam ser corrigidas
+- 🎯 Próximo: Implementar comandos restantes e integração com GamePage
