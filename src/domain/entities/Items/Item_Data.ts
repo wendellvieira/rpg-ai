@@ -1,4 +1,4 @@
-import { TipoItem, RaridadeItem } from '../../../types';
+import type { TipoItem, RaridadeItem } from '../../../types';
 
 /**
  * Interface para dados de persistência do Item

@@ -81,6 +81,7 @@
     "git stash": true,
     "git checkout": true,
     "git pull": true,
+    "git commit -m": true,
 
     // ✅ MANIPULAÇÃO DE ARQUIVOS SEGURA (para refatoração)
     "mkdir": true,
@@ -107,6 +108,9 @@
     "uniq": true,
     "awk": true,
     "sed": true,
+
+    // Comando pipeline complexo para busca de arquivos
+    "/^find .* \\| grep .* \\| head .*$/": true,
 
     // Node.js e execução
     "node": true,

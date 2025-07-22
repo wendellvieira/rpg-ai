@@ -1,97 +1,124 @@
 import { Item } from './Item';
-import { TipoItem, type RaridadeItem, type ResultadoDados } from '../types';
-import { Dados } from './Dados';
-
-export enum CategoriaArma {
-  CORPO_A_CORPO = 'corpo-a-corpo',
-  DISTANCIA = 'distancia',
-  ARREMESSO = 'arremesso',
-}
-
-export enum TipoDano {
-  CORTANTE = 'cortante',
-  PERFURANTE = 'perfurante',
-  CONTUNDENTE = 'contundente',
-  ACIDO = 'acido',
-  FRIO = 'frio',
-  FOGO = 'fogo',
-  FORCA = 'forca',
-  RELAMPAGO = 'relampago',
-  NECROTICO = 'necrotico',
-  VENENO = 'veneno',
-  PSIQUICO = 'psiquico',
-  RADIANTE = 'radiante',
-  TROVAO = 'trovao',
-}
-
-export enum PropriedadeArma {
-  LEVE = 'leve',
-  PESADA = 'pesada',
-  VERSATIL = 'versatil',
-  SUTIL = 'sutil',
-  ALCANCE = 'alcance',
-  ARREMESSO = 'arremesso',
-  MUNICAO = 'municao',
-  RECARGA = 'recarga',
-  ESPECIAL = 'especial',
-}
-
-interface DadosArma {
-  id?: string;
-  nome: string;
-  descricao: string;
-  valor: number;
-  peso: number;
-  raridade?: RaridadeItem;
-  magico?: boolean;
-  imagemUrl?: string;
-  categoria: CategoriaArma;
-  dano: string; // Ex: "1d8", "2d6+1"
-  tipoDano: TipoDano;
-  alcance: number; // Em metros
-  propriedades: PropriedadeArma[];
-  critico: number; // Multiplicador crítico (padrão 2)
-  bonusAtaque?: number; // Para armas mágicas
-  bonusDano?: number; // Para armas mágicas
-}
+import type { Arma_Data, ArmaConfig } from './Arma_Data';
+import { 
+  CategoriaArma, 
+  TipoDano, 
+  PropriedadeArma
+} from './Arma_Data';
+import { TipoItem, RaridadeItem } from '../../../types';
+import type { ResultadoDados } from '../../../types';
+import { riid } from '../../../utils/riid';
+import { Dados } from '../../../services/Engine/Dice/DiceEngine';
 
 /**
  * Classe para armas do jogo
+ * Implementa o padrão Factory para criação de instâncias
  */
 export class Arma extends Item {
-  public readonly categoria: CategoriaArma;
-  public readonly dano: string;
-  public readonly tipoDano: TipoDano;
-  public readonly alcance: number;
-  public readonly propriedadesArma: PropriedadeArma[];
-  public readonly critico: number;
-  public readonly bonusAtaque: number;
-  public readonly bonusDano: number;
+  // ✅ OBRIGATÓRIO: Propriedade data tipada
+  public override data: Arma_Data | null = null;
 
-  constructor(dados: DadosArma) {
-    super({
-      ...dados,
+  protected constructor() {
+    super();
+  }
+
+  // ✅ MÉTODOS ESPECÍFICOS DA ARMA (não override)
+  static createArma(data: Arma_Data): Arma {
+    const arma = new Arma();
+    arma.data = data;
+    return arma;
+  }
+
+  static createArmaFromConfig(config: ArmaConfig): Arma {
+    const data: Arma_Data = {
+      id: config.id || riid(),
+      nome: config.nome,
       tipo: TipoItem.ARMA,
+      descricao: config.descricao,
+      valor: config.valor,
+      peso: config.peso,
+      raridade: config.raridade || RaridadeItem.COMUM,
+      magico: config.magico || false,
       propriedades: {
-        categoria: dados.categoria,
-        dano: dados.dano,
-        tipoDano: dados.tipoDano,
-        alcance: dados.alcance,
-        propriedadesArma: dados.propriedades,
-        critico: dados.critico,
-        bonusAtaque: dados.bonusAtaque || 0,
-        bonusDano: dados.bonusDano || 0,
+        categoria: config.categoria,
+        dano: config.dano,
+        tipoDano: config.tipoDano,
+        alcance: config.alcance,
+        propriedadesArma: config.propriedades,
+        critico: config.critico || 2,
+        bonusAtaque: config.bonusAtaque || 0,
+        bonusDano: config.bonusDano || 0,
       },
-    });
+      ...(config.imagemUrl && { imagemUrl: config.imagemUrl }),
+      // Propriedades específicas da arma
+      categoria: config.categoria,
+      dano: config.dano,
+      tipoDano: config.tipoDano,
+      alcance: config.alcance,
+      propriedadesArma: config.propriedades,
+      critico: config.critico || 2,
+      bonusAtaque: config.bonusAtaque || 0,
+      bonusDano: config.bonusDano || 0,
+    };
+    
+    return Arma.createArma(data);
+  }
 
-    this.categoria = dados.categoria;
-    this.dano = dados.dano;
-    this.tipoDano = dados.tipoDano;
-    this.alcance = dados.alcance;
-    this.propriedadesArma = dados.propriedades;
-    this.critico = dados.critico || 2;
-    this.bonusAtaque = dados.bonusAtaque || 0;
-    this.bonusDano = dados.bonusDano || 0;
+  static createEmptyArma(): Arma {
+    const data: Arma_Data = {
+      id: riid(),
+      nome: '',
+      tipo: TipoItem.ARMA,
+      descricao: '',
+      valor: 0,
+      peso: 0,
+      raridade: RaridadeItem.COMUM,
+      magico: false,
+      propriedades: {},
+      categoria: CategoriaArma.CORPO_A_CORPO,
+      dano: '1d4',
+      tipoDano: TipoDano.CONTUNDENTE,
+      alcance: 1,
+      propriedadesArma: [],
+      critico: 2,
+      bonusAtaque: 0,
+      bonusDano: 0,
+    };
+    
+    return Arma.createArma(data);
+  }
+
+  // ✅ PERMITIDO: Propriedades calculadas/getters
+  get categoria(): CategoriaArma {
+    return this.data?.categoria || CategoriaArma.CORPO_A_CORPO;
+  }
+
+  get dano(): string {
+    return this.data?.dano || '1d4';
+  }
+
+  get tipoDano(): TipoDano {
+    return this.data?.tipoDano || TipoDano.CONTUNDENTE;
+  }
+
+  get alcance(): number {
+    return this.data?.alcance || 1;
+  }
+
+  get propriedadesArma(): PropriedadeArma[] {
+    return this.data?.propriedadesArma || [];
+  }
+
+  get critico(): number {
+    return this.data?.critico || 2;
+  }
+
+  get bonusAtaque(): number {
+    return this.data?.bonusAtaque || 0;
+  }
+
+  get bonusDano(): number {
+    return this.data?.bonusDano || 0;
   }
 
   /**
@@ -202,7 +229,7 @@ export class Arma extends Item {
    * Cria uma cópia da arma
    */
   override clonar(): Arma {
-    return new Arma({
+    return Arma.createArmaFromConfig({
       nome: this.nome,
       descricao: this.descricao,
       valor: this.valor,
@@ -252,7 +279,7 @@ export class Arma extends Item {
 
   // Factory methods para armas comuns
   static criarEspadaLonga(): Arma {
-    return new Arma({
+    return Arma.createArmaFromConfig({
       nome: 'Espada Longa',
       descricao: 'Uma espada de lâmina reta e comprida, versátil em combate.',
       valor: 15,
@@ -267,7 +294,7 @@ export class Arma extends Item {
   }
 
   static criarArcoLongo(): Arma {
-    return new Arma({
+    return Arma.createArmaFromConfig({
       nome: 'Arco Longo',
       descricao: 'Um arco alto e poderoso para ataques à distância.',
       valor: 50,
@@ -282,7 +309,7 @@ export class Arma extends Item {
   }
 
   static criarAdaga(): Arma {
-    return new Arma({
+    return Arma.createArmaFromConfig({
       nome: 'Adaga',
       descricao: 'Uma lâmina curta e afiada, ideal para ataques rápidos.',
       valor: 2,

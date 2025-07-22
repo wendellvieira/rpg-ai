@@ -15,17 +15,23 @@ export abstract class Item {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   static create(_data: Item_Data): Item {
     // Esta é uma classe abstrata, então as subclasses devem implementar
-    throw new Error('Item é uma classe abstrata. Use as subclasses específicas (Arma, Armadura, etc.)');
+    throw new Error(
+      'Item é uma classe abstrata. Use as subclasses específicas (Arma, Armadura, etc.)',
+    );
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   static createFromConfig(_config: ItemConfig): Item {
     // Esta é uma classe abstrata, então as subclasses devem implementar
-    throw new Error('Item é uma classe abstrata. Use as subclasses específicas (Arma, Armadura, etc.)');
+    throw new Error(
+      'Item é uma classe abstrata. Use as subclasses específicas (Arma, Armadura, etc.)',
+    );
   }
 
   static createEmpty(): Item {
-    throw new Error('Item é uma classe abstrata. Use as subclasses específicas (Arma, Armadura, etc.)');
+    throw new Error(
+      'Item é uma classe abstrata. Use as subclasses específicas (Arma, Armadura, etc.)',
+    );
   }
 
   // ✅ PERMITIDO: Propriedades calculadas/getters

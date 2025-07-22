@@ -86,10 +86,10 @@ export abstract class BaseModalController<TResult = unknown> implements ModalCon
 
     this.isOpen = true;
     this.deferred = Deferred.create<TResult>();
-    
+
     // Hook para subclasses implementarem lógica de abertura
     this.onOpen();
-    
+
     return this.deferred.wait();
   }
 
@@ -99,16 +99,16 @@ export abstract class BaseModalController<TResult = unknown> implements ModalCon
     }
 
     this.isOpen = false;
-    
+
     // Hook para subclasses implementarem lógica de fechamento
     this.onClose(result);
-    
+
     if (result !== undefined) {
       this.deferred.resolve(result);
     } else {
       this.deferred.resolve({} as TResult);
     }
-    
+
     this.deferred = null;
   }
 
@@ -118,10 +118,10 @@ export abstract class BaseModalController<TResult = unknown> implements ModalCon
     }
 
     this.isOpen = false;
-    
+
     // Hook para subclasses implementarem lógica de cancelamento
     this.onCancel();
-    
+
     this.deferred.reject(new Error('Modal cancelled'));
     this.deferred = null;
   }
