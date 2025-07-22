@@ -237,6 +237,52 @@ export class Personagem_Store {
   /**
    * Reset completo da store
    */
+  /**
+   * Obtém um personagem por ID
+   */
+  obterPersonagemPorId(id: string): Personagem | undefined {
+    return this.personagens.find((p) => p.data?.id === id);
+  }
+
+  /**
+   * Aplica dano a um personagem
+   */
+  async aplicarDano(id: string, quantidade: number): Promise<void> {
+    const personagem = this.obterPersonagemPorId(id);
+    if (!personagem || !personagem.data) return;
+
+    const novoHp = Math.max(0, personagem.data.atributos.derivados.hp - quantidade);
+    await this.atualizarPersonagem(id, {
+      atributos: {
+        ...personagem.data.atributos,
+        derivados: {
+          ...personagem.data.atributos.derivados,
+          hp: novoHp,
+        },
+      },
+    });
+  }
+
+  /**
+   * Aplica cura a um personagem
+   */
+  async aplicarCura(id: string, quantidade: number): Promise<void> {
+    const personagem = this.obterPersonagemPorId(id);
+    if (!personagem || !personagem.data) return;
+
+    const hpMaximo = personagem.data.atributos.derivados.hpMaximo;
+    const novoHp = Math.min(hpMaximo, personagem.data.atributos.derivados.hp + quantidade);
+    await this.atualizarPersonagem(id, {
+      atributos: {
+        ...personagem.data.atributos,
+        derivados: {
+          ...personagem.data.atributos.derivados,
+          hp: novoHp,
+        },
+      },
+    });
+  }
+
   reset(): void {
     this.personagens = [];
     this.personagemAtivo = null;

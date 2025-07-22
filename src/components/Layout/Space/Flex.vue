@@ -10,6 +10,7 @@ import {
   LayoutUtils,
   type ResponsiveGap,
   type AlignItems,
+  type AlignContent,
   type JustifyContent,
 } from './layout-types';
 

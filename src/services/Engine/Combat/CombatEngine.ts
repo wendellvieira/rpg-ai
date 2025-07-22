@@ -464,7 +464,7 @@ export class SistemaCombate {
     const nivel = nivelConjurado || magia.nivel;
 
     // Calcula CD da salvaguarda se a magia tiver
-    const cdSalvaguarda = 8 + this.calcularCDSalvaguarda(conjurador, magia);
+    const cdSalvaguarda = 8 + this.calcularCDSalvaguarda(conjurador);
 
     let resultado: ResultadoAtaqueMagia = {
       sucesso: true,
@@ -510,7 +510,7 @@ export class SistemaCombate {
   /**
    * Calcula CD de salvaguarda para uma magia
    */
-  private calcularCDSalvaguarda(conjurador: Personagem, _magia: Magia): number {
+  private calcularCDSalvaguarda(conjurador: Personagem): number {
     // CD = 8 + bônus proficiência + modificador do atributo de conjuração
     const bonusProficiencia = Math.floor((conjurador.nivel + 7) / 4); // Fórmula simplificada
 
