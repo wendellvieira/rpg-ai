@@ -11,7 +11,7 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: '/game',
-        component: () => import('pages/GamePage.vue'),
+        component: () => import('pages/Game/GamePage_Page.vue'),
       },
       {
         path: '/setup',

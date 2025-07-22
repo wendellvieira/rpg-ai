@@ -9,6 +9,8 @@ applyTo: '**'
 - Você NÃO deve usar "npx quasar dev", pois ele não entrega o resultado da compilação correto.
 - Para testes unitários, você deve usar "npm run test:unit:ci" (execução única) ao invés de "npm run test:unit" (modo watch que trava o terminal).
 - Para testes com interface gráfica, você deve usar "npm run test:ui" apenas quando explicitamente solicitado.
+- Todos os .md criados devem viver na pasta "docs" e seguir o padrão de nomeação "nome-da-tarefa.md".
+  s
 
 ## Regras de comandos no terminal.
 
