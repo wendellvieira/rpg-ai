@@ -40,6 +40,7 @@
     // Build e desenvolvimento
     "npm run": true,
     "npm install": true,
+    "npm test": true,
     "npm ci": true,
     "yarn": true,
     "pnpm": true,
