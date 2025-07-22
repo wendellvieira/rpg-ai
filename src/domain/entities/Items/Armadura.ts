@@ -25,7 +25,7 @@ export class Armadura extends Item {
 
   static createArmaduraFromConfig(config: ArmaduraConfig): Armadura {
     const tipo = config.tipoArmadura === TipoArmadura.ESCUDO ? TipoItem.ESCUDO : TipoItem.ARMADURA;
-    
+
     const data: Armadura_Data = {
       id: config.id || riid(),
       nome: config.nome,
@@ -54,7 +54,7 @@ export class Armadura extends Item {
       bonusCA: config.bonusCA || 0,
       resistencias: config.resistencias || [],
     };
-    
+
     return Armadura.createArmadura(data);
   }
 
@@ -77,7 +77,7 @@ export class Armadura extends Item {
       bonusCA: 0,
       resistencias: [],
     };
-    
+
     return Armadura.createArmadura(data);
   }
 
