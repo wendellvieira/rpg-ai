@@ -31,5 +31,160 @@
 
   // Facilitar navegação no projeto
   "explorer.compactFolders": false,
-  "breadcrumbs.enabled": true
+  "breadcrumbs.enabled": true,
+
+  // 🔧 Terminal Auto-Approval Configuration for RPG-AI Development
+  // Based on VS Code v1.102 Terminal auto approval feature
+  // Allows GitHub Copilot to execute safe commands automatically
+  "github.copilot.chat.agent.terminal.allowList": {
+    // Build e desenvolvimento
+    "npm run": true,
+    "npm install": true,
+    "npm ci": true,
+    "yarn": true,
+    "pnpm": true,
+
+    // Quasar framework
+    "quasar dev": true,
+    "quasar build": true,
+    "quasar create": true,
+    "quasar info": true,
+    "npx quasar": true,
+
+    // TypeScript
+    "tsc": true,
+    "npx tsc": true,
+    "vue-tsc": true,
+    "npx vue-tsc": true,
+
+    // Linting e formatação
+    "eslint": true,
+    "npx eslint": true,
+    "prettier": true,
+    "npx prettier": true,
+
+    // Testing
+    "jest": true,
+    "npx jest": true,
+    "vitest": true,
+    "npx vitest": true,
+
+    // Git (comandos seguros)
+    "/^git (status|log|diff|branch|show|add|commit|stash|checkout|pull)$/": true,
+    "git status": true,
+    "git log": true,
+    "git diff": true,
+    "git branch": true,
+    "git show": true,
+    "git add": true,
+    "git commit": true,
+    "git stash": true,
+    "git checkout": true,
+    "git pull": true,
+
+    // ✅ MANIPULAÇÃO DE ARQUIVOS SEGURA (para refatoração)
+    "mkdir": true,
+    "rmdir": true,
+    "rm": true,
+    "mv": true,
+    "cp": true,
+    "touch": true,
+    "ln": true,
+
+    // Comandos de navegação e visualização
+    "ls": true,
+    "cat": true,
+    "pwd": true,
+    "echo": true,
+    "cd": true,
+    "tree": true,
+    "find": true,
+    "grep": true,
+    "head": true,
+    "tail": true,
+    "wc": true,
+    "sort": true,
+    "uniq": true,
+    "awk": true,
+    "sed": true,
+
+    // Node.js e execução
+    "node": true,
+    "npx": true,
+
+    // Comandos específicos do VS Code
+    "code": true,
+
+    // Análise de arquivos
+    "file": true,
+    "stat": true,
+    "du": true,
+    "which": true,
+    "where": true,
+    "diff": true,
+
+    // Compressão/descompressão
+    "tar": true,
+    "zip": true,
+    "unzip": true,
+    "gzip": true,
+    "gunzip": true,
+
+    // Permissões básicas (não destrutivas)
+    "chmod +x": true,
+    "chmod +r": true,
+    "chmod +w": true,
+
+    // Processos (apenas visualização)
+    "ps": true,
+    "top": true,
+    "htop": true
+  },
+
+  "github.copilot.chat.agent.terminal.denyList": {
+    // ⚠️ REMOÇÃO DESTRUTIVA PERIGOSA
+    "rm -rf /": true,
+    "rm -rf /*": true,
+    "rm -rf ~": true,
+    "rm -rf $HOME": true,
+    "rm -rf .": true,
+    "rm -rf ..": true,
+
+    // ⚠️ GIT DESTRUTIVO
+    "git reset --hard HEAD~": true,
+    "git clean -fd": true,
+    "git push --force": true,
+    "git push -f": true,
+
+    // ⚠️ COMANDOS DE SISTEMA CRÍTICOS
+    "sudo rm": true,
+    "sudo rmdir": true,
+    "sudo mv": true,
+    "sudo chmod": true,
+    "sudo chown": true,
+    "kill -9": true,
+    "killall": true,
+    "pkill": true,
+
+    // ⚠️ DOWNLOAD/EXECUÇÃO REMOTA
+    "curl | sh": true,
+    "wget | sh": true,
+    "eval": true,
+    "exec": true,
+
+    // ⚠️ INSTALAÇÃO GLOBAL PERIGOSA
+    "npm install -g": true,
+    "yarn global add": true,
+    "pnpm add -g": true,
+
+    // ⚠️ PUBLICAÇÃO
+    "npm publish": true,
+    "yarn publish": true,
+    "git push --tags": true,
+
+    // ⚠️ MODIFICAÇÃO DE ARQUIVOS CRÍTICOS DO SISTEMA
+    "mv /etc": true,
+    "rm /etc": true,
+    "chmod 000": true
+  }
 }

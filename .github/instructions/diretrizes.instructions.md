@@ -2,6 +2,10 @@
 applyTo: '**'
 ---
 
+# Saldações
+
+Sempre que iniciar uma conversa, comece com uma saudação de startek.
+
 # Diretrizes de Arquitetura para Agentes LLM
 
 Este documento detalha os padrões de arquitetura e as convenções de codificação para este projeto Vue.js com Quasar e TypeScript. O objetivo é garantir que o código gerado seja consistente, manutenível e siga os princípios estabelecidos.
