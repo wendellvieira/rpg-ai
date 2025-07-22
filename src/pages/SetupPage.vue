@@ -387,6 +387,7 @@ import type { AtributosPrimarios, AtributosDerivados, ConhecimentoPersonagem } f
 import { useConfigStore } from '../stores/configStore';
 import { useItemStore } from '../stores/itemStore';
 import { usePersonagemStore } from '../stores/personagemStore';
+import type { Item } from '../domain/entities/Items/Item';
 import MapaViewer from '../components/MapaViewer.vue';
 
 // Lazy loading para diálogos pesados
@@ -581,7 +582,7 @@ async function criarPersonagem() {
       nome: novoPersonagem.value.nome,
       raca: novoPersonagem.value.raca,
       classe: novoPersonagem.value.classe,
-      ehNPC: novoPersonagem.value.isIA,
+      isIA: novoPersonagem.value.isIA,
     });
 
     await carregarPersonagens();
@@ -611,12 +612,12 @@ async function criarPersonagem() {
   }
 }
 
-async function editarPersonagem(personagem: PersonagemData) {
+function editarPersonagem(personagem: PersonagemData) {
   try {
     personagemParaEditar.value = personagem;
 
-    // Usar o store para carregar o personagem completo
-    const personagemCompleto = await personagemStore.carregarPersonagem(personagem.id);
+    // Usar o store para buscar o personagem completo
+    const personagemCompleto = personagemStore.buscarPersonagem(personagem.id);
 
     personagemCompletoParaEditar.value = personagemCompleto;
     mostrarEditarPersonagem.value = true;
@@ -653,10 +654,15 @@ async function salvarPersonagemEditado(dadosPersonagem: {
         descricao: dadosPersonagem.descricao,
         isIA: dadosPersonagem.isIA,
         promptPersonalidade: dadosPersonagem.promptPersonalidade,
-        atributosPrimarios: dadosPersonagem.atributosPrimarios,
-        atributosDerivados: dadosPersonagem.atributosDerivados,
-        inventario: dadosPersonagem.inventario,
-        conhecimento: dadosPersonagem.conhecimento,
+        atributos: {
+          primarios: dadosPersonagem.atributosPrimarios,
+          derivados: dadosPersonagem.atributosDerivados,
+          nivel: 1,
+        },
+        inventario: dadosPersonagem.inventario.map(
+          (item) => [item.id, item.quantidade] as [string, number],
+        ),
+        conhecimentos: dadosPersonagem.conhecimento,
       });
     } else {
       // Criando novo personagem
@@ -690,8 +696,8 @@ function confirmarExclusaoPersonagem(personagem: PersonagemData) {
   }).onOk(() => {
     void (async () => {
       try {
-        // Usar o store para deletar o personagem
-        await personagemStore.deletarPersonagem(personagem.id);
+        // Usar o store para remover o personagem
+        await personagemStore.removerPersonagem(personagem.id);
         await carregarPersonagens();
 
         $q.notify({
@@ -714,7 +720,7 @@ async function carregarItens() {
   carregandoItens.value = true;
   try {
     await itemStore.carregarItens();
-    itens.value = itemStore.itens.map((item) => ({
+    itens.value = itemStore.itens.map((item: Item) => ({
       id: item.id,
       nome: item.nome,
       tipo: item.tipo,

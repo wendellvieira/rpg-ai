@@ -2,6 +2,24 @@ import type { Personagem } from '../../../domain/entities/Character/Personagem';
 import type { Arma } from '../../../domain/entities/Items/Arma';
 import { CategoriaArma } from '../../../domain/entities/Items/Arma';
 import { Dados } from '../../../classes/Dados';
+import type { Magia } from '../../../domain/entities/Magic/Magia';
+import { TipoSalvaguarda } from '../../../domain/entities/Magic/Magia';
+import type { ResultadoDados } from '../../../types';
+    let bonusDano = atacante.atributos?.getModificador('forca') || 0;
+    let tipoDano = 'físico';
+
+    if (arma && arma.data) {
+      dadoDano = arma.data.dano || '1d6';
+      bonusDano += arma.data.bonusDano || 0;
+      tipoDano = arma.data.tipoDano || 'físico';
+
+      // Para armas de distância, usar Destreza em vez de Força
+      if (arma.data.categoria === CategoriaArma.DISTANCIA && atacante.atributos) {
+        bonusDano =
+          bonusDano - (atacante.atributos.getModificador('forca') || 0) +
+          (atacante.atributos.getModificador('destreza') || 0);
+      }
+    }ses/Dados';
 import type { Magia, EfeitoMagia } from '../../../domain/entities/Magic/Magia';
 import { TipoSalvaguarda } from '../../../domain/entities/Magic/Magia';
 import type { ResultadoDados } from '../../../types';
@@ -98,7 +116,7 @@ export class SistemaCombate {
     const rolagemAtaque = this.rolarAtaque(bonusAtaque, vantagem, desvantagem);
 
     // Verifica se acertou
-    const caAlvo = alvo.ca;
+    const caAlvo = alvo.data?.atributos.derivados.ca || 10;
     const sucesso = rolagemAtaque.total >= caAlvo;
     const critico = rolagemAtaque.resultados.includes(20);
     const erroGrave = rolagemAtaque.resultados.includes(1);
@@ -115,7 +133,7 @@ export class SistemaCombate {
       tipoDano = resultadoDano.tipo;
 
       // Aplica dano ao alvo
-      alvo.receberDano(dano);
+      this.aplicarDano(alvo, dano);
     }
 
     const resultado: ResultadoAtaque = {
@@ -153,24 +171,50 @@ export class SistemaCombate {
   }
 
   /**
+   * Aplica dano a um personagem
+   */
+  private aplicarDano(personagem: Personagem, dano: number): void {
+    if (!personagem.data) return;
+
+    const hpAtual = personagem.data.atributos.derivados.hp;
+    const novoHp = Math.max(0, hpAtual - dano);
+
+    personagem.updateData({
+      atributos: {
+        ...personagem.data.atributos,
+        derivados: {
+          ...personagem.data.atributos.derivados,
+          hp: novoHp,
+        },
+      },
+    });
+  }
+
+  /**
    * Calcula bônus de ataque do personagem
    */
   private calcularBonusAtaque(atacante: Personagem, arma?: Arma): number {
-    let bonus = atacante.bonusProficiencia; // Bônus de proficiência base
+    // Calcular bônus de proficiência baseado no nível (simples: +2 no nível 1-4, +3 no 5-8, etc.)
+    const nivel = atacante.nivel;
+    const bonusProficiencia = Math.floor((nivel - 1) / 4) + 2;
 
-    if (arma) {
+    let bonus = bonusProficiencia;
+
+    if (arma && atacante.atributos) {
       // Usa o modificador apropriado (Força para armas corpo a corpo, Destreza para distância)
-      if (arma.categoria === CategoriaArma.CORPO_A_CORPO) {
-        bonus += atacante.getModificador('forca');
-      } else if (arma.categoria === CategoriaArma.DISTANCIA) {
-        bonus += atacante.getModificador('destreza');
+      if (arma.data?.categoria === CategoriaArma.CORPO_A_CORPO) {
+        bonus += atacante.atributos.getModificador('forca');
+      } else if (arma.data?.categoria === CategoriaArma.DISTANCIA) {
+        bonus += atacante.atributos.getModificador('destreza');
       }
 
-      // Adiciona bônus da arma
-      bonus += arma.bonusAtaque;
-    } else {
+      // Adiciona bônus da arma (se existir)
+      if (arma.data?.bonusAtaque) {
+        bonus += arma.data.bonusAtaque;
+      }
+    } else if (atacante.atributos) {
       // Ataque desarmado usa Força
-      bonus += atacante.getModificador('forca');
+      bonus += atacante.atributos.getModificador('forca');
     }
 
     return bonus;

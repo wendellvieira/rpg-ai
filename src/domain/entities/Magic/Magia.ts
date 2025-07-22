@@ -1,14 +1,23 @@
 import { Item } from '../Items/Item';
 import type { Magia_Data, MagiaConfig } from './Magia_Data';
-import { 
-  EscolaMagia, 
-  ComponenteMagia, 
-  DuracaoMagia, 
-  TipoAlvo, 
-  TipoSalvaguarda 
+import {
+  EscolaMagia,
+  ComponenteMagia,
+  DuracaoMagia,
+  TipoAlvo,
+  TipoSalvaguarda,
 } from './Magia_Data';
 import { TipoItem, RaridadeItem } from '../../../types';
 import { riid } from '../../../utils/riid';
+
+// Re-export das enums e tipos para uso externo
+export {
+  EscolaMagia,
+  ComponenteMagia,
+  DuracaoMagia,
+  TipoAlvo,
+  TipoSalvaguarda,
+} from './Magia_Data';
 
 /**
  * Classe para magias
@@ -78,7 +87,7 @@ export class Magia extends Item {
       ...(config.area && { area: config.area }),
       ...(config.nivelSuperior && { nivelSuperior: config.nivelSuperior }),
     };
-    
+
     return Magia.createMagia(data);
   }
 
@@ -107,7 +116,7 @@ export class Magia extends Item {
       preparada: false,
       conjurada: false,
     };
-    
+
     return Magia.createMagia(data);
   }
 
@@ -349,36 +358,36 @@ export class Magia extends Item {
     descricao += `• Tempo de Conjuração: ${this.tempoConjuracao}\n`;
     descricao += `• Alcance: ${this.alcance}\n`;
     descricao += `• Componentes: ${this.componentes.join(', ')}\n`;
-    
+
     if (this.componenteMaterial) {
       descricao += `• Material: ${this.componenteMaterial}\n`;
     }
-    
+
     descricao += `• Duração: ${this.duracaoDetalhada}\n`;
     descricao += `• Alvo: ${this.alvo}\n`;
-    
+
     if (this.salvaguarda !== TipoSalvaguarda.NENHUMA) {
       descricao += `• Salvaguarda: ${this.salvaguarda}\n`;
     }
-    
+
     descricao += `• Resiste Magia: ${this.resisteMagia ? 'Sim' : 'Não'}\n`;
-    
+
     if (this.dano) {
       descricao += `• Dano: ${this.dano}\n`;
     }
-    
+
     if (this.area) {
       descricao += `• Área: ${this.area}\n`;
     }
-    
+
     descricao += `• Status: ${this.preparada ? 'Preparada' : 'Não preparada'}`;
     if (this.preparada) {
       descricao += `, ${this.conjurada ? 'Conjurada' : 'Disponível'}`;
     }
     descricao += '\n';
-    
+
     descricao += `\n**Efeito:**\n${this.efeito}\n`;
-    
+
     if (this.nivelSuperior) {
       descricao += `\n**Em Níveis Superiores:**\n${this.nivelSuperior}\n`;
     }
@@ -402,8 +411,10 @@ export class Magia extends Item {
       salvaguarda: TipoSalvaguarda.NENHUMA,
       resisteMagia: true,
       dano: '1d4+1',
-      efeito: 'Cada dardo atinge automaticamente uma criatura que você puder ver dentro do alcance. Um dardo causa 1d4+1 de dano de força ao alvo.',
-      nivelSuperior: 'Quando você conjurar essa magia usando um espaço de magia de 2° nível ou superior, a magia cria um dardo adicional para cada nível do espaço acima do 1°.',
+      efeito:
+        'Cada dardo atinge automaticamente uma criatura que você puder ver dentro do alcance. Um dardo causa 1d4+1 de dano de força ao alvo.',
+      nivelSuperior:
+        'Quando você conjurar essa magia usando um espaço de magia de 2° nível ou superior, a magia cria um dardo adicional para cada nível do espaço acima do 1°.',
     });
   }
 
@@ -422,8 +433,10 @@ export class Magia extends Item {
       salvaguarda: TipoSalvaguarda.NENHUMA,
       resisteMagia: false,
       dano: '1d8+mod',
-      efeito: 'Uma criatura que você tocar recupera 1d8 + seu modificador de habilidade de conjuração em pontos de vida.',
-      nivelSuperior: 'Quando você conjurar essa magia usando um espaço de magia de 2° nível ou superior, a cura aumenta em 1d8 para cada nível do espaço acima do 1°.',
+      efeito:
+        'Uma criatura que você tocar recupera 1d8 + seu modificador de habilidade de conjuração em pontos de vida.',
+      nivelSuperior:
+        'Quando você conjurar essa magia usando um espaço de magia de 2° nível ou superior, a cura aumenta em 1d8 para cada nível do espaço acima do 1°.',
     });
   }
 
@@ -444,8 +457,10 @@ export class Magia extends Item {
       salvaguarda: TipoSalvaguarda.REFLEXO,
       resisteMagia: true,
       dano: '8d6',
-      efeito: 'Cada criatura numa esfera de 6 metros de raio centrada no ponto deve realizar um teste de resistência de Destreza. Uma criatura sofre 8d6 de dano de fogo se falhar na resistência, ou metade desse dano se for bem-sucedida.',
-      nivelSuperior: 'Quando você conjurar essa magia usando um espaço de magia de 4° nível ou superior, o dano aumenta em 1d6 para cada nível do espaço acima do 3°.',
+      efeito:
+        'Cada criatura numa esfera de 6 metros de raio centrada no ponto deve realizar um teste de resistência de Destreza. Uma criatura sofre 8d6 de dano de fogo se falhar na resistência, ou metade desse dano se for bem-sucedida.',
+      nivelSuperior:
+        'Quando você conjurar essa magia usando um espaço de magia de 4° nível ou superior, o dano aumenta em 1d6 para cada nível do espaço acima do 3°.',
     });
   }
 }

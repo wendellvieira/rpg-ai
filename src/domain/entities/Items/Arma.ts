@@ -6,6 +6,9 @@ import type { ResultadoDados } from '../../../types';
 import { riid } from '../../../utils/riid';
 import { Dados } from '../../../classes/Dados';
 
+// Re-export das enums para uso externo
+export { CategoriaArma, TipoDano, PropriedadeArma } from './Arma_Data';
+
 /**
  * Classe para armas do jogo
  * Implementa o padrão Factory para criação de instâncias

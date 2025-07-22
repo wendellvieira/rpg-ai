@@ -5,12 +5,9 @@ import { Arma } from '../../../domain/entities/Items/Arma';
 import { Armadura } from '../../../domain/entities/Items/Armadura';
 import { Consumivel } from '../../../domain/entities/Items/Consumivel';
 import type { Item_Data, ItemConfig } from '../../../domain/entities/Items/Item_Data';
-import type { Arma_Data, ArmaConfig } from '../../../domain/entities/Items/Arma_Data';
-import type { Armadura_Data, ArmaduraConfig } from '../../../domain/entities/Items/Armadura_Data';
-import type {
-  Consumivel_Data,
-  ConsumivelConfig,
-} from '../../../domain/entities/Items/Consumivel_Data';
+import type { Arma_Data } from '../../../domain/entities/Items/Arma_Data';
+import type { Armadura_Data } from '../../../domain/entities/Items/Armadura_Data';
+import type { Consumivel_Data } from '../../../domain/entities/Items/Consumivel_Data';
 import { TipoItem, RaridadeItem } from '../../../domain/entities/Items/Item_Data';
 import { PersistenceManager } from '../../../services/Infrastructure/PersistenceManager';
 
@@ -93,7 +90,9 @@ export class Item_Store {
         const itemData = await persistence.carregarItem(indice.id);
         if (itemData && typeof itemData === 'object' && 'data' in itemData) {
           // Se carregou uma instância de Item
-          itensCarregados.push(itemData as Item);
+          // FIXME: Temporariamente comentado devido à incompatibilidade de tipos
+          // itensCarregados.push(itemData as Item);
+          console.warn('Carregamento de item instance desabilitado temporariamente');
         } else if (itemData) {
           // Se carregou dados brutos, tentar criar item
           const item = this.criarItemDeserializado(itemData);

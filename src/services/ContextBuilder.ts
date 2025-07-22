@@ -378,27 +378,33 @@ export class ContextBuilder {
   private obterEquipamentos(personagem: Personagem): string[] {
     const equipamentos: string[] = [];
 
-    const equipamentosMap = personagem.getEquipamentos;
-    equipamentosMap.forEach((itemId, slot) => {
-      equipamentos.push(`${slot}: ${itemId}`); // Em uma implementação real, seria obtido o nome do item
-    });
+    if (personagem.data?.equipamentos) {
+      personagem.data.equipamentos.forEach(([slot, itemId]) => {
+        equipamentos.push(`${slot}: ${itemId}`); // Em uma implementação real, seria obtido o nome do item
+      });
+    }
 
     return equipamentos;
   }
 
   private obterItens(personagem: Personagem): string[] {
-    const itens = personagem.obterItensInventario();
-    return itens.map((item) => `${item.itemId} (x${item.quantidade})`); // Em uma implementação real, seria obtido o nome do item
+    if (!personagem.data?.inventario) return [];
+
+    return personagem.data.inventario.map(([itemId, quantidade]) => `${itemId} (x${quantidade})`); // Em uma implementação real, seria obtido o nome do item
   }
 
   private obterStatusPersonagem(personagem: Personagem): Record<string, unknown> {
-    const attrs = personagem.getAtributos;
+    if (!personagem.data || !personagem.atributos) {
+      return {};
+    }
+
+    const attrs = personagem.atributos;
     return {
-      hp: personagem.hp,
-      mp: personagem.mp,
+      hp: personagem.data.atributos.derivados.hp,
+      mp: personagem.data.atributos.derivados.mp,
       nivel: personagem.nivel,
-      ca: personagem.ca,
-      iniciativa: personagem.iniciativa,
+      ca: personagem.data.atributos.derivados.ca,
+      iniciativa: personagem.data.atributos.derivados.iniciativa,
       atributos: {
         força: attrs.forca,
         destreza: attrs.destreza,
@@ -415,7 +421,7 @@ export class ContextBuilder {
         sabedoria: attrs.getModificador('sabedoria'),
         carisma: attrs.getModificador('carisma'),
       },
-      conhecimentos: personagem.getConhecimentos,
+      conhecimentos: personagem.data.conhecimentos,
     };
   }
 

@@ -214,7 +214,7 @@ CONFIGURAÇÃO:
       .join('\n');
 
     // Construir seção de conhecimentos do personagem
-    const conhecimentos = this.personagem.getConhecimentos;
+    const conhecimentos = this.personagem.data?.conhecimentos || [];
     let secaoConhecimentos = '';
     if (conhecimentos.length > 0) {
       secaoConhecimentos = `\nCONHECIMENTOS DO SEU PERSONAGEM:

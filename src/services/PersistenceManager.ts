@@ -64,8 +64,11 @@ export class PersistenceManager {
    */
   async salvarPersonagem(personagem: Personagem): Promise<void> {
     await this.verificarInicializacao();
-    const dados = personagem.serializar();
-    console.log('🗄️ PersistenceManager: Dados serializados para salvar:', dados);
+    const dados = personagem.data;
+    if (!dados) {
+      throw new Error('Personagem sem dados para salvar');
+    }
+    console.log('🗄️ PersistenceManager: Dados para salvar:', dados);
     console.log('🗄️ PersistenceManager: Conhecimentos nos dados:', dados.conhecimentos);
     await this.dbService.setItem(`personagem_${personagem.id}`, dados);
     await this.atualizarIndicePersonagens(personagem);
@@ -82,9 +85,12 @@ export class PersistenceManager {
 
     if (dados) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const personagem = Personagem.deserializar(dados as any);
-      console.log('🗄️ PersistenceManager: Personagem deserializado:', personagem);
-      console.log('🗄️ PersistenceManager: Conhecimentos carregados:', personagem.getConhecimentos);
+      const personagem = Personagem.create(dados as any);
+      console.log('🗄️ PersistenceManager: Personagem criado:', personagem);
+      console.log(
+        '🗄️ PersistenceManager: Conhecimentos carregados:',
+        personagem.data?.conhecimentos,
+      );
       return personagem;
     }
 
