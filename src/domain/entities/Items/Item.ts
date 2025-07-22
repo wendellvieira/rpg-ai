@@ -1,48 +1,85 @@
-import { TipoItem, RaridadeItem } from '../types';
+import type { Item_Data, ItemConfig } from './Item_Data';
+import { TipoItem, RaridadeItem } from './Item_Data';
 
 /**
  * Classe base para todos os itens do jogo
+ * Implementa o padrão Factory para criação de instâncias
  */
 export abstract class Item {
-  public readonly id: string;
-  public readonly nome: string;
-  public readonly tipo: TipoItem;
-  public readonly descricao: string;
-  public readonly valor: number; // Em moedas de ouro
-  public readonly peso: number; // Em kg
-  public readonly raridade: RaridadeItem;
-  public readonly magico: boolean;
-  public readonly propriedades: Record<string, unknown>;
-  public readonly imagemUrl: string | undefined; // URL ou base64 da imagem do item
+  // ✅ OBRIGATÓRIO: Propriedade data tipada
+  public data: Item_Data | null = null;
 
-  constructor(dados: {
-    id?: string;
-    nome: string;
-    tipo: TipoItem;
-    descricao: string;
-    valor: number;
-    peso: number;
-    raridade?: RaridadeItem;
-    magico?: boolean;
-    propriedades?: Record<string, unknown>;
-    imagemUrl?: string;
-  }) {
-    this.id = dados.id ?? this.gerarId();
-    this.nome = dados.nome;
-    this.tipo = dados.tipo;
-    this.descricao = dados.descricao;
-    this.valor = dados.valor;
-    this.peso = dados.peso;
-    this.raridade = dados.raridade ?? RaridadeItem.COMUM;
-    this.magico = dados.magico ?? false;
-    this.propriedades = dados.propriedades ?? {};
-    this.imagemUrl = dados.imagemUrl;
+  protected constructor() {}
+
+  // ✅ OBRIGATÓRIO: Static factory methods
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static create(_data: Item_Data): Item {
+    // Esta é uma classe abstrata, então as subclasses devem implementar
+    throw new Error('Item é uma classe abstrata. Use as subclasses específicas (Arma, Armadura, etc.)');
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static createFromConfig(_config: ItemConfig): Item {
+    // Esta é uma classe abstrata, então as subclasses devem implementar
+    throw new Error('Item é uma classe abstrata. Use as subclasses específicas (Arma, Armadura, etc.)');
+  }
+
+  static createEmpty(): Item {
+    throw new Error('Item é uma classe abstrata. Use as subclasses específicas (Arma, Armadura, etc.)');
+  }
+
+  // ✅ PERMITIDO: Propriedades calculadas/getters
+  get id(): string {
+    return this.data?.id || '';
+  }
+
+  get nome(): string {
+    return this.data?.nome || '';
+  }
+
+  get tipo(): TipoItem {
+    return this.data?.tipo || TipoItem.OUTRO;
+  }
+
+  get descricao(): string {
+    return this.data?.descricao || '';
+  }
+
+  get valor(): number {
+    return this.data?.valor || 0;
+  }
+
+  get peso(): number {
+    return this.data?.peso || 0;
+  }
+
+  get raridade(): RaridadeItem {
+    return this.data?.raridade || RaridadeItem.COMUM;
+  }
+
+  get magico(): boolean {
+    return this.data?.magico || false;
+  }
+
+  get propriedades(): Record<string, unknown> {
+    return this.data?.propriedades || {};
+  }
+
+  get imagemUrl(): string | undefined {
+    return this.data?.imagemUrl;
+  }
+
+  // ✅ CORRETO: Atualização via substituição do data
+  updateData(newData: Partial<Item_Data>): void {
+    if (this.data) {
+      this.data = { ...this.data, ...newData };
+    }
   }
 
   /**
    * Gera um ID único para o item
    */
-  private gerarId(): string {
+  protected static generateId(): string {
     return `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
